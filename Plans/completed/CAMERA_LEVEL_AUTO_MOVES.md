@@ -3,8 +3,9 @@ tags:
   - plan
   - web
   - graph
-status: development
+status: completed
 created: 2026-09-11
+completed_on: 2026-09-11
 ---
 # Plan: Level the camera to world up during programmatic moves
 
@@ -92,3 +93,27 @@ smoothly over the flight, and user tumbling stays free (trackball, may roll).
 - Switching to OrbitControls (ruled out: users keep free tumble).
 - Levelling on user-driven moves or when idle.
 - The `dist` / `radius` heuristics in `flyTo` (`Graph.svelte:66-68`).
+
+## Completion notes
+
+- **Planned vs. actual:** every phase landed as written, in one file
+  (`web/src/Graph.svelte`). All `file:line` citations — `flyTo` at `:58-75`, `animate()` at
+  `:77-99`, `zoomToFit` at `:125`, `d3Force` at `:120`, and the four library references under
+  `web/node_modules/` — were re-verified against `main` before editing and were all accurate.
+  `graph.controls()` and `graph.camera()` are both populated synchronously by
+  `ForceGraph3D()(el)` (`3d-force-graph.mjs:325-328`), so the `staticMoving` assignment is safe
+  where the plan put it.
+- **Mid-flight adjustments:** two small hardenings beyond the plan text. The antipodal nudge
+  normalises `view × to` before scaling and falls back to `(1,0,0)` when that cross product is
+  degenerate (view parallel to `to`), otherwise the nudge magnitude would depend on the angle
+  between them and could be zero. `levelCamera` also returns early if `graph.camera()` or
+  `graph.controls()` is missing, and the `animate()` block drops a stale tween if the graph has
+  been torn down.
+- **Surprises / residual risks:** none in the math — a headless harness replaying the exact
+  `levelCamera` + tween code against real `three` confirmed a rolled view converges to
+  `(0.000, 1.000, 0.000)`, the straight-down case to `(0.000, 0.000, -1.000)`, the upside-down
+  case to `(0.000, 1.000, 0.000)`, and an already-level camera creates no tween, with no NaN or
+  denormalised `up` and a finite `lookAt` matrix on every frame. The remaining risk is purely
+  perceptual and was **not** verified in a browser: that the un-roll *looks* smooth rather than
+  abrupt, and that losing trackball inertia (Decision 5) is an acceptable tradeoff in the hand.
+  Both need a human at the app.
