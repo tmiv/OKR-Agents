@@ -12,6 +12,9 @@
   const meshes = new Map(); // node id → THREE.Mesh, for the pulse loop
   let highlightSet = new Set();
   let raf;
+  const WORLD_UP = new THREE.Vector3(0, 1, 0);
+  // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
+  let upTween = null;
 
   const LEVEL = {
     company: { color: '#f5c542', size: 10 },
@@ -55,11 +58,34 @@
     return { nodes, links };
   }
 
+  // Trackball lets the user roll `camera.up` freely; every programmatic move
+  // tweens it back to world up over the flight so the view un-rolls smoothly.
+  function levelCamera(ms) {
+    if (!graph) return;
+    const cam = graph.camera();
+    const controls = graph.controls();
+    if (!cam || !controls) return;
+    const from = cam.up.clone().normalize();
+    const view = controls.target.clone().sub(cam.position).normalize();
+    // Looking (almost) straight down the tree makes lookAt with up = +Y undefined.
+    let to = WORLD_UP.clone();
+    if (Math.abs(view.dot(WORLD_UP)) > 0.98) to = new THREE.Vector3(0, 0, -1);
+    if (from.distanceToSquared(to) < 1e-6) { upTween = null; return; }
+    // Upside down: a straight lerp would pass through the origin, so nudge off the antipode.
+    if (from.dot(to) < -0.999) {
+      const nudge = view.clone().cross(to);
+      if (nudge.lengthSq() < 1e-6) nudge.set(1, 0, 0);
+      from.addScaledVector(nudge.normalize(), 0.01).normalize();
+    }
+    upTween = { from, to, start: performance.now(), ms };
+  }
+
   export function flyTo(ids, ms = 1200) {
     if (!graph || !ids?.length) return;
     const want = new Set(ids);
     const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && Number.isFinite(n.x));
     if (!nodes.length) return;
+    levelCamera(ms);
     const c = { x: 0, y: 0, z: 0 };
     for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
     c.x /= nodes.length; c.y /= nodes.length; c.z /= nodes.length;
@@ -75,6 +101,23 @@
   }
 
   function animate() {
+    if (upTween) {
+      const cam = graph?.camera();
+      if (!cam) {
+        upTween = null;
+      } else {
+        const t = Math.min(1, (performance.now() - upTween.start) / upTween.ms);
+        if (t >= 1) {
+          cam.up.copy(upTween.to);
+          upTween = null;
+        } else {
+          // Quadratic.Out, matching the library's position tween.
+          const e = 1 - (1 - t) ** 2;
+          // Lerp + normalize is fine here: the arc is short and lookAt re-orthogonalises.
+          cam.up.copy(upTween.from).lerp(upTween.to, e).normalize();
+        }
+      }
+    }
     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
     for (const [id, mesh] of meshes) {
       const hi = highlightSet.has(id);
@@ -118,11 +161,15 @@
       .onNodeClick((n) => { onSelect?.(n.id); flyTo([n.id], 800); })
       .onBackgroundClick(() => onSelect?.(null));
     graph.d3Force('charge').strength(-160);
+    // Inertia would keep rotating camera.up while we tween it; the tradeoff is
+    // that user tumbling no longer coasts.
+    graph.controls().staticMoving = true;
+    if (import.meta.env.DEV) window.__graph = graph;
 
     graph.graphData(toGraphData(tree, null));
     const ro = new ResizeObserver(() => graph.width(el.clientWidth).height(el.clientHeight));
     ro.observe(el);
-    setTimeout(() => graph.zoomToFit(900, 60), 700);
+    setTimeout(() => { graph.zoomToFit(900, 60); levelCamera(900); }, 700);
     animate();
 
     return () => {
