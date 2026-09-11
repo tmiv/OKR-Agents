@@ -1,0 +1,7 @@
+{
+  "schema": "action",
+  "data": {
+    "op": "deleteUnit",
+    "id": "field-marketing"
+  }
+}

@@ -21,11 +21,14 @@ import { PACKAGE_VERSION, RESPOND_INPUT_SCHEMA } from './dist/meta.js';
 import {
   validateAction as _validateAction,
   validateAddAction as _validateAddAction,
+  validateAddUnitAction as _validateAddUnitAction,
   validateChatRequest as _validateChatRequest,
   validateChatResponse as _validateChatResponse,
   validateCompany as _validateCompany,
   validateDeleteAction as _validateDeleteAction,
+  validateDeleteUnitAction as _validateDeleteUnitAction,
   validateEditAction as _validateEditAction,
+  validateEditUnitAction as _validateEditUnitAction,
   validateHistory as _validateHistory,
   validateOkrDocument as _validateOkrDocument,
   validateOkrNode as _validateOkrNode,
@@ -104,11 +107,14 @@ const ACTION_BRANCHES = {
   edit: _validateEditAction,
   relink: _validateRelinkAction,
   add: _validateAddAction,
-  delete: _validateDeleteAction
+  delete: _validateDeleteAction,
+  editUnit: _validateEditUnitAction,
+  addUnit: _validateAddUnitAction,
+  deleteUnit: _validateDeleteUnitAction
 };
 const ACTION_OPS = Object.keys(ACTION_BRANCHES);
 
-// Ajv reports a failed oneOf as all four branches' complaints at once, and a
+// Ajv reports a failed oneOf as every branch's complaints at once, and a
 // resolved $ref rewrites schemaPath relative to the branch — so there is no way
 // to tell from the errors which branch was meant. Read the `op` ourselves and
 // validate only that branch.
@@ -228,6 +234,102 @@ export function checkTreeSemantics(tree) {
   return { errors, warnings };
 }
 
+/**
+ * The same relational checks, over the org rather than the tree: unique unit
+ * ids, parents that exist, no parent cycles, a `lead` that names a real person,
+ * a person in a real unit.
+ *
+ * `charter.dependsOn` pointing at a unit that is not there is a warning, not an
+ * error: deleting a team leaves every charter that depended on it dangling, and
+ * that should not make the document unreadable.
+ *
+ * @param {unknown} company
+ * @returns {{ errors: string[], warnings: string[] }}
+ */
+export function checkCompanySemantics(company) {
+  const errors = [];
+  const warnings = [];
+  const units = company?.units;
+  if (!Array.isArray(units)) return { errors: ['/units: must be an array'], warnings };
+
+  const byId = new Map();
+  for (const [i, u] of units.entries()) {
+    if (byId.has(u.id)) errors.push(`/units/${i}/id: duplicate unit id "${u.id}"`);
+    else byId.set(u.id, u);
+  }
+
+  const people = Array.isArray(company?.people) ? company.people : [];
+  const peopleById = new Map();
+  for (const [i, p] of people.entries()) {
+    if (peopleById.has(p.id)) errors.push(`/people/${i}/id: duplicate person id "${p.id}"`);
+    else peopleById.set(p.id, p);
+  }
+
+  for (const [i, u] of units.entries()) {
+    if (u.parent != null && !byId.has(u.parent)) {
+      errors.push(`/units/${i}/parent: "${u.id}" points at missing parent "${u.parent}"`);
+    }
+    if (u.lead != null && !peopleById.has(u.lead)) {
+      errors.push(`/units/${i}/lead: "${u.id}" names missing person "${u.lead}"`);
+    }
+    for (const [j, dep] of (u.charter?.dependsOn ?? []).entries()) {
+      if (!byId.has(dep)) warnings.push(`/units/${i}/charter/dependsOn/${j}: "${u.id}" depends on missing team "${dep}"`);
+    }
+  }
+
+  for (const [i, p] of people.entries()) {
+    if (!byId.has(p.unitId)) errors.push(`/people/${i}/unitId: "${p.id}" is in missing unit "${p.unitId}"`);
+  }
+
+  // Same walk as the tree: anything that does not terminate at a top-level unit
+  // is in or below a cycle. Report each cycle once, by its lowest-sorting member.
+  const reported = new Set();
+  for (const start of units) {
+    const seen = new Set();
+    let cur = start;
+    while (cur && cur.parent != null) {
+      if (seen.has(cur.id)) break;
+      seen.add(cur.id);
+      const next = byId.get(cur.parent);
+      if (!next) break; // already reported as a missing parent
+      if (seen.has(next.id)) {
+        const cycle = [...seen].filter((id) => byId.has(id)).sort();
+        const key = cycle.join(',');
+        if (!reported.has(key)) {
+          reported.add(key);
+          errors.push(`/units: parent cycle through ${cycle.join(' -> ')}`);
+        }
+        break;
+      }
+      cur = next;
+    }
+  }
+
+  return { errors, warnings };
+}
+
+/**
+ * Do the tree's `unitId` pointers land on teams that exist? Warnings only,
+ * never errors: a tree mid-edit can legitimately dangle (a team was deleted,
+ * or the document simply has no `company`), and a dangling unitId costs nothing
+ * more than a node rendering its `owner` text instead of a team link.
+ *
+ * @param {unknown} tree
+ * @param {unknown} company
+ * @returns {{ errors: string[], warnings: string[] }}
+ */
+export function checkOwnership(tree, company) {
+  const warnings = [];
+  const nodes = tree?.nodes;
+  if (!Array.isArray(nodes)) return { errors: [], warnings };
+  const known = new Set((Array.isArray(company?.units) ? company.units : []).map((u) => u.id));
+  for (const [i, n] of nodes.entries()) {
+    if (n.unitId == null) continue;
+    if (!known.has(n.unitId)) warnings.push(`/nodes/${i}/unitId: "${n.id}" is owned by missing team "${n.unitId}"`);
+  }
+  return { errors: [], warnings };
+}
+
 // ── documents ───────────────────────────────────────────────────────────────
 
 /**
@@ -295,6 +397,14 @@ export function parseDocument(input) {
   if (!structural.ok) return { ok: false, errors: structural.errors, warnings: [] };
 
   const { errors, warnings } = checkTreeSemantics(document.tree);
+  if (document.company) {
+    const org = checkCompanySemantics(document.company);
+    errors.push(...org.errors);
+    warnings.push(...org.warnings);
+  }
+  // Runs with or without a company: a document that carries unitId but no
+  // company should say so rather than pass silently.
+  warnings.push(...checkOwnership(document.tree, document.company).warnings);
   if (errors.length) return { ok: false, errors, warnings };
   return { ok: true, document, warnings };
 }

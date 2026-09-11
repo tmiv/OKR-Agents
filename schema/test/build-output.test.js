@@ -13,7 +13,7 @@ const read = (p) => readFileSync(fileURLToPath(new URL(p, import.meta.url)), 'ut
 
 test('each generated type is declared exactly once', () => {
   const types = read('../dist/types.d.ts');
-  for (const name of ['OkrNode', 'OkrTree', 'OkrDocument', 'Company', 'History', 'ChatRequest', 'ChatResponse']) {
+  for (const name of ['OkrNode', 'OkrTree', 'OkrDocument', 'Company', 'TeamCharter', 'History', 'ChatRequest', 'ChatResponse']) {
     const count = types.match(new RegExp(`^export interface ${name} \\{`, 'gm'))?.length ?? 0;
     assert.equal(count, 1, `expected exactly one "export interface ${name}", found ${count}`);
   }
@@ -24,9 +24,16 @@ test('no suffixed duplicate types — the whole reason for the json2ts fork', ()
   assert.deepEqual(dupes, [], 'upstream json-schema-to-typescript inlines annotated $refs and suffixes the copies');
 });
 
-test('Action is a discriminated union of the four ops', () => {
+test('Action is a discriminated union of the four node ops and the three team ops', () => {
+  // json2ts wraps the union once it is long enough, so compare on the branch
+  // list rather than the exact line.
   const types = read('../dist/types.d.ts');
-  assert.match(types, /export type Action = EditAction \| RelinkAction \| AddAction \| DeleteAction;/);
+  const union = types.match(/export type Action =\s*([^;]+);/)?.[1];
+  assert.ok(union, 'no "export type Action" in dist/types.d.ts');
+  assert.deepEqual(
+    union.split('|').map((s) => s.trim()),
+    ['EditAction', 'RelinkAction', 'AddAction', 'DeleteAction', 'EditUnitAction', 'AddUnitAction', 'DeleteUnitAction']
+  );
 });
 
 test('the tool schema is fully flattened', () => {

@@ -6,6 +6,175 @@
     "exportedAt": "2026-09-11T00:00:00Z",
     "generator": "hand-authored"
   },
+  "company": {
+    "name": "Workflow platform",
+    "units": [
+      {
+        "id": "exec",
+        "name": "Exec",
+        "parent": null,
+        "charter": {
+          "mission": "We set one company goal a year and make sure every team's work ladders up to it. Our real product is the list of things the company has decided not to do.",
+          "process": "Board targets come in once a year and a single company objective goes out. Each division brings its objectives to a monthly business review; anything that needs a trade-off between two divisions is settled there rather than in a hallway.",
+          "owns": [
+            "the company objective",
+            "the annual operating plan",
+            "headcount allocation",
+            "the board narrative"
+          ]
+        }
+      },
+      {
+        "id": "product",
+        "name": "Product",
+        "parent": "exec",
+        "charter": {
+          "mission": "We decide what gets built and why, so the platform earns its price for a mid-market team and not only for the enterprises that already bought it.",
+          "process": "Customer research, support themes and usage data come in. We run a monthly roadmap review with Engineering and Design, then publish a quarterly commitment that Marketing and Sales can plan their own quarters against.",
+          "owns": [
+            "the product roadmap",
+            "week-1 activation",
+            "pricing and packaging",
+            "what ships behind a flag"
+          ],
+          "dependsOn": [
+            "engineering",
+            "design"
+          ]
+        }
+      },
+      {
+        "id": "marketing",
+        "name": "Marketing",
+        "parent": "exec",
+        "charter": {
+          "mission": "We create demand that Sales can actually work, and we make the product understandable before anyone has to talk to a human about it.",
+          "process": "We plan a quarter ahead against the pipeline number Sales needs, execute through Content and Field Marketing, and review pipeline contribution weekly with Sales Ops. Campaigns that do not tie to a pipeline number do not get run.",
+          "owns": [
+            "the demand generation number",
+            "the website",
+            "brand and messaging",
+            "the event calendar"
+          ],
+          "dependsOn": [
+            "product",
+            "sales"
+          ]
+        }
+      },
+      {
+        "id": "sales",
+        "name": "Sales",
+        "parent": "exec",
+        "charter": {
+          "mission": "We turn qualified demand into paying mid-market teams, and we keep them paying.",
+          "process": "A weekly forecast runs off the pipeline Marketing generates. Discovery and trials are run with Customer Success, and deals close on the standard contract; anything non-standard goes to Sales Ops for approval before it is promised.",
+          "owns": [
+            "new ARR",
+            "net revenue retention",
+            "the CRM",
+            "discounting policy"
+          ],
+          "dependsOn": [
+            "marketing",
+            "product"
+          ]
+        }
+      },
+      {
+        "id": "engineering",
+        "name": "Engineering",
+        "parent": "exec",
+        "charter": {
+          "mission": "We build and run the platform, and we keep it fast and available enough that no other team has to plan around it being down.",
+          "process": "The quarterly product commitment and the running incident queue are our two inputs. We ship in two-week iterations behind feature flags and hold a weekly reliability review where SRE brings the numbers rather than the anecdotes.",
+          "owns": [
+            "p95 API latency",
+            "uptime",
+            "the deploy pipeline",
+            "the service catalogue",
+            "the security posture"
+          ],
+          "dependsOn": [
+            "product"
+          ]
+        }
+      },
+      {
+        "id": "people",
+        "name": "People",
+        "parent": "exec",
+        "charter": {
+          "mission": "We make sure the company can hire, keep and grow the people the operating plan quietly assumes it already has.",
+          "process": "A rolling hiring plan runs against the operating plan, a compensation and performance cycle runs twice a year, and a quarterly engagement survey goes to the exec review with the bad news left in.",
+          "owns": [
+            "the hiring plan",
+            "attrition",
+            "the compensation bands",
+            "onboarding"
+          ],
+          "dependsOn": [
+            "exec"
+          ]
+        }
+      },
+      {
+        "id": "growth",
+        "name": "Growth",
+        "parent": "product"
+      },
+      {
+        "id": "design",
+        "name": "Design",
+        "parent": "product"
+      },
+      {
+        "id": "content",
+        "name": "Content",
+        "parent": "marketing"
+      },
+      {
+        "id": "field-marketing",
+        "name": "Field Marketing",
+        "parent": "marketing"
+      },
+      {
+        "id": "customer-success",
+        "name": "Customer Success",
+        "parent": "sales"
+      },
+      {
+        "id": "sales-ops",
+        "name": "Sales Ops",
+        "parent": "sales"
+      },
+      {
+        "id": "platform",
+        "name": "Platform",
+        "parent": "engineering"
+      },
+      {
+        "id": "sre",
+        "name": "SRE",
+        "parent": "engineering"
+      },
+      {
+        "id": "dev-infra",
+        "name": "Dev Infra",
+        "parent": "engineering"
+      },
+      {
+        "id": "security",
+        "name": "Security",
+        "parent": "engineering"
+      },
+      {
+        "id": "talent",
+        "name": "Talent",
+        "parent": "people"
+      }
+    ]
+  },
   "tree": {
     "nodes": [
       {
@@ -14,8 +183,9 @@
         "parent": null,
         "label": "Become the default workflow platform for mid-market ops teams",
         "owner": "Exec",
-        "metric": "share of mid-market ops teams (500–5k employees) on a paid plan",
-        "target": "6% → 15% by end of FY26",
+        "unitId": "exec",
+        "metric": "share of mid-market ops teams (500\u20135k employees) on a paid plan",
+        "target": "6% \u2192 15% by end of FY26",
         "contributes": 1
       },
       {
@@ -24,8 +194,9 @@
         "parent": "co-1",
         "label": "New accounts reach real value in their first week",
         "owner": "Product",
+        "unitId": "product",
         "metric": "week-1 activation rate",
-        "target": "31% → 50%",
+        "target": "31% \u2192 50%",
         "contributes": 0.9
       },
       {
@@ -34,8 +205,9 @@
         "parent": "obj-1",
         "label": "Cut median time-to-first-workflow from 14 days to 5",
         "owner": "Product",
+        "unitId": "product",
         "metric": "median days from signup to first workflow run",
-        "target": "14 → 5 by Q4",
+        "target": "14 \u2192 5 by Q4",
         "contributes": 0.9
       },
       {
@@ -44,8 +216,9 @@
         "parent": "obj-1",
         "label": "Lift week-1 activation from 31% to 50%",
         "owner": "Growth",
+        "unitId": "growth",
         "metric": "% of new accounts with 3+ active workflows in week 1",
-        "target": "31% → 50% by Q4",
+        "target": "31% \u2192 50% by Q4",
         "contributes": 0.85
       },
       {
@@ -54,8 +227,9 @@
         "parent": "obj-1",
         "label": "Ship guided templates for the top 5 onboarding use cases",
         "owner": "Product",
-        "metric": "templates live and used by ≥20% of new accounts",
-        "target": "0 → 5 by Q3",
+        "unitId": "product",
+        "metric": "templates live and used by \u226520% of new accounts",
+        "target": "0 \u2192 5 by Q3",
         "contributes": 0.7
       },
       {
@@ -64,6 +238,7 @@
         "parent": "obj-1",
         "label": "Redesign the settings page",
         "owner": "Design",
+        "unitId": "design",
         "metric": "",
         "target": "",
         "contributes": 0.25
@@ -74,18 +249,20 @@
         "parent": "co-1",
         "label": "Turn brand awareness into qualified mid-market pipeline",
         "owner": "Marketing",
+        "unitId": "marketing",
         "metric": "marketing-sourced qualified pipeline",
-        "target": "$3.2M → $6M",
+        "target": "$3.2M \u2192 $6M",
         "contributes": 0.85
       },
       {
         "id": "kr-5",
         "level": "kr",
         "parent": "obj-2",
-        "label": "Raise MQL → SQL conversion from 12% to 20%",
+        "label": "Raise MQL \u2192 SQL conversion from 12% to 20%",
         "owner": "Marketing",
+        "unitId": "marketing",
         "metric": "MQL to SQL conversion rate, trailing 90 days",
-        "target": "12% → 20% by Q4",
+        "target": "12% \u2192 20% by Q4",
         "contributes": 0.85
       },
       {
@@ -94,8 +271,9 @@
         "parent": "obj-2",
         "label": "Source $6M of qualified pipeline from marketing programs",
         "owner": "Marketing",
+        "unitId": "marketing",
         "metric": "marketing-sourced pipeline (SQL stage or later)",
-        "target": "$3.2M → $6M by Q4",
+        "target": "$3.2M \u2192 $6M by Q4",
         "contributes": 0.9
       },
       {
@@ -104,6 +282,7 @@
         "parent": "obj-2",
         "label": "Improve our social media presence",
         "owner": "Marketing",
+        "unitId": "marketing",
         "metric": "",
         "target": "",
         "contributes": 0.2
@@ -114,8 +293,9 @@
         "parent": "obj-2",
         "label": "Publish 3 customer case studies in target verticals",
         "owner": "Content",
+        "unitId": "content",
         "metric": "case studies published",
-        "target": "0 → 3 by Q3",
+        "target": "0 \u2192 3 by Q3",
         "contributes": 0.55
       },
       {
@@ -124,6 +304,7 @@
         "parent": "obj-2",
         "label": "Attend more industry events",
         "owner": "Field Marketing",
+        "unitId": "field-marketing",
         "metric": "",
         "target": "more than last year",
         "contributes": 0.3
@@ -134,6 +315,7 @@
         "parent": "co-1",
         "label": "Win and expand mid-market accounts efficiently",
         "owner": "Sales",
+        "unitId": "sales",
         "metric": "new + expansion ARR from mid-market",
         "target": "$12M new ARR",
         "contributes": 0.95
@@ -144,8 +326,9 @@
         "parent": "obj-3",
         "label": "Close $12M of new ARR from the mid-market segment",
         "owner": "Sales",
+        "unitId": "sales",
         "metric": "closed-won new ARR, mid-market segment",
-        "target": "$7.5M → $12M by Q4",
+        "target": "$7.5M \u2192 $12M by Q4",
         "contributes": 0.95
       },
       {
@@ -154,8 +337,9 @@
         "parent": "obj-3",
         "label": "Raise net revenue retention from 104% to 115%",
         "owner": "Customer Success",
+        "unitId": "customer-success",
         "metric": "trailing-12-month NRR",
-        "target": "104% → 115% by Q4",
+        "target": "104% \u2192 115% by Q4",
         "contributes": 0.9
       },
       {
@@ -164,8 +348,9 @@
         "parent": "obj-3",
         "label": "Shorten the average mid-market sales cycle from 62 to 45 days",
         "owner": "Sales Ops",
+        "unitId": "sales-ops",
         "metric": "median days from SQL to closed-won",
-        "target": "62 → 45 by Q4",
+        "target": "62 \u2192 45 by Q4",
         "contributes": 0.8
       },
       {
@@ -174,6 +359,7 @@
         "parent": "obj-3",
         "label": "Hire 6 account executives",
         "owner": "Sales",
+        "unitId": "sales",
         "metric": "AEs hired and ramped",
         "target": "6 by Q2",
         "contributes": 0.45
@@ -184,8 +370,9 @@
         "parent": "co-1",
         "label": "Ship a platform customers can bet their operations on",
         "owner": "Engineering",
+        "unitId": "engineering",
         "metric": "monthly uptime + Sev-1 count",
-        "target": "99.95% uptime, ≤2 Sev-1 per quarter",
+        "target": "99.95% uptime, \u22642 Sev-1 per quarter",
         "contributes": 0.8
       },
       {
@@ -194,8 +381,9 @@
         "parent": "obj-4",
         "label": "Reach 99.95% monthly uptime on the workflow engine",
         "owner": "Platform",
+        "unitId": "platform",
         "metric": "monthly uptime, workflow engine",
-        "target": "99.8% → 99.95% every month from Q3",
+        "target": "99.8% \u2192 99.95% every month from Q3",
         "contributes": 0.9
       },
       {
@@ -204,8 +392,9 @@
         "parent": "obj-4",
         "label": "Reduce p95 workflow run latency from 8s to 2s",
         "owner": "Platform",
+        "unitId": "platform",
         "metric": "p95 end-to-end workflow run latency",
-        "target": "8s → 2s by Q4",
+        "target": "8s \u2192 2s by Q4",
         "contributes": 0.75
       },
       {
@@ -214,8 +403,9 @@
         "parent": "obj-4",
         "label": "Cut Sev-1 incidents from 9 per quarter to 2",
         "owner": "SRE",
+        "unitId": "sre",
         "metric": "Sev-1 incidents per quarter",
-        "target": "9 → 2 by Q4",
+        "target": "9 \u2192 2 by Q4",
         "contributes": 0.85
       },
       {
@@ -224,6 +414,7 @@
         "parent": "obj-4",
         "label": "Migrate CI to the new build system",
         "owner": "Dev Infra",
+        "unitId": "dev-infra",
         "metric": "repos migrated",
         "target": "all repos by Q3",
         "contributes": 0.35
@@ -234,6 +425,7 @@
         "parent": "obj-4",
         "label": "Deliver the SOC 2 Type II report",
         "owner": "Security",
+        "unitId": "security",
         "metric": "report issued with zero exceptions",
         "target": "issued by end of Q3",
         "contributes": 0.65
@@ -244,6 +436,7 @@
         "parent": "co-1",
         "label": "Grow a team that can sustain this pace",
         "owner": "People",
+        "unitId": "people",
         "metric": "regretted attrition + time-to-fill",
         "target": "8% attrition, 60-day time-to-fill",
         "contributes": 0.55
@@ -254,8 +447,9 @@
         "parent": "obj-5",
         "label": "Reduce regretted attrition from 14% to 8%",
         "owner": "People",
+        "unitId": "people",
         "metric": "annualised regretted attrition",
-        "target": "14% → 8% by Q4",
+        "target": "14% \u2192 8% by Q4",
         "contributes": 0.7
       },
       {
@@ -264,8 +458,9 @@
         "parent": "obj-5",
         "label": "Fill 90% of open roles within 60 days",
         "owner": "Talent",
+        "unitId": "talent",
         "metric": "% of roles filled within 60 days of opening",
-        "target": "55% → 90% by Q4",
+        "target": "55% \u2192 90% by Q4",
         "contributes": 0.6
       },
       {
@@ -274,6 +469,7 @@
         "parent": "obj-5",
         "label": "Run a company offsite",
         "owner": "People",
+        "unitId": "people",
         "metric": "",
         "target": "",
         "contributes": 0.2

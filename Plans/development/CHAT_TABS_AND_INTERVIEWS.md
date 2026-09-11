@@ -9,7 +9,7 @@ status: development
 created: 2026-09-11
 predecessors:
   - development/CHAT_CONTEXT.md
-  - development/TEAM_MODEL_AND_EDITOR.md
+  - completed/TEAM_MODEL_AND_EDITOR.md
 ---
 # Plan: Multiple chat tabs with a mode and a subject, and buttons that open interviews
 

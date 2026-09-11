@@ -3,7 +3,7 @@ import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { MODEL, RESPOND_TOOL, systemPrompt } from './prompt.js';
 import { sanitizeHistory, mergeTurns, validateResponse } from './validate.js';
-import { checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
+import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
 
 const PORT = Number(process.env.PORT) || 8787;
 const app = express();
@@ -21,7 +21,7 @@ app.post('/api/chat', async (req, res) => {
   if (!request.ok) {
     return res.status(400).json({ error: 'The request does not match the chat schema.', details: request.errors });
   }
-  const { tree, message, selectedNodeId = null, history = [] } = request.value;
+  const { tree, company = null, message, selectedNodeId = null, history = [] } = request.value;
 
   // Shape is not enough: a tree can be well-formed and still be unusable.
   // Warnings (an off-ladder link, say) are normal mid-edit, so they only log.
@@ -31,6 +31,20 @@ app.post('/api/chat', async (req, res) => {
   }
   if (semantics.warnings.length) console.warn('[chat] tree warnings:', JSON.stringify(semantics.warnings));
 
+  // The org gets the same treatment, and only when it is sent at all: a request
+  // without `company` is a document that has no teams, not a broken one.
+  if (company) {
+    const org = checkCompanySemantics(company);
+    if (org.errors.length) {
+      return res.status(400).json({ error: 'The company is structurally broken.', details: org.errors });
+    }
+    if (org.warnings.length) console.warn('[chat] company warnings:', JSON.stringify(org.warnings));
+  }
+  // A node pointing at a team that is gone is never fatal — it just means the
+  // model should read that node's `owner` text instead.
+  const ownership = checkOwnership(tree, company);
+  if (ownership.warnings.length) console.warn('[chat] ownership warnings:', JSON.stringify(ownership.warnings));
+
   const selected = typeof selectedNodeId === 'string' && tree.nodes.some((n) => n.id === selectedNodeId) ? selectedNodeId : null;
   const messages = mergeTurns([...sanitizeHistory(history), { role: 'user', content: message.trim() }]);
 
@@ -39,7 +53,7 @@ app.post('/api/chat', async (req, res) => {
     const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 4096,
-      system: systemPrompt(tree, selected),
+      system: systemPrompt(tree, company, selected),
       tools: [RESPOND_TOOL],
       tool_choice: { type: 'tool', name: 'respond' },
       messages
@@ -53,7 +67,7 @@ app.post('/api/chat', async (req, res) => {
       return res.json({ reply: text || `The model ${why}. Try rephrasing.`, actions: [], highlight: [] });
     }
 
-    const out = validateResponse(tree, call.input);
+    const out = validateResponse(tree, company, call.input);
     if (out.dropped.length) console.warn('[chat] dropped from model output:', JSON.stringify(out.dropped));
     console.log(
       `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights`

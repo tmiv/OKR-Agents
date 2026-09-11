@@ -6,6 +6,74 @@
     "exportedAt": "2026-09-11T00:00:00Z",
     "generator": "hand-authored"
   },
+  "company": {
+    "name": "Starter Co.",
+    "units": [
+      {
+        "id": "exec",
+        "name": "Exec",
+        "parent": null
+      },
+      {
+        "id": "product",
+        "name": "Product",
+        "parent": "exec",
+        "charter": {
+          "mission": "We decide what gets built and why, and we are answerable for whether a new account ever reaches value.",
+          "process": "Research and usage data in, a quarterly commitment out, reviewed monthly with whoever is building it.",
+          "owns": [
+            "the roadmap",
+            "week-1 activation",
+            "pricing"
+          ]
+        }
+      },
+      {
+        "id": "growth",
+        "name": "Growth",
+        "parent": "exec",
+        "charter": {
+          "mission": "We move the numbers between a stranger hearing about us and a team paying us every month.",
+          "process": "We run experiments against one funnel metric at a time, read them out weekly, and keep only the ones that survive a second quarter.",
+          "owns": [
+            "signup conversion",
+            "trial-to-paid",
+            "the experiment backlog"
+          ],
+          "dependsOn": [
+            "product"
+          ]
+        }
+      },
+      {
+        "id": "marketing",
+        "name": "Marketing",
+        "parent": "exec",
+        "charter": {
+          "mission": "We make the product understandable and put it in front of the people who have the problem it solves.",
+          "process": "We plan a quarter ahead against a pipeline number and review contribution weekly.",
+          "owns": [
+            "the website",
+            "brand and messaging",
+            "the demand generation number"
+          ],
+          "dependsOn": [
+            "product"
+          ]
+        }
+      },
+      {
+        "id": "lifecycle",
+        "name": "Lifecycle",
+        "parent": "product"
+      },
+      {
+        "id": "customer-success",
+        "name": "Customer Success",
+        "parent": "growth"
+      }
+    ]
+  },
   "tree": {
     "nodes": [
       {
@@ -14,8 +82,9 @@
         "parent": null,
         "label": "Grow a business customers recommend without being asked",
         "owner": "Exec",
+        "unitId": "exec",
         "metric": "annual recurring revenue and referral share of new customers",
-        "target": "$4M → $7M ARR with 30% referred",
+        "target": "$4M \u2192 $7M ARR with 30% referred",
         "contributes": 1
       },
       {
@@ -24,8 +93,9 @@
         "parent": "co-1",
         "label": "New customers get real value in their first week",
         "owner": "Product",
+        "unitId": "product",
         "metric": "week-1 activation rate",
-        "target": "28% → 45%",
+        "target": "28% \u2192 45%",
         "contributes": 0.9
       },
       {
@@ -34,8 +104,9 @@
         "parent": "obj-1",
         "label": "Cut setup time from three days to four hours",
         "owner": "Product",
+        "unitId": "product",
         "metric": "median hours from signup to first live account",
-        "target": "72h → 4h by Q3",
+        "target": "72h \u2192 4h by Q3",
         "contributes": 0.85
       },
       {
@@ -44,8 +115,9 @@
         "parent": "obj-1",
         "label": "Lift week-1 activation from 28% to 45%",
         "owner": "Growth",
+        "unitId": "growth",
         "metric": "% of new customers finishing setup within seven days",
-        "target": "28% → 45% by Q4",
+        "target": "28% \u2192 45% by Q4",
         "contributes": 0.9
       },
       {
@@ -54,6 +126,7 @@
         "parent": "obj-1",
         "label": "Refresh the onboarding emails",
         "owner": "Lifecycle",
+        "unitId": "lifecycle",
         "metric": "",
         "target": "",
         "contributes": 0.25
@@ -64,8 +137,9 @@
         "parent": "co-1",
         "label": "Turn happy customers into new ones",
         "owner": "Growth",
+        "unitId": "growth",
         "metric": "referral-sourced share of new customers",
-        "target": "12% → 30%",
+        "target": "12% \u2192 30%",
         "contributes": 0.85
       },
       {
@@ -74,8 +148,9 @@
         "parent": "obj-2",
         "label": "Raise referral-sourced new customers from 12% to 30%",
         "owner": "Growth",
+        "unitId": "growth",
         "metric": "% of new customers who name a referral at signup",
-        "target": "12% → 30% by Q4",
+        "target": "12% \u2192 30% by Q4",
         "contributes": 0.9
       },
       {
@@ -84,6 +159,7 @@
         "parent": "obj-2",
         "label": "Be more active in the community",
         "owner": "Marketing",
+        "unitId": "marketing",
         "metric": "",
         "target": "",
         "contributes": 0.2
@@ -94,8 +170,9 @@
         "parent": "obj-2",
         "label": "Run a customer advisory board",
         "owner": "Customer Success",
+        "unitId": "customer-success",
         "metric": "advisory sessions held",
-        "target": "0 → 4 by Q4",
+        "target": "0 \u2192 4 by Q4",
         "contributes": 0.35
       }
     ]

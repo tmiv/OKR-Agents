@@ -1,0 +1,14 @@
+{
+  "schema": "okr-node",
+  "data": {
+    "id": "kr-9",
+    "level": "kr",
+    "parent": "obj-2",
+    "label": "Run six regional buyer roundtables",
+    "owner": "Field Marketing",
+    "unitId": "field-marketing",
+    "metric": "",
+    "target": "",
+    "contributes": 0.25
+  }
+}

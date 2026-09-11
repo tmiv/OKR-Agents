@@ -5,12 +5,13 @@ tags:
   - web
   - service
   - teams
-status: development
+status: completed
 created: 2026-09-11
+completed_on: 2026-09-11
 predecessors:
   - completed/OKR_SCHEMA_PACKAGE.md
-  - development/BUNDLED_DATASETS.md
-  - development/OKR_NODE_EDITOR.md
+  - completed/BUNDLED_DATASETS.md
+  - completed/OKR_NODE_EDITOR.md
 successors:
   - development/CHAT_CONTEXT.md
   - development/CHAT_TABS_AND_INTERVIEWS.md
@@ -252,3 +253,41 @@ them in a panel; team edits are undoable Actions; the assistant sees them on eve
   only units referenced by the tree plus their ancestors if it becomes a problem.
 - Rollback: schema changes are additive and gated by optional fields; reverting the web and
   service changes leaves documents with `unitId`/`charter` still valid.
+
+## Completion notes
+
+- **Planned vs. actual.** All six phases landed as written. The schema half went in unchanged:
+  `charter` on `CompanyUnit`, `unitId` on the node, the three unit ops, `company` on the chat
+  request, `checkCompanySemantics` / `checkOwnership`, and the eight fixtures. Phases 2–6 landed
+  as designed too — `web/src/lib/company.js`, `applyDocumentActions`, the `panel` slot,
+  `TeamList` / `TeamEditor`, the Detail team picker, and `three-spritetext` labels. What moved
+  was every `file:line` citation: all three predecessors shipped after this plan was written, so
+  the App.svelte line numbers in Phases 2–6 were stale by 100+ lines and `tree.js` no longer
+  exists. The citations were re-verified against the tree before each edit; the schema ones
+  (Phase 1) were still accurate apart from `okr-node.schema.json:38-42`, which names `target`,
+  not `owner`.
+- **Mid-flight adjustments.** (1) `company` went into all three datasets, not just the two the
+  plan names — `regional-clinic-network` shipped with `BUNDLED_DATASETS` after this plan was
+  written, and leaving it team-less would have made the Teams panel empty for a third of the
+  picker. (2) The charter textareas commit on blur and revert on Escape, but Enter inserts a
+  newline rather than committing: `process` is multi-paragraph prose, and Detail's
+  Enter-commits rule does not survive contact with it. The `name` input keeps Enter-commits.
+  (3) `deleteUnit` also prunes the deleted id out of every other team's `charter.dependsOn`, so
+  a delete cannot leave the org pointing at a ghost — the plan only specified reparenting
+  children and un-owning nodes. (4) `describe()` for `editUnit` names the charter field that
+  changed ("Edited mission of the Marketing team"), not the word "charter". (5) A stale team
+  panel (undo, dataset switch, delete) falls back to the Teams list via an `$effect`, which the
+  plan did not call for but the one-panel-slot decision needs. (6) `onFocusField` is wired as an
+  optional no-op prop so `CHAT_CONTEXT` is a one-line change; the "Interview me about this team"
+  button is left to `CHAT_TABS_AND_INTERVIEWS`, as its own plan owns it.
+- **Surprises / residual risks.** Adding `unitId` to the datasets broke two existing tests in a
+  way worth keeping: `document.test.js` built a document from the default *tree* with no
+  `company`, which is now 27 ownership warnings — the fix was to carry the org with the tree,
+  which is exactly the invariant the check exists to enforce. The measured input-token cost of
+  the `<teams>` block on the default dataset is **+1,470 tokens** (8,751 → 10,221), inside the
+  plan's +1–2k estimate, and it grows linearly with team count and charter length; the cap
+  suggested in Risks (send only referenced units plus ancestors) is still unbuilt. Team labels
+  are legible once the camera is near a subtree but are small at the default zoomed-out view —
+  a fixed sprite height in world units, which is the tradeoff the plan chose. Finally,
+  `applyActions` in `apply.js` is now dead code in the app (only `applyDocumentActions` is
+  called); the plan asked for it to stay exported for tests, and there are no web tests yet.

@@ -10,6 +10,8 @@ import type {
   Action,
   AddAction,
   AddFields,
+  AddUnitAction,
+  AddUnitFields,
   Company,
   CompanyPerson,
   CompanyUnit,
@@ -17,8 +19,10 @@ import type {
   ChatResponse,
   ChatTurn,
   DeleteAction,
+  DeleteUnitAction,
   DocumentMeta,
   EditAction,
+  EditUnitAction,
   EditableFields,
   History,
   MetricSample,
@@ -27,13 +31,17 @@ import type {
   OkrTree,
   RelinkAction,
   RelinkFields,
-  TreeChange
+  TeamCharter,
+  TreeChange,
+  UnitFields
 } from './dist/types.js';
 
 export type {
   Action,
   AddAction,
   AddFields,
+  AddUnitAction,
+  AddUnitFields,
   Company,
   CompanyPerson,
   CompanyUnit,
@@ -41,8 +49,10 @@ export type {
   ChatResponse,
   ChatTurn,
   DeleteAction,
+  DeleteUnitAction,
   DocumentMeta,
   EditAction,
+  EditUnitAction,
   EditableFields,
   History,
   MetricSample,
@@ -51,7 +61,9 @@ export type {
   OkrTree,
   RelinkAction,
   RelinkFields,
-  TreeChange
+  TeamCharter,
+  TreeChange,
+  UnitFields
 };
 
 /** What every `validate*` returns: the value on success, printable errors on failure. */
@@ -81,6 +93,19 @@ export declare function validateChatResponse(data: unknown): ValidationResult<Ch
  * an error, because free relinking is allowed while editing.
  */
 export declare function checkTreeSemantics(tree: unknown): { errors: string[]; warnings: string[] };
+
+/**
+ * The same checks over the org: duplicate unit ids, missing parents, parent
+ * cycles, a `lead` or `person.unitId` that names nothing. A `charter.dependsOn`
+ * pointing at a team that is gone is a warning, not an error.
+ */
+export declare function checkCompanySemantics(company: unknown): { errors: string[]; warnings: string[] };
+
+/**
+ * Whether the tree's `unitId` pointers land on teams that exist. Warnings only:
+ * a dangling unitId is legal mid-edit and simply falls back to `owner` text.
+ */
+export declare function checkOwnership(tree: unknown, company: unknown): { errors: string[]; warnings: string[] };
 
 /** Stamp a tree into an exportable document at the current SCHEMA_VERSION. */
 export declare function createDocument(input: {

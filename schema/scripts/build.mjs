@@ -36,7 +36,7 @@ const fail = (msg) => {
 // The named validators consumers get, and the schema each one compiles from.
 // Keys must match the exports listed in index.js and dist/validators.d.ts.
 //
-// The four *Action entries compile a single oneOf branch each. Ajv reports a
+// The seven *Action entries compile a single oneOf branch each. Ajv reports a
 // oneOf failure as every branch's complaints at once, with no way to tell which
 // branch an error came from — resolving a $ref rewrites schemaPath relative to
 // the target. Validating the branch the `op` names gives a usable message.
@@ -52,7 +52,10 @@ const VALIDATORS = {
   validateEditAction: 'action.schema.json#/definitions/editAction',
   validateRelinkAction: 'action.schema.json#/definitions/relinkAction',
   validateAddAction: 'action.schema.json#/definitions/addAction',
-  validateDeleteAction: 'action.schema.json#/definitions/deleteAction'
+  validateDeleteAction: 'action.schema.json#/definitions/deleteAction',
+  validateEditUnitAction: 'action.schema.json#/definitions/editUnitAction',
+  validateAddUnitAction: 'action.schema.json#/definitions/addUnitAction',
+  validateDeleteUnitAction: 'action.schema.json#/definitions/deleteUnitAction'
 };
 
 const BASE = 'https://okr-viewer.dev/schema/v1/';

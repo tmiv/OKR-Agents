@@ -1,0 +1,13 @@
+{
+  "schema": "action",
+  "data": {
+    "op": "editUnit",
+    "id": "marketing",
+    "fields": {
+      "charter": {
+        "mission": "We create demand the sales team can act on.",
+        "dependsOn": ["product"]
+      }
+    }
+  }
+}

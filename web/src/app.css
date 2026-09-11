@@ -149,6 +149,33 @@ main { flex: 1; display: flex; min-height: 0; }
 .detail .actions button { font-size: 12px; padding: 4px 10px; }
 .detail .actions .danger { color: var(--bad); }
 .detail .actions .danger:hover { border-color: var(--bad); }
+/* ── teams panel ────────────────────────────────────────────────────── */
+/* Same surface as .detail; only what teams add is listed here. */
+.detail .level.team { color: var(--accent); }
+.detail .back { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.detail.teams h2 { margin-bottom: 10px; }
+.detail input.label-input { font-size: 16px; margin: 8px 0 12px; }
+.detail .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+/* the indented org tree; padding-left comes from the row's depth */
+.detail ul.tree { gap: 4px; margin-top: 4px; }
+.detail ul.tree li { align-items: center; }
+.detail .count {
+  font-size: 11px; font-variant-numeric: tabular-nums;
+  color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 0 7px;
+}
+.detail .count.none { opacity: 0.4; }
+.detail ul.checks { gap: 2px; margin-top: 2px; }
+.detail ul.checks li { display: block; }
+.detail ul.checks label { display: flex; align-items: center; gap: 7px; cursor: pointer; }
+.detail ul.checks input[type="checkbox"] { width: auto; margin: 0; accent-color: var(--accent); }
+.detail.teams textarea { resize: vertical; margin-bottom: 2px; }
+
+/* the legend is pointer-events: none, so its one control opts back in */
+.legend .toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; pointer-events: auto; }
+.legend .toggle input { margin: 0; accent-color: var(--accent); }
+
+.topbar button.on { border-color: var(--accent); color: var(--accent); }
+
 .bar .good, .pct.good { background: var(--good); }
 .bar .meh, .pct.meh { background: var(--meh); }
 .bar .bad, .pct.bad { background: var(--bad); }

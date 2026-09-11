@@ -16,7 +16,7 @@ const errs = (fn, data) => {
 
 test('an unknown op reports only the op, listing every allowed value', () => {
   assert.deepEqual(errs(validateAction, { op: 'explode', id: 'kr-1' }), [
-    '/op: must be one of "edit", "relink", "add", "delete"'
+    '/op: must be one of "edit", "relink", "add", "delete", "editUnit", "addUnit", "deleteUnit"'
   ]);
 });
 
@@ -58,7 +58,7 @@ test('nested actions report the path the caller sees', () => {
       highlight: [],
       actions: [{ op: 'edit', id: 'kr-1', fields: { notes: 'x' } }, { op: 'zap', id: 'x' }]
     }),
-    ['/actions/0/fields: unknown property "notes"', '/actions/1/op: must be one of "edit", "relink", "add", "delete"']
+    ['/actions/0/fields: unknown property "notes"', '/actions/1/op: must be one of "edit", "relink", "add", "delete", "editUnit", "addUnit", "deleteUnit"']
   );
 });
 

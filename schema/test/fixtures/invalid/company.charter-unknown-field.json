@@ -1,0 +1,18 @@
+{
+  "schema": "company",
+  "at": "/units/0/charter",
+  "data": {
+    "name": "Acme",
+    "units": [
+      {
+        "id": "eng",
+        "name": "Engineering",
+        "parent": null,
+        "charter": {
+          "mission": "We keep the platform up.",
+          "persona": "grumpy"
+        }
+      }
+    ]
+  }
+}

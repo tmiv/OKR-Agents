@@ -28,8 +28,13 @@
     },
     "owner": {
       "type": "string",
-      "description": "Team or person accountable for this node. Free text in v1, for example \"Growth\" or \"Sales Ops\".",
+      "description": "Team or person accountable for this node, as display text, for example \"Growth\" or \"Sales Ops\". When unitId is set this is derived from that team's name; set unitId and leave owner alone.",
       "maxLength": 400
+    },
+    "unitId": {
+      "type": ["string", "null"],
+      "description": "Id of the owning team in company.units, or null when the node is not assigned to a team. owner is the display name derived from it.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
     },
     "metric": {
       "type": "string",

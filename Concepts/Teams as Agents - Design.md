@@ -8,7 +8,7 @@ created: 2026-09-11
 # Teams as Agents - Design
 
 Why teams get a charter now, and what that charter is for later. The near-term plan is
-[TEAM_MODEL_AND_EDITOR](../Plans/development/TEAM_MODEL_AND_EDITOR.md); the far-term plan does
+[TEAM_MODEL_AND_EDITOR](../Plans/completed/TEAM_MODEL_AND_EDITOR.md); the far-term plan does
 not exist yet and would be named `TEAM_AGENT_DISCUSSIONS.md`. Parent vision:
 [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md).
 

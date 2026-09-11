@@ -10,10 +10,15 @@
 /**
  * @typedef {import('@okr-viewer/schema').OkrTree} OkrTree
  * @typedef {import('@okr-viewer/schema').OkrNode} OkrNode
+ * @typedef {import('@okr-viewer/schema').Company} Company
  * @typedef {import('@okr-viewer/schema').Action} Action
  */
 
-const EDITABLE = ['label', 'owner', 'metric', 'target', 'contributes', 'parent'];
+import { applyUnitAction, unitName } from './company.js';
+
+const EDITABLE = ['label', 'owner', 'metric', 'target', 'contributes', 'parent', 'unitId'];
+
+const UNIT_OPS = new Set(['editUnit', 'addUnit', 'deleteUnit']);
 
 const clamp01 = (n) => (Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0.5);
 
@@ -99,10 +104,58 @@ export function applyAction(tree, action) {
 }
 
 /**
+ * The document-level apply: node ops go to applyAction, team ops to
+ * applyUnitAction, and the two are joined here.
+ *
+ * Two joins, both of them the invariant "owner never disagrees with unitId"
+ * (Concepts/Teams as Agents):
+ *
+ *   - a node op that sets `unitId` without saying `owner` gets `owner` filled
+ *     in from the team's name, so a prompt that reads `owner` and a prompt that
+ *     reads `unitId` agree;
+ *   - `deleteUnit` clears that `unitId` off every node it owned, keeping the
+ *     `owner` text so the node still says who is accountable.
+ *
+ * @param {{ tree: OkrTree, company: Company | null }} document
+ * @param {Action[]} actions
+ * @returns {{ tree: OkrTree, company: Company | null }}
+ */
+export function applyDocumentActions({ tree, company = null }, actions = []) {
+  let nextTree = tree;
+  let nextCompany = company;
+
+  for (const action of actions) {
+    if (UNIT_OPS.has(action?.op)) {
+      nextCompany = applyUnitAction(nextCompany, action);
+      if (action.op === 'deleteUnit') {
+        const orphaned = nextTree.nodes.some((n) => n.unitId === action.id);
+        if (orphaned) {
+          nextTree = { nodes: nextTree.nodes.map((n) => (n.unitId === action.id ? { ...n, unitId: null } : n)) };
+        }
+      }
+      continue;
+    }
+
+    let resolved = action;
+    const fields = action?.fields;
+    if (fields && 'unitId' in fields && !('owner' in fields)) {
+      // null unitId means "no team"; the owner text it leaves behind is the
+      // last thing the user saw, so only a real team overwrites it.
+      const name = unitName(nextCompany, fields.unitId);
+      if (name != null) resolved = { ...action, fields: { ...fields, owner: name } };
+    }
+    nextTree = applyAction(nextTree, resolved);
+  }
+
+  return { tree: nextTree, company: nextCompany };
+}
+
+/**
+ * Tree-only apply, kept for callers (and tests) that have no org in hand.
  * @param {OkrTree} tree
  * @param {Action[]} actions
  * @returns {OkrTree}
  */
 export function applyActions(tree, actions = []) {
-  return actions.reduce(applyAction, tree);
+  return applyDocumentActions({ tree, company: null }, actions).tree;
 }

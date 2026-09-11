@@ -18,9 +18,13 @@ import {
 // The tree the app boots with. datasets.test.js validates every bundled
 // document; here it is the fixture the round trips run on, so a real tree with
 // real edge cases goes through createDocument/parseDocument.
-const defaultTree = JSON.parse(
+const defaultDocument = JSON.parse(
   readFileSync(new URL('../../web/src/assets/datasets/workflow-platform-fy26.json', import.meta.url))
-).tree;
+);
+const defaultTree = defaultDocument.tree;
+// Its nodes carry unitId, so the org has to travel with the tree: a document
+// with unitId and no company parses, but warns on every node.
+const defaultCompany = defaultDocument.company;
 
 test('the default dataset’s tree is valid and raises no warnings', () => {
   const structural = validateOkrTree(defaultTree);
@@ -47,10 +51,11 @@ test('caller meta survives, but exportedAt and generator are filled in', () => {
 });
 
 test('round trip through JSON preserves the tree exactly', () => {
-  const doc = createDocument({ tree: defaultTree, meta: { title: 'Round trip' } });
+  const doc = createDocument({ tree: defaultTree, company: defaultCompany, meta: { title: 'Round trip' } });
   const out = parseDocument(JSON.stringify(doc, null, 2));
   assert.ok(out.ok, `round trip failed:\n  ${out.errors?.join('\n  ')}`);
   assert.deepEqual(out.document.tree, defaultTree);
+  assert.deepEqual(out.document.company, defaultCompany);
   assert.deepEqual(out.warnings, []);
 });
 

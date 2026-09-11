@@ -1,0 +1,9 @@
+{
+  "schema": "action",
+  "at": "/fields",
+  "data": {
+    "op": "editUnit",
+    "id": "marketing",
+    "fields": {}
+  }
+}

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://okr-viewer.dev/schema/v1/action.schema.json",
   "title": "Action",
-  "description": "One edit to the OKR tree. The op decides which fields are allowed; anything not listed for that op is rejected.",
+  "description": "One edit to the OKR document: either to a node in the tree or to a team in company.units. The op decides which fields are allowed; anything not listed for that op is rejected.",
   "oneOf": [
     {
       "$ref": "#/definitions/editAction",
@@ -19,12 +19,29 @@
     {
       "$ref": "#/definitions/deleteAction",
       "description": "Remove a node and everything under it."
+    },
+    {
+      "$ref": "#/definitions/editUnitAction",
+      "description": "Change an existing team: its name, where it sits in the org, or its charter."
+    },
+    {
+      "$ref": "#/definitions/addUnitAction",
+      "description": "Create a team that does not exist yet."
+    },
+    {
+      "$ref": "#/definitions/deleteUnitAction",
+      "description": "Remove a team. Its nodes are kept and simply lose their team."
     }
   ],
   "definitions": {
     "nodeId": {
       "type": "string",
       "description": "Id of the node this action applies to.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "unitId": {
+      "type": "string",
+      "description": "Id of the team in company.units this action applies to.",
       "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
     },
     "editableFields": {
@@ -40,8 +57,13 @@
         },
         "owner": {
           "type": "string",
-          "description": "New owning team or person.",
+          "description": "New owning team or person, as display text. Prefer unitId when the owner is one of the teams in company.units; owner is filled in from the team's name.",
           "maxLength": 400
+        },
+        "unitId": {
+          "type": ["string", "null"],
+          "description": "Id of the team in company.units that should own this node, or null to un-assign it. Setting this fills owner in from the team's name.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
         },
         "metric": {
           "type": "string",
@@ -86,8 +108,13 @@
         },
         "owner": {
           "type": "string",
-          "description": "Owning team or person.",
+          "description": "Owning team or person, as display text. Prefer unitId when the owner is one of the teams in company.units.",
           "maxLength": 400
+        },
+        "unitId": {
+          "type": ["string", "null"],
+          "description": "Id of the team in company.units that owns the new node, or null for none. Setting this fills owner in from the team's name.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
         },
         "metric": {
           "type": "string",
@@ -112,6 +139,121 @@
         }
       },
       "required": ["label"],
+      "additionalProperties": false
+    },
+    "unitFields": {
+      "title": "UnitFields",
+      "description": "The fields an editUnit may set on an existing team. Every one is optional, but at least one must be present.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "New display name for the team, for example \"Field Marketing\".",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "parent": {
+          "type": ["string", "null"],
+          "description": "Id of the team this one now sits under, or null to move it to the top of the org. Must be an existing team that is not below this one.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "lead": {
+          "type": "string",
+          "description": "Id of the person in company.people who leads the team.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "charter": {
+          "$ref": "company.schema.json#/definitions/charter",
+          "description": "Charter fields to change. Merged into the team's existing charter one field at a time, so sending only mission leaves process, owns and dependsOn as they were."
+        }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
+    },
+    "addUnitFields": {
+      "title": "AddUnitFields",
+      "description": "The fields a new team may be created with. Only name is required.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Display name for the new team. Required.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "parent": {
+          "type": ["string", "null"],
+          "description": "Id of the team the new one sits under, or null for the top of the org. Must already exist.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "charter": {
+          "$ref": "company.schema.json#/definitions/charter",
+          "description": "The new team's charter, if the user has said enough about how it works to write one."
+        }
+      },
+      "required": ["name"],
+      "additionalProperties": false
+    },
+    "editUnitAction": {
+      "title": "EditUnitAction",
+      "description": "Change an existing team in company.units. Only change a charter when the user has told you something about how the team actually works; do not invent a mission for a team they merely mentioned.",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "description": "Discriminator: editUnit.",
+          "enum": ["editUnit"]
+        },
+        "id": {
+          "$ref": "#/definitions/unitId",
+          "description": "Id of the team to edit. It must already exist in company.units."
+        },
+        "fields": {
+          "$ref": "#/definitions/unitFields",
+          "description": "The values to change."
+        }
+      },
+      "required": ["op", "id", "fields"],
+      "additionalProperties": false
+    },
+    "addUnitAction": {
+      "title": "AddUnitAction",
+      "description": "Create a team that is not in company.units yet. Use it when the user describes a team the org chart does not have, not to rename one that already exists.",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "description": "Discriminator: addUnit.",
+          "enum": ["addUnit"]
+        },
+        "id": {
+          "$ref": "#/definitions/unitId",
+          "description": "Id for the new team. Must be unique and read as a slug of its name, for example \"field-marketing\"."
+        },
+        "fields": {
+          "$ref": "#/definitions/addUnitFields",
+          "description": "The new team's content."
+        }
+      },
+      "required": ["op", "id", "fields"],
+      "additionalProperties": false
+    },
+    "deleteUnitAction": {
+      "title": "DeleteUnitAction",
+      "description": "Remove a team from company.units. Nothing is deleted from the tree: the nodes it owned keep their owner text and simply lose their unitId, and any teams under it move up to its parent. Only when explicitly asked.",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "description": "Discriminator: deleteUnit.",
+          "enum": ["deleteUnit"]
+        },
+        "id": {
+          "$ref": "#/definitions/unitId",
+          "description": "Id of the team to remove."
+        }
+      },
+      "required": ["op", "id"],
       "additionalProperties": false
     },
     "editAction": {

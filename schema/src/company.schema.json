@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://okr-viewer.dev/schema/v1/company.schema.json",
   "title": "Company",
-  "description": "The org structure the OKR tree hangs off: units and, optionally, the people in them. Node owners stay free text in v1, so nothing here is referenced by the tree yet.",
+  "description": "The org structure the OKR tree hangs off: units and, optionally, the people in them. A node points at the unit that owns it with unitId; owner is the display name derived from that unit.",
   "type": "object",
   "properties": {
     "name": {
@@ -58,9 +58,52 @@
           "type": "string",
           "description": "Id of the person who leads this unit, if known.",
           "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "charter": {
+          "$ref": "#/definitions/charter",
+          "description": "How this team works and what it owns, written so it can be handed to a model as the team's own voice."
         }
       },
       "required": ["id", "name", "parent"],
+      "additionalProperties": false
+    },
+    "charter": {
+      "title": "TeamCharter",
+      "description": "A team's job description, written for a reader who knows nothing else about it: someone who saw only this charter should be able to sit in a meeting and argue the team's corner. Every field is optional; write the ones you actually know.",
+      "type": "object",
+      "properties": {
+        "mission": {
+          "type": "string",
+          "description": "Why this team exists, in the team's own words. One or two sentences, stated as the outcome the team is there to produce rather than the activities it performs.",
+          "maxLength": 1000
+        },
+        "process": {
+          "type": "string",
+          "description": "The business process this team runs, in the team's own words: what comes in, the steps it takes, what it hands off, and on what cadence.",
+          "maxLength": 4000
+        },
+        "owns": {
+          "type": "array",
+          "description": "The systems, metrics or decisions this team is the accountable owner of. A list rather than prose, so two teams claiming the same thing is visible at a glance.",
+          "items": {
+            "type": "string",
+            "description": "One system, metric or decision this team is the accountable owner of, for example \"activation rate\" or \"the pricing page\".",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "maxItems": 50
+        },
+        "dependsOn": {
+          "type": "array",
+          "description": "Ids of the teams in company.units whose output this team needs in order to do its work. References, not prose, so a review can walk the graph.",
+          "items": {
+            "type": "string",
+            "description": "Id of another unit in company.units.",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "maxItems": 50
+        }
+      },
       "additionalProperties": false
     },
     "person": {

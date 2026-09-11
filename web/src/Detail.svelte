@@ -1,8 +1,16 @@
 <script>
   import { tick } from 'svelte';
   import { descendants } from './lib/apply.js';
+  import { unitName } from './lib/company.js';
 
-  let { node, tree, editing = false, onSelect, onClose, onToggleEdit, onEdit } = $props();
+  let { node, tree, company = null, editing = false, onSelect, onClose, onToggleEdit, onEdit, onOpenTeam } = $props();
+
+  // The owner field is a team picker when there are teams to pick, and free
+  // text when there are not — an imported file without a `company` still has to
+  // be editable. `owner` itself is never typed while a team is chosen: the
+  // apply layer derives it from the team's name.
+  const units = $derived(company?.units ?? []);
+  const ownerTeam = $derived(unitName(company, node.unitId));
 
   const LEVEL_NAME = { company: 'Company objective', objective: 'Team objective', kr: 'Key result' };
   const parent = $derived(node.parent ? tree.nodes.find((n) => n.id === node.parent) ?? null : null);
@@ -94,6 +102,15 @@
     onEdit({ op: 'relink', id: node.id, fields: { parent: id } });
   }
 
+  // Only unitId is sent; applyDocumentActions fills `owner` in from the team's
+  // name, so the two can never disagree.
+  function commitTeam(e) {
+    const value = e.currentTarget.value;
+    const unitId = value === '' ? null : value;
+    if (unitId === (node.unitId ?? null)) return;
+    onEdit({ op: 'edit', id: node.id, fields: { unitId } });
+  }
+
   // ── adding and deleting ───────────────────────────────────────────────────
 
   const childLevel = $derived(node.level === 'company' ? 'objective' : node.level === 'objective' ? 'kr' : null);
@@ -114,11 +131,14 @@
     onEdit({
       op: 'add',
       id,
+      // A new child inherits its parent's team. Where there is one, only
+      // `unitId` is sent and the apply layer derives `owner` from it; where
+      // there is not, the owner text carries over as it always did.
       fields: {
         level: childLevel,
         parent: node.id,
         label: childLevel === 'objective' ? 'New objective' : 'New key result',
-        owner: node.owner ?? '',
+        ...(node.unitId ? { unitId: node.unitId } : { owner: node.owner ?? '' }),
         contributes: 0.5
       }
     });
@@ -170,13 +190,22 @@
   <dl>
     <dt>Owner</dt>
     <dd>
-      {#if editing}
+      {#if editing && units.length}
+        <select value={node.unitId ?? ''} onchange={commitTeam} aria-label="Owner">
+          <option value="">— none —</option>
+          {#each units as u (u.id)}
+            <option value={u.id}>{u.name}</option>
+          {/each}
+        </select>
+      {:else if editing}
         <input
           bind:value={draft.owner}
           onblur={() => commitText('owner')}
           onkeydown={(e) => onFieldKey(e, 'owner')}
           aria-label="Owner"
         />
+      {:else if ownerTeam}
+        <button class="link" onclick={() => onOpenTeam?.(node.unitId)}>{ownerTeam}</button>
       {:else}
         {node.owner || '—'}
       {/if}

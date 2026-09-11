@@ -33,11 +33,24 @@ export function mergeTurns(turns) {
   return out;
 }
 
-export function validateResponse(tree, input) {
+export function validateResponse(tree, company, input) {
   const known = new Set(tree.nodes.map((n) => n.id));
   const parentOf = new Map(tree.nodes.map((n) => [n.id, n.parent]));
+  // Teams are filtered exactly like nodes, and against the same moving target:
+  // an addUnit earlier in the batch makes its id usable by a later action.
+  const knownUnits = new Set((Array.isArray(company?.units) ? company.units : []).map((u) => u.id));
+  const unitParentOf = new Map((Array.isArray(company?.units) ? company.units : []).map((u) => [u.id, u.parent ?? null]));
   const dropped = [];
   const actions = [];
+
+  const isUnitAncestorOrSelf = (candidate, id) => {
+    let cur = candidate;
+    for (let i = 0; cur != null && i < 1000; i++) {
+      if (cur === id) return true;
+      cur = unitParentOf.get(cur) ?? null;
+    }
+    return false;
+  };
 
   const isAncestorOrSelf = (candidate, id) => {
     let cur = candidate;
@@ -64,11 +77,26 @@ export function validateResponse(tree, input) {
     const { op, id } = a;
     const fields = { ...a.fields };
 
+    // Teams the model made up are dropped the same way node ids are, so
+    // nothing unknown reaches the browser's apply layer.
+    const badUnitRef = (value) => value != null && !knownUnits.has(value);
+    const keepKnownDeps = (charter) => {
+      if (!Array.isArray(charter?.dependsOn)) return charter;
+      const kept = charter.dependsOn.filter((d) => knownUnits.has(d) && d !== id);
+      if (kept.length === charter.dependsOn.length) return charter;
+      reject(`dropped unknown dependsOn entries for ${id}`);
+      return { ...charter, dependsOn: kept };
+    };
+
     if (op === 'edit' || op === 'relink') {
       if (!known.has(id)) { reject(`unknown id ${id}`); continue; }
       if ('parent' in fields && !validParent(id, fields.parent)) {
         reject(`bad parent ${fields.parent} for ${id}`);
         delete fields.parent;
+      }
+      if ('unitId' in fields && badUnitRef(fields.unitId)) {
+        reject(`unknown team ${fields.unitId} for ${id}`);
+        delete fields.unitId;
       }
       // A relink whose only field was the rejected parent has nothing left.
       if (!Object.keys(fields).length) { reject('no usable fields'); continue; }
@@ -79,9 +107,45 @@ export function validateResponse(tree, input) {
       // The model is never allowed to mint a second company root.
       if (!fields.level || fields.level === 'company') fields.level = 'kr';
       if (!(fields.parent != null && known.has(fields.parent))) { reject(`add with bad parent ${fields.parent}`); continue; }
+      if ('unitId' in fields && badUnitRef(fields.unitId)) {
+        reject(`unknown team ${fields.unitId} for ${id}`);
+        delete fields.unitId;
+      }
       known.add(id);
       parentOf.set(id, fields.parent);
       actions.push({ op, id, fields });
+    } else if (op === 'editUnit') {
+      if (!knownUnits.has(id)) { reject(`unknown team ${id}`); continue; }
+      if ('parent' in fields && fields.parent != null) {
+        // A team cannot move under itself or under one of its own children.
+        if (!knownUnits.has(fields.parent) || isUnitAncestorOrSelf(fields.parent, id)) {
+          reject(`bad parent ${fields.parent} for team ${id}`);
+          delete fields.parent;
+        }
+      }
+      if ('charter' in fields) fields.charter = keepKnownDeps(fields.charter);
+      if (!Object.keys(fields).length) { reject('no usable fields'); continue; }
+      if ('parent' in fields) unitParentOf.set(id, fields.parent ?? null);
+      actions.push({ op, id, fields });
+    } else if (op === 'addUnit') {
+      if (knownUnits.has(id)) { reject(`addUnit with existing id ${id}`); continue; }
+      if (fields.parent != null && !knownUnits.has(fields.parent)) {
+        reject(`addUnit with bad parent ${fields.parent}`);
+        fields.parent = null;
+      }
+      knownUnits.add(id);
+      unitParentOf.set(id, fields.parent ?? null);
+      if ('charter' in fields) fields.charter = keepKnownDeps(fields.charter);
+      actions.push({ op, id, fields });
+    } else if (op === 'deleteUnit') {
+      if (!knownUnits.has(id)) { reject(`unknown team ${id}`); continue; }
+      // Deleting a team never cascades: its children move up to its parent, so
+      // only the team itself leaves the known set.
+      const up = unitParentOf.get(id) ?? null;
+      for (const [child, parent] of unitParentOf) if (parent === id) unitParentOf.set(child, up);
+      knownUnits.delete(id);
+      unitParentOf.delete(id);
+      actions.push({ op, id });
     } else if (op === 'delete') {
       if (!known.has(id)) { reject(`unknown id ${id}`); continue; }
       const gone = new Set([id]);

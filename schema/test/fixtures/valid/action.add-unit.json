@@ -1,0 +1,15 @@
+{
+  "schema": "action",
+  "data": {
+    "op": "addUnit",
+    "id": "field-marketing",
+    "fields": {
+      "name": "Field Marketing",
+      "parent": "marketing",
+      "charter": {
+        "mission": "We put the product in front of buyers in person.",
+        "owns": ["the event calendar"]
+      }
+    }
+  }
+}

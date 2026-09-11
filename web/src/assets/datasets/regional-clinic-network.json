@@ -6,6 +6,195 @@
     "exportedAt": "2026-09-11T00:00:00Z",
     "generator": "hand-authored"
   },
+  "company": {
+    "name": "Regional clinic network",
+    "units": [
+      {
+        "id": "board",
+        "name": "Board",
+        "parent": null,
+        "charter": {
+          "mission": "We hold the network to its obligation to the region: care that people can get to, that is safe, and that the network can still afford to provide next year.",
+          "process": "We meet quarterly against the strategic plan, approve capital, and take one report from each of Access, Clinical, Revenue Cycle and Operations.",
+          "owns": [
+            "the strategic plan",
+            "capital allocation",
+            "the CEO"
+          ]
+        }
+      },
+      {
+        "id": "patient-access",
+        "name": "Patient Access",
+        "parent": "board",
+        "charter": {
+          "mission": "We are accountable for whether a person in this region can get an appointment when they need one, by phone or on their own.",
+          "process": "Referral and call volume come in daily; we manage template capacity across clinics weekly with Clinic Operations and read out third-next-available monthly.",
+          "owns": [
+            "third-next-available appointment",
+            "the call abandonment rate",
+            "the scheduling templates",
+            "the patient portal"
+          ],
+          "dependsOn": [
+            "operations"
+          ]
+        }
+      },
+      {
+        "id": "chief-medical-officer",
+        "name": "Chief Medical Officer",
+        "parent": "board",
+        "charter": {
+          "mission": "We own the quality and safety of the care delivered, and the clinical standards every site works to.",
+          "process": "Quality and safety data are reviewed monthly with each service line; standards are set once and then audited, not renegotiated per clinic.",
+          "owns": [
+            "clinical protocols",
+            "the quality scorecard",
+            "credentialing",
+            "the infection rate"
+          ],
+          "dependsOn": [
+            "people"
+          ]
+        }
+      },
+      {
+        "id": "revenue-cycle",
+        "name": "Revenue Cycle",
+        "parent": "board",
+        "charter": {
+          "mission": "We make sure the care the network gives is the care the network gets paid for, without surprising the patient.",
+          "process": "Claims go out daily and denials come back; we work a weekly denial queue with Coding and Billing IT and report days-in-AR monthly.",
+          "owns": [
+            "days in accounts receivable",
+            "the denial rate",
+            "the charge master",
+            "patient billing statements"
+          ],
+          "dependsOn": [
+            "chief-medical-officer",
+            "operations"
+          ]
+        }
+      },
+      {
+        "id": "people",
+        "name": "People",
+        "parent": "board",
+        "charter": {
+          "mission": "We keep the network staffed with people who want to stay, because agency cover is the most expensive way to run a clinic.",
+          "process": "A rolling hiring plan runs against the staffing model; nursing vacancy and turnover are read out monthly with Workforce Planning.",
+          "owns": [
+            "the staffing model",
+            "nurse turnover",
+            "the hiring plan",
+            "the agency spend"
+          ]
+        }
+      },
+      {
+        "id": "operations",
+        "name": "Operations",
+        "parent": "board",
+        "charter": {
+          "mission": "We run the buildings, the supplies and the money so that clinical teams only have to think about patients.",
+          "process": "Site metrics are reviewed weekly and the budget monthly; anything that needs capital goes to the board with a payback period attached.",
+          "owns": [
+            "the operating budget",
+            "the supply contracts",
+            "clinic utilisation",
+            "the facilities plan"
+          ]
+        }
+      },
+      {
+        "id": "contact-center",
+        "name": "Contact Center",
+        "parent": "patient-access"
+      },
+      {
+        "id": "digital-health",
+        "name": "Digital Health",
+        "parent": "patient-access"
+      },
+      {
+        "id": "primary-care",
+        "name": "Primary Care",
+        "parent": "chief-medical-officer"
+      },
+      {
+        "id": "care-transitions",
+        "name": "Care Transitions",
+        "parent": "chief-medical-officer"
+      },
+      {
+        "id": "population-health",
+        "name": "Population Health",
+        "parent": "chief-medical-officer"
+      },
+      {
+        "id": "quality",
+        "name": "Quality",
+        "parent": "chief-medical-officer"
+      },
+      {
+        "id": "infection-prevention",
+        "name": "Infection Prevention",
+        "parent": "chief-medical-officer"
+      },
+      {
+        "id": "billing",
+        "name": "Billing",
+        "parent": "revenue-cycle"
+      },
+      {
+        "id": "patient-financial-services",
+        "name": "Patient Financial Services",
+        "parent": "revenue-cycle"
+      },
+      {
+        "id": "billing-it",
+        "name": "Billing IT",
+        "parent": "revenue-cycle"
+      },
+      {
+        "id": "coding",
+        "name": "Coding",
+        "parent": "revenue-cycle"
+      },
+      {
+        "id": "nursing",
+        "name": "Nursing",
+        "parent": "people"
+      },
+      {
+        "id": "workforce-planning",
+        "name": "Workforce Planning",
+        "parent": "people"
+      },
+      {
+        "id": "talent",
+        "name": "Talent",
+        "parent": "people"
+      },
+      {
+        "id": "clinic-operations",
+        "name": "Clinic Operations",
+        "parent": "operations"
+      },
+      {
+        "id": "finance",
+        "name": "Finance",
+        "parent": "operations"
+      },
+      {
+        "id": "supply-chain",
+        "name": "Supply Chain",
+        "parent": "operations"
+      }
+    ]
+  },
   "tree": {
     "nodes": [
       {
@@ -14,19 +203,20 @@
         "parent": null,
         "label": "Give the region timely, dependable care at a cost the network can sustain",
         "owner": "Board",
+        "unitId": "board",
         "metric": "annual patient visits and operating margin",
-        "target": "142k → 165k visits at 4% or better margin",
+        "target": "142k \u2192 165k visits at 4% or better margin",
         "contributes": 1
       },
-
       {
         "id": "obj-1",
         "level": "objective",
         "parent": "co-1",
         "label": "Patients can be seen when they need to be seen",
         "owner": "Patient Access",
+        "unitId": "patient-access",
         "metric": "third-next-available appointment, primary care",
-        "target": "18 → 7 days",
+        "target": "18 \u2192 7 days",
         "contributes": 0.95
       },
       {
@@ -35,8 +225,9 @@
         "parent": "obj-1",
         "label": "Cut third-next-available primary care appointment from 18 days to 7",
         "owner": "Patient Access",
+        "unitId": "patient-access",
         "metric": "third-next-available appointment, primary care, network average",
-        "target": "18 → 7 days by Q4",
+        "target": "18 \u2192 7 days by Q4",
         "contributes": 0.95
       },
       {
@@ -45,8 +236,9 @@
         "parent": "obj-1",
         "label": "Answer 90% of appointment line calls within 60 seconds",
         "owner": "Contact Center",
+        "unitId": "contact-center",
         "metric": "% of inbound scheduling calls answered in under 60 seconds",
-        "target": "61% → 90% by Q3",
+        "target": "61% \u2192 90% by Q3",
         "contributes": 0.85
       },
       {
@@ -55,8 +247,9 @@
         "parent": "obj-1",
         "label": "Reduce the no-show rate from 14% to 8%",
         "owner": "Patient Access",
+        "unitId": "patient-access",
         "metric": "no-show rate across all clinic sites",
-        "target": "14% → 8% by Q4",
+        "target": "14% \u2192 8% by Q4",
         "contributes": 0.8
       },
       {
@@ -65,6 +258,7 @@
         "parent": "obj-1",
         "label": "Roll out the new patient portal",
         "owner": "Digital Health",
+        "unitId": "digital-health",
         "metric": "",
         "target": "",
         "contributes": 0.3
@@ -75,19 +269,20 @@
         "parent": "obj-1",
         "label": "Open Saturday hours at the three busiest sites",
         "owner": "Clinic Operations",
+        "unitId": "clinic-operations",
         "metric": "sites offering Saturday clinics at 70%+ slot fill",
-        "target": "0 → 3 by Q3",
+        "target": "0 \u2192 3 by Q3",
         "contributes": 0.65
       },
-
       {
         "id": "obj-2",
         "level": "objective",
         "parent": "co-1",
         "label": "Care quality is measurably better than last year, everywhere",
         "owner": "Chief Medical Officer",
+        "unitId": "chief-medical-officer",
         "metric": "composite clinical quality score",
-        "target": "72 → 85",
+        "target": "72 \u2192 85",
         "contributes": 0.9
       },
       {
@@ -96,8 +291,9 @@
         "parent": "obj-2",
         "label": "Raise blood pressure control from 58% to 75% of hypertensive patients",
         "owner": "Primary Care",
+        "unitId": "primary-care",
         "metric": "% of hypertensive patients with BP under 140/90 at last visit",
-        "target": "58% → 75% by Q4",
+        "target": "58% \u2192 75% by Q4",
         "contributes": 0.9
       },
       {
@@ -106,8 +302,9 @@
         "parent": "obj-2",
         "label": "Lift diabetes control from 61% to 74% of patients under A1c 8",
         "owner": "Primary Care",
+        "unitId": "primary-care",
         "metric": "% of diabetic patients with most recent A1c under 8",
-        "target": "61% → 74% by Q4",
+        "target": "61% \u2192 74% by Q4",
         "contributes": 0.85
       },
       {
@@ -116,8 +313,9 @@
         "parent": "obj-2",
         "label": "Cut 30-day readmissions from 15.2% to 11%",
         "owner": "Care Transitions",
+        "unitId": "care-transitions",
         "metric": "30-day all-cause readmission rate",
-        "target": "15.2% → 11% by Q4",
+        "target": "15.2% \u2192 11% by Q4",
         "contributes": 0.8
       },
       {
@@ -126,8 +324,9 @@
         "parent": "obj-2",
         "label": "Raise colorectal cancer screening from 49% to 65% of eligible patients",
         "owner": "Population Health",
+        "unitId": "population-health",
         "metric": "% of screening-eligible patients up to date",
-        "target": "49% → 65% by Q4",
+        "target": "49% \u2192 65% by Q4",
         "contributes": 0.75
       },
       {
@@ -136,6 +335,7 @@
         "parent": "obj-2",
         "label": "Refresh the clinical policy binders",
         "owner": "Quality",
+        "unitId": "quality",
         "metric": "",
         "target": "",
         "contributes": 0.2
@@ -146,19 +346,20 @@
         "parent": "obj-2",
         "label": "Reach 95% hand hygiene compliance on every inpatient unit",
         "owner": "Infection Prevention",
+        "unitId": "infection-prevention",
         "metric": "observed hand hygiene compliance rate",
-        "target": "81% → 95% by Q3",
+        "target": "81% \u2192 95% by Q3",
         "contributes": 0.7
       },
-
       {
         "id": "obj-3",
         "level": "objective",
         "parent": "co-1",
         "label": "We get paid correctly, the first time, for the care we deliver",
         "owner": "Revenue Cycle",
+        "unitId": "revenue-cycle",
         "metric": "net collection rate and days in accounts receivable",
-        "target": "94% → 98% collected, 52 → 38 days",
+        "target": "94% \u2192 98% collected, 52 \u2192 38 days",
         "contributes": 0.9
       },
       {
@@ -167,8 +368,9 @@
         "parent": "obj-3",
         "label": "Cut days in accounts receivable from 52 to 38",
         "owner": "Revenue Cycle",
+        "unitId": "revenue-cycle",
         "metric": "days in A/R, all payers",
-        "target": "52 → 38 by Q4",
+        "target": "52 \u2192 38 by Q4",
         "contributes": 0.9
       },
       {
@@ -177,8 +379,9 @@
         "parent": "obj-3",
         "label": "Reduce first-pass claim denials from 11% to 5%",
         "owner": "Billing",
+        "unitId": "billing",
         "metric": "% of claims denied on first submission",
-        "target": "11% → 5% by Q4",
+        "target": "11% \u2192 5% by Q4",
         "contributes": 0.9
       },
       {
@@ -187,8 +390,9 @@
         "parent": "obj-3",
         "label": "Collect 60% of patient responsibility at the time of service",
         "owner": "Patient Financial Services",
+        "unitId": "patient-financial-services",
         "metric": "% of patient balance collected point-of-service",
-        "target": "23% → 60% by Q4",
+        "target": "23% \u2192 60% by Q4",
         "contributes": 0.8
       },
       {
@@ -197,6 +401,7 @@
         "parent": "obj-3",
         "label": "Switch to the new claims clearinghouse",
         "owner": "Billing IT",
+        "unitId": "billing-it",
         "metric": "clinic sites live on the new clearinghouse",
         "target": "all 11 by Q3",
         "contributes": 0.35
@@ -207,19 +412,20 @@
         "parent": "obj-3",
         "label": "Raise the clean claim rate from 86% to 96%",
         "owner": "Coding",
+        "unitId": "coding",
         "metric": "% of claims accepted without rework",
-        "target": "86% → 96% by Q4",
+        "target": "86% \u2192 96% by Q4",
         "contributes": 0.85
       },
-
       {
         "id": "obj-4",
         "level": "objective",
         "parent": "co-1",
         "label": "Every shift is staffed by people who intend to stay",
         "owner": "People",
+        "unitId": "people",
         "metric": "RN vacancy rate and agency staffing spend",
-        "target": "19% → 8% vacancy, agency spend down $4.2M",
+        "target": "19% \u2192 8% vacancy, agency spend down $4.2M",
         "contributes": 0.85
       },
       {
@@ -228,8 +434,9 @@
         "parent": "obj-4",
         "label": "Cut the RN vacancy rate from 19% to 8%",
         "owner": "Nursing",
+        "unitId": "nursing",
         "metric": "RN vacancy rate across the network",
-        "target": "19% → 8% by Q4",
+        "target": "19% \u2192 8% by Q4",
         "contributes": 0.9
       },
       {
@@ -238,8 +445,9 @@
         "parent": "obj-4",
         "label": "Reduce agency staffing spend from $9.1M to $4.9M",
         "owner": "Workforce Planning",
+        "unitId": "workforce-planning",
         "metric": "annualised agency and travel staffing spend",
-        "target": "$9.1M → $4.9M by Q4",
+        "target": "$9.1M \u2192 $4.9M by Q4",
         "contributes": 0.85
       },
       {
@@ -248,8 +456,9 @@
         "parent": "obj-4",
         "label": "Bring first-year nurse turnover from 31% to 18%",
         "owner": "Nursing",
+        "unitId": "nursing",
         "metric": "12-month turnover among nurses in their first year",
-        "target": "31% → 18% by Q4",
+        "target": "31% \u2192 18% by Q4",
         "contributes": 0.8
       },
       {
@@ -258,6 +467,7 @@
         "parent": "obj-4",
         "label": "Improve staff morale",
         "owner": "People",
+        "unitId": "people",
         "metric": "",
         "target": "",
         "contributes": 0.2
@@ -268,19 +478,20 @@
         "parent": "obj-4",
         "label": "Fill 85% of open clinical roles within 45 days",
         "owner": "Talent",
+        "unitId": "talent",
         "metric": "% of clinical requisitions filled within 45 days of opening",
-        "target": "48% → 85% by Q4",
+        "target": "48% \u2192 85% by Q4",
         "contributes": 0.7
       },
-
       {
         "id": "obj-5",
         "level": "objective",
         "parent": "co-1",
         "label": "Run the clinics efficiently enough to fund the next site",
         "owner": "Operations",
+        "unitId": "operations",
         "metric": "fully loaded cost per primary care visit",
-        "target": "$214 → $186",
+        "target": "$214 \u2192 $186",
         "contributes": 0.7
       },
       {
@@ -289,8 +500,9 @@
         "parent": "obj-5",
         "label": "Reduce cost per primary care visit from $214 to $186",
         "owner": "Finance",
+        "unitId": "finance",
         "metric": "fully loaded cost per primary care visit",
-        "target": "$214 → $186 by Q4",
+        "target": "$214 \u2192 $186 by Q4",
         "contributes": 0.85
       },
       {
@@ -299,8 +511,9 @@
         "parent": "obj-5",
         "label": "Raise exam room utilisation from 62% to 78%",
         "owner": "Clinic Operations",
+        "unitId": "clinic-operations",
         "metric": "% of scheduled exam room hours actually used",
-        "target": "62% → 78% by Q4",
+        "target": "62% \u2192 78% by Q4",
         "contributes": 0.75
       },
       {
@@ -309,6 +522,7 @@
         "parent": "obj-5",
         "label": "Consolidate supply vendors",
         "owner": "Supply Chain",
+        "unitId": "supply-chain",
         "metric": "",
         "target": "",
         "contributes": 0.3

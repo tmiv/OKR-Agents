@@ -35,6 +35,24 @@ for (const file of FILES) {
   });
 }
 
+// Ownership is the join between the two halves of a document, and it is the
+// one a hand edit breaks silently: rename a unit id and every node that pointed
+// at it renders its stale owner text instead. parseDocument warns about that,
+// and the zero-warnings assertion above already covers it — this says so out
+// loud, and adds the stricter bar a bundled dataset is held to: if it ships a
+// company at all, every node names a team in it.
+for (const file of FILES) {
+  test(`${file} assigns every node to a team that exists`, () => {
+    const doc = read(file);
+    if (!doc.company) return; // a dataset without an org is legal; owner stays text
+    const known = new Set(doc.company.units.map((u) => u.id));
+    const dangling = doc.tree.nodes.filter((n) => n.unitId && !known.has(n.unitId)).map((n) => n.id);
+    assert.deepEqual(dangling, [], `${file}: nodes pointing at missing teams: ${dangling.join(', ')}`);
+    const unassigned = doc.tree.nodes.filter((n) => n.unitId == null).map((n) => n.id);
+    assert.deepEqual(unassigned, [], `${file}: nodes with no team: ${unassigned.join(', ')}`);
+  });
+}
+
 test('manifest.default names a file that exists', () => {
   assert.ok(
     FILES.includes(`${manifest.default}.json`),

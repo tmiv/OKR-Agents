@@ -9,7 +9,7 @@ status: development
 created: 2026-09-11
 predecessors:
   - development/OKR_NODE_EDITOR.md
-  - development/TEAM_MODEL_AND_EDITOR.md
+  - completed/TEAM_MODEL_AND_EDITOR.md
 successors:
   - development/CHAT_TABS_AND_INTERVIEWS.md
 ---

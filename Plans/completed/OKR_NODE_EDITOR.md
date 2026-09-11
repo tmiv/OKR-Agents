@@ -10,7 +10,7 @@ completed_on: 2026-09-11
 predecessors:
   - completed/OKR_SCHEMA_PACKAGE.md
 successors:
-  - development/TEAM_MODEL_AND_EDITOR.md
+  - completed/TEAM_MODEL_AND_EDITOR.md
   - development/CHAT_CONTEXT.md
 ---
 # Plan: Edit OKR node details in the Detail panel through one commit path that records history

@@ -1,0 +1,35 @@
+{
+  "schema": "company",
+  "data": {
+    "name": "Acme",
+    "units": [
+      {
+        "id": "eng",
+        "name": "Engineering",
+        "parent": null,
+        "lead": "p-1",
+        "charter": {
+          "mission": "We keep the platform fast and available so every other team can ship without asking permission.",
+          "process": "We take a quarterly roadmap and a running incident queue as input, run two-week iterations with a weekly reliability review, and hand releases to SRE behind feature flags.",
+          "owns": ["the deploy pipeline", "p95 API latency", "the service catalogue"],
+          "dependsOn": ["product"]
+        }
+      },
+      {
+        "id": "product",
+        "name": "Product",
+        "parent": null,
+        "charter": {
+          "mission": "We decide what gets built and why.",
+          "owns": ["the roadmap", "activation rate"]
+        }
+      },
+      {
+        "id": "plat",
+        "name": "Platform",
+        "parent": "eng"
+      }
+    ],
+    "people": [{ "id": "p-1", "name": "Ada", "unitId": "eng" }]
+  }
+}

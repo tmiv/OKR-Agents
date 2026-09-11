@@ -9,6 +9,10 @@
       "$ref": "okr-tree.schema.json",
       "description": "The tree as the browser currently holds it."
     },
+    "company": {
+      "$ref": "company.schema.json",
+      "description": "The org the tree hangs off, if the browser has one: the teams nodes reference by unitId, with their charters."
+    },
     "message": {
       "type": "string",
       "description": "What the user just typed.",

@@ -2,8 +2,10 @@
   import { onMount } from 'svelte';
   import ForceGraph3D from '3d-force-graph';
   import * as THREE from 'three';
+  import SpriteText from 'three-spritetext';
+  import { unitName } from './lib/company.js';
 
-  let { tree, selectedId = null, highlight = [], onSelect } = $props();
+  let { tree, company = null, selectedId = null, highlight = [], showTeamLabels = false, onSelect } = $props();
 
   let el;
   // The graph instance lives outside Svelte's reactive system on purpose:
@@ -39,6 +41,21 @@
       new THREE.MeshLambertMaterial({ color: cfg.color, transparent: true, opacity: 0.95 })
     );
     mesh.userData.baseColor = new THREE.Color(cfg.color);
+
+    // The team label hangs under the sphere as a child of the mesh, so it
+    // follows the node without a second layout pass. It is created empty and
+    // hidden; the effect below fills it in, because node objects are reused
+    // across data updates and this function does not run again for them.
+    // (It is seeded here as well, because 3d-force-graph may build the object
+    // after the effect has already walked the meshes it knew about.)
+    const text = unitName(company, node.unitId) ?? node.owner ?? '';
+    const label = new SpriteText(text, 3, '#8b96ad');
+    label.material.depthWrite = false;
+    label.position.y = -(cfg.size + 4);
+    label.visible = showTeamLabels && !!text;
+    mesh.add(label);
+    mesh.userData.label = label;
+
     meshes.set(node.id, mesh);
     return mesh;
   }
@@ -148,7 +165,12 @@
       .dagLevelDistance(90)
       .onDagError((loopIds) => console.warn('DAG cycle, falling back to free layout', loopIds))
       .nodeId('id')
-      .nodeLabel((n) => `<div class="tip"><b>${esc(n.label)}</b><span>${esc(n.owner)}${n.target ? ' · ' + esc(n.target) : ''}</span></div>`)
+      // The team's name beats the owner text: they agree whenever unitId is
+      // set, and when it is not there is only the text.
+      .nodeLabel((n) => {
+        const who = unitName(company, n.unitId) ?? n.owner;
+        return `<div class="tip"><b>${esc(n.label)}</b><span>${esc(who)}${n.target ? ' · ' + esc(n.target) : ''}</span></div>`;
+      })
       .nodeThreeObject(makeNodeObject)
       .linkWidth((l) => 0.5 + 2.8 * (l.contributes ?? 0.5))
       .linkColor((l) => linkColor(l.contributes))
@@ -185,6 +207,22 @@
     graph.graphData(toGraphData(t, graph.graphData()));
     const alive = new Set(t.nodes.map((n) => n.id));
     for (const id of [...meshes.keys()]) if (!alive.has(id)) meshes.delete(id);
+  });
+
+  // Node objects survive data updates (see toGraphData), so makeNodeObject does
+  // not run again for an existing node and the label text has to be rewritten
+  // in place — on a tree edit, a team rename, and a dataset switch alike.
+  $effect(() => {
+    const t = tree;
+    const c = company;
+    const on = showTeamLabels;
+    for (const n of t.nodes) {
+      const label = meshes.get(n.id)?.userData.label;
+      if (!label) continue;
+      const text = unitName(c, n.unitId) ?? n.owner ?? '';
+      if (label.text !== text) label.text = text;
+      label.visible = on && !!text;
+    }
   });
 
   $effect(() => {
