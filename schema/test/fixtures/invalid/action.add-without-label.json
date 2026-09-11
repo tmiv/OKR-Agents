@@ -1,0 +1,11 @@
+{
+  "schema": "action",
+  "at": "/fields",
+  "data": {
+    "op": "add",
+    "id": "kr-new",
+    "fields": {
+      "parent": "obj-1"
+    }
+  }
+}

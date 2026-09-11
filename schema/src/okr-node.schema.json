@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://okr-viewer.dev/schema/v1/okr-node.schema.json",
+  "title": "OkrNode",
+  "description": "One node in the OKR tree. Nodes are flat and carry a parent pointer; the tree is reconstructed from those pointers, never from nesting.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable unique identifier. New ids should read as \"kr-<short-slug>\" or \"obj-<short-slug>\".",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "level": {
+      "type": "string",
+      "description": "Where the node sits in the ladder: company (the single root), objective (team-level), or kr (key result).",
+      "enum": ["company", "objective", "kr"]
+    },
+    "parent": {
+      "type": ["string", "null"],
+      "description": "Id of the parent node, or null for the company root. Exactly one node in a tree has a null parent.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "label": {
+      "type": "string",
+      "description": "What the node is trying to achieve, stated as an outcome rather than an activity. One sentence.",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "owner": {
+      "type": "string",
+      "description": "Team or person accountable for this node. Free text in v1, for example \"Growth\" or \"Sales Ops\".",
+      "maxLength": 400
+    },
+    "metric": {
+      "type": "string",
+      "description": "The quantity being moved, named precisely enough to be looked up. Empty means the node is not measurable.",
+      "maxLength": 400
+    },
+    "target": {
+      "type": "string",
+      "description": "The move being committed to, with a baseline, a goal, and a date, for example \"31% -> 50% by Q4\".",
+      "maxLength": 400
+    },
+    "contributes": {
+      "type": "number",
+      "description": "Hand-assessed score (0-1) of how well this node supports its parent. Anything below 0.4 is a misalignment worth calling out.",
+      "minimum": 0,
+      "maximum": 1,
+      "default": 0.5
+    }
+  },
+  "required": ["id", "level", "parent", "label"],
+  "additionalProperties": false
+}

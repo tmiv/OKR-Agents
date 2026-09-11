@@ -4,6 +4,17 @@
   import Detail from './Detail.svelte';
   import { initialTree } from './lib/tree.js';
   import { applyActions } from './lib/apply.js';
+  import { checkTreeSemantics, createDocument, parseDocument, validateChatResponse, validateOkrTree } from '@okr-viewer/schema';
+
+  // A bad hand edit to tree.js should fail at boot, not halfway through a demo.
+  // Dev only: the check is dead code in the production bundle.
+  if (import.meta.env.DEV) {
+    const structural = validateOkrTree(initialTree);
+    if (!structural.ok) console.error('[tree.js] initialTree is not a valid OkrTree:', structural.errors);
+    const { errors, warnings } = checkTreeSemantics(initialTree);
+    if (errors.length) console.error('[tree.js] initialTree is structurally broken:', errors);
+    if (warnings.length) console.warn('[tree.js] initialTree warnings:', warnings);
+  }
 
   // The tree is $state.raw on purpose: apply.js always returns a new tree, so
   // deep reactivity buys nothing and structuredClone() stays a plain clone.
@@ -32,9 +43,17 @@
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body.error ?? `${res.status} ${res.statusText}`);
+        const why = body.error ?? `${res.status} ${res.statusText}`;
+        throw new Error(body.details?.length ? `${why} (${body.details.slice(0, 3).join('; ')})` : why);
       }
-      const { reply, actions = [], highlight: ids = [] } = await res.json();
+      // The service validates what it sends, but this is the boundary the tree
+      // crosses before it reaches the renderer — so check it here too, and
+      // refuse to apply anything from a response we do not recognise.
+      const checked = validateChatResponse(await res.json());
+      if (!checked.ok) {
+        throw new Error(`the service sent a response this app can't read (${checked.errors.slice(0, 3).join('; ')})`);
+      }
+      const { reply, actions, highlight: ids } = checked.value;
       if (actions.length) {
         undoStack = [...undoStack, structuredClone(tree)]; // snapshot before we mutate
         tree = applyActions(tree, actions);
@@ -61,6 +80,52 @@
     tree = structuredClone(initialTree);
     highlight = [];
     selectedId = null;
+  }
+
+  // ── export / import ───────────────────────────────────────────────────────
+  //
+  // The file is an OkrDocument: the tree plus a schemaVersion the reader checks
+  // before it trusts anything inside. Same package on both sides, so a file
+  // written here is a file the service would accept.
+
+  let fileInput;
+
+  function exportTree() {
+    const doc = createDocument({ tree, meta: { title: 'OKR Viewer export' } });
+    const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `okr-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    messages.push({ role: 'assistant', content: `Exported ${tree.nodes.length} nodes to ${a.download}.`, note: true });
+  }
+
+  async function importTree(e) {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // so re-picking the same file fires change again
+    if (!file) return;
+
+    const out = parseDocument(await file.text());
+    if (!out.ok) {
+      messages.push({
+        role: 'assistant',
+        content: `Couldn't import ${file.name}: ${out.errors.slice(0, 3).join('; ')}`,
+        error: true
+      });
+      return;
+    }
+
+    undoStack = [...undoStack, structuredClone(tree)]; // same snapshot-then-replace as reset()
+    tree = out.document.tree;
+    highlight = [];
+    selectedId = null;
+    const warned = out.warnings.length ? ` ${out.warnings.length} warning${out.warnings.length === 1 ? '' : 's'}: ${out.warnings.slice(0, 3).join('; ')}` : '';
+    messages.push({
+      role: 'assistant',
+      content: `Imported ${tree.nodes.length} nodes from ${file.name}. Undo to go back.${warned}`,
+      note: true
+    });
   }
 
   function select(id) {
@@ -93,7 +158,10 @@
       <button onclick={undo} disabled={!undoStack.length} title="⌘Z">
         ↶ Undo{undoStack.length ? ` (${undoStack.length})` : ''}
       </button>
+      <button onclick={exportTree} class="ghost" title="Download the tree as a versioned JSON document">Export</button>
+      <button onclick={() => fileInput.click()} class="ghost" title="Replace the tree from a JSON document">Import</button>
       <button onclick={reset} class="ghost">Reset</button>
+      <input bind:this={fileInput} onchange={importTree} type="file" accept="application/json,.json" hidden />
     </div>
   </header>
 

@@ -1,0 +1,11 @@
+{
+  "schema": "action",
+  "at": "/fields",
+  "data": {
+    "op": "relink",
+    "id": "kr-1",
+    "fields": {
+      "label": "x"
+    }
+  }
+}

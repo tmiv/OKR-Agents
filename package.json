@@ -1,0 +1,17 @@
+{
+  "name": "okr-viewer",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "workspaces": [
+    "schema",
+    "web",
+    "service"
+  ],
+  "scripts": {
+    "build:schema": "npm run build -w schema",
+    "test:schema": "npm test -w schema",
+    "dev:web": "npm run dev -w web",
+    "dev:service": "npm run dev -w service"
+  }
+}

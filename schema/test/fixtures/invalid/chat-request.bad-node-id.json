@@ -1,0 +1,17 @@
+{
+  "schema": "chat-request",
+  "at": "/tree/nodes/0/id",
+  "data": {
+    "tree": {
+      "nodes": [
+        {
+          "id": 1,
+          "level": "kr",
+          "parent": null,
+          "label": "x"
+        }
+      ]
+    },
+    "message": "hi"
+  }
+}

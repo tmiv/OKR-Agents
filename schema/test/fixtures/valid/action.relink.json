@@ -1,0 +1,10 @@
+{
+  "schema": "action",
+  "data": {
+    "op": "relink",
+    "id": "kr-1",
+    "fields": {
+      "parent": "co-1"
+    }
+  }
+}

@@ -8,6 +8,7 @@
     "start": "node index.js"
   },
   "dependencies": {
+    "@okr-viewer/schema": "^0.1.0",
     "@anthropic-ai/sdk": "^0.125.0",
     "dotenv": "^17.4.0",
     "express": "^5.2.0"

@@ -2,6 +2,16 @@
 //
 // Pure: never mutates the input. Untouched node objects are reused by
 // reference so the graph can diff by identity and keep its layout warm.
+//
+// The JSDoc types come from @okr-viewer/schema's generated declarations, so an
+// editor checks this file against the same schema the service validates with,
+// without either package adopting TypeScript.
+
+/**
+ * @typedef {import('@okr-viewer/schema').OkrTree} OkrTree
+ * @typedef {import('@okr-viewer/schema').OkrNode} OkrNode
+ * @typedef {import('@okr-viewer/schema').Action} Action
+ */
 
 const EDITABLE = ['label', 'owner', 'metric', 'target', 'contributes', 'parent'];
 
@@ -14,6 +24,12 @@ function pick(fields = {}, extra = []) {
   return out;
 }
 
+/**
+ * Every node below `id`, transitively.
+ * @param {OkrTree} tree
+ * @param {string} id
+ * @returns {Set<string>}
+ */
 export function descendants(tree, id) {
   const out = new Set();
   let frontier = [id];
@@ -31,6 +47,14 @@ function wouldCycle(tree, id, newParent) {
   return descendants(tree, id).has(newParent);
 }
 
+/**
+ * Apply one action, returning a new tree. Anything that does not fit the tree
+ * (an unknown id, a parent that would make a cycle) is ignored rather than
+ * thrown — the service has already filtered the model's output.
+ * @param {OkrTree} tree
+ * @param {Action} action
+ * @returns {OkrTree}
+ */
 export function applyAction(tree, action) {
   if (!action || typeof action.id !== 'string') return tree;
   const { op, id } = action;
@@ -74,6 +98,11 @@ export function applyAction(tree, action) {
   }
 }
 
+/**
+ * @param {OkrTree} tree
+ * @param {Action[]} actions
+ * @returns {OkrTree}
+ */
 export function applyActions(tree, actions = []) {
   return actions.reduce(applyAction, tree);
 }

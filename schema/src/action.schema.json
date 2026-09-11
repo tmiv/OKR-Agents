@@ -1,0 +1,212 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://okr-viewer.dev/schema/v1/action.schema.json",
+  "title": "Action",
+  "description": "One edit to the OKR tree. The op decides which fields are allowed; anything not listed for that op is rejected.",
+  "oneOf": [
+    {
+      "$ref": "#/definitions/editAction",
+      "description": "Change the content of an existing node."
+    },
+    {
+      "$ref": "#/definitions/relinkAction",
+      "description": "Move an existing node under a different parent."
+    },
+    {
+      "$ref": "#/definitions/addAction",
+      "description": "Create a new node."
+    },
+    {
+      "$ref": "#/definitions/deleteAction",
+      "description": "Remove a node and everything under it."
+    }
+  ],
+  "definitions": {
+    "nodeId": {
+      "type": "string",
+      "description": "Id of the node this action applies to.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "editableFields": {
+      "title": "EditableFields",
+      "description": "The fields an edit or relink may set. Every one is optional, but at least one must be present.",
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "New label. State the outcome, not the activity.",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "owner": {
+          "type": "string",
+          "description": "New owning team or person.",
+          "maxLength": 400
+        },
+        "metric": {
+          "type": "string",
+          "description": "New metric: the quantity being moved, named precisely enough to look up.",
+          "maxLength": 400
+        },
+        "target": {
+          "type": "string",
+          "description": "New target, with a baseline, a goal and a date, for example \"31% -> 50% by Q4\".",
+          "maxLength": 400
+        },
+        "contributes": {
+          "type": "number",
+          "description": "New alignment score (0-1). Raise it when a fix makes the node genuinely support its parent.",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "parent": {
+          "type": ["string", "null"],
+          "description": "New parent id. Must be an existing node that is not a descendant of this one.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        }
+      },
+      "minProperties": 1,
+      "additionalProperties": false
+    },
+    "addFields": {
+      "title": "AddFields",
+      "description": "The fields a new node may be created with. Only label is required; everything else falls back to a default.",
+      "type": "object",
+      "properties": {
+        "level": {
+          "type": "string",
+          "description": "Where the new node sits. Defaults to kr.",
+          "enum": ["company", "objective", "kr"]
+        },
+        "label": {
+          "type": "string",
+          "description": "What the new node is trying to achieve. Required.",
+          "minLength": 1,
+          "maxLength": 400
+        },
+        "owner": {
+          "type": "string",
+          "description": "Owning team or person.",
+          "maxLength": 400
+        },
+        "metric": {
+          "type": "string",
+          "description": "The quantity being moved.",
+          "maxLength": 400
+        },
+        "target": {
+          "type": "string",
+          "description": "Baseline, goal and date.",
+          "maxLength": 400
+        },
+        "contributes": {
+          "type": "number",
+          "description": "How well the new node supports its parent (0-1).",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "parent": {
+          "type": ["string", "null"],
+          "description": "Id of the parent the new node hangs off. Must already exist.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        }
+      },
+      "required": ["label"],
+      "additionalProperties": false
+    },
+    "editAction": {
+      "title": "EditAction",
+      "description": "Rewrite an existing node in place.",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "description": "Discriminator: edit.",
+          "enum": ["edit"]
+        },
+        "id": {
+          "$ref": "#/definitions/nodeId",
+          "description": "Id of the node to edit. It must already exist."
+        },
+        "fields": {
+          "$ref": "#/definitions/editableFields",
+          "description": "The values to overwrite."
+        }
+      },
+      "required": ["op", "id", "fields"],
+      "additionalProperties": false
+    },
+    "relinkAction": {
+      "title": "RelinkAction",
+      "description": "Move a node under a different parent. Follow it with an edit that updates contributes for the new fit.",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "description": "Discriminator: relink.",
+          "enum": ["relink"]
+        },
+        "id": {
+          "$ref": "#/definitions/nodeId",
+          "description": "Id of the node to move. It must already exist."
+        },
+        "fields": {
+          "title": "RelinkFields",
+          "description": "A relink must name the new parent.",
+          "type": "object",
+          "properties": {
+            "parent": {
+              "type": ["string", "null"],
+              "description": "Id of the new parent. Must exist and must not be a descendant of the node being moved.",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+            }
+          },
+          "required": ["parent"],
+          "additionalProperties": false
+        }
+      },
+      "required": ["op", "id", "fields"],
+      "additionalProperties": false
+    },
+    "addAction": {
+      "title": "AddAction",
+      "description": "Create a node that does not exist yet.",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "description": "Discriminator: add.",
+          "enum": ["add"]
+        },
+        "id": {
+          "$ref": "#/definitions/nodeId",
+          "description": "Id for the new node. Must be unique and read as \"kr-<short-slug>\" or \"obj-<short-slug>\"."
+        },
+        "fields": {
+          "$ref": "#/definitions/addFields",
+          "description": "The new node's content."
+        }
+      },
+      "required": ["op", "id", "fields"],
+      "additionalProperties": false
+    },
+    "deleteAction": {
+      "title": "DeleteAction",
+      "description": "Remove a node and every node under it. Only when explicitly asked.",
+      "type": "object",
+      "properties": {
+        "op": {
+          "type": "string",
+          "description": "Discriminator: delete.",
+          "enum": ["delete"]
+        },
+        "id": {
+          "$ref": "#/definitions/nodeId",
+          "description": "Id of the node to remove."
+        }
+      },
+      "required": ["op", "id"],
+      "additionalProperties": false
+    }
+  }
+}

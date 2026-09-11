@@ -1,0 +1,105 @@
+/**
+ * Public types for @okr-viewer/schema.
+ *
+ * The data-shape types are generated from schema/src/ into dist/types.d.ts and
+ * re-exported here, so `import('@okr-viewer/schema').OkrTree` works from plain
+ * JS via JSDoc without either consumer adopting TypeScript.
+ */
+
+import type {
+  Action,
+  AddAction,
+  AddFields,
+  Company,
+  CompanyPerson,
+  CompanyUnit,
+  ChatRequest,
+  ChatResponse,
+  ChatTurn,
+  DeleteAction,
+  DocumentMeta,
+  EditAction,
+  EditableFields,
+  History,
+  MetricSample,
+  OkrDocument,
+  OkrNode,
+  OkrTree,
+  RelinkAction,
+  RelinkFields,
+  TreeChange
+} from './dist/types.js';
+
+export type {
+  Action,
+  AddAction,
+  AddFields,
+  Company,
+  CompanyPerson,
+  CompanyUnit,
+  ChatRequest,
+  ChatResponse,
+  ChatTurn,
+  DeleteAction,
+  DocumentMeta,
+  EditAction,
+  EditableFields,
+  History,
+  MetricSample,
+  OkrDocument,
+  OkrNode,
+  OkrTree,
+  RelinkAction,
+  RelinkFields,
+  TreeChange
+};
+
+/** What every `validate*` returns: the value on success, printable errors on failure. */
+export type ValidationResult<T> = { ok: true; value: T } | { ok: false; errors: string[] };
+
+/** Document format version this build reads and writes. */
+export declare const SCHEMA_VERSION: number;
+
+/** Version of the @okr-viewer/schema package itself. */
+export declare const PACKAGE_VERSION: string;
+
+/** The `respond` tool's `input_schema`: chat-response with every `$ref` flattened. */
+export declare const RESPOND_INPUT_SCHEMA: Record<string, unknown>;
+
+export declare function validateOkrDocument(data: unknown): ValidationResult<OkrDocument>;
+export declare function validateOkrTree(data: unknown): ValidationResult<OkrTree>;
+export declare function validateOkrNode(data: unknown): ValidationResult<OkrNode>;
+export declare function validateCompany(data: unknown): ValidationResult<Company>;
+export declare function validateHistory(data: unknown): ValidationResult<History>;
+export declare function validateAction(data: unknown): ValidationResult<Action>;
+export declare function validateChatRequest(data: unknown): ValidationResult<ChatRequest>;
+export declare function validateChatResponse(data: unknown): ValidationResult<ChatResponse>;
+
+/**
+ * Relational checks JSON Schema cannot express: duplicate ids, missing parents,
+ * cycles, and exactly one root. The level ladder is reported as a warning, not
+ * an error, because free relinking is allowed while editing.
+ */
+export declare function checkTreeSemantics(tree: unknown): { errors: string[]; warnings: string[] };
+
+/** Stamp a tree into an exportable document at the current SCHEMA_VERSION. */
+export declare function createDocument(input: {
+  tree: OkrTree;
+  company?: Company;
+  history?: History;
+  meta?: Partial<DocumentMeta>;
+}): OkrDocument;
+
+/** Parse, version-check, migrate, then validate a document written by createDocument. */
+export declare function parseDocument(
+  input: string | object
+): { ok: true; document: OkrDocument; warnings: string[] } | { ok: false; errors: string[]; warnings: string[] };
+
+/** One function per major step of the document format; `MIGRATIONS[n]` takes n to n + 1. */
+export declare const MIGRATIONS: Record<number, (document: any) => any>;
+
+/** Walk a document up the migration ladder from `fromVersion` to SCHEMA_VERSION. */
+export declare function migrate(
+  document: object,
+  fromVersion: number
+): { ok: true; document: object } | { ok: false; errors: string[] };

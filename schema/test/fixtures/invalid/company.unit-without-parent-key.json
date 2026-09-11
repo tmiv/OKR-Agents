@@ -1,0 +1,13 @@
+{
+  "schema": "company",
+  "at": "/units/0",
+  "data": {
+    "name": "Acme",
+    "units": [
+      {
+        "id": "u-1",
+        "name": "Eng"
+      }
+    ]
+  }
+}

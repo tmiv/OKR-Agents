@@ -1,0 +1,19 @@
+{
+  "schema": "chat-response",
+  "data": {
+    "reply": "Two KRs have no metric.",
+    "actions": [
+      {
+        "op": "edit",
+        "id": "kr-1",
+        "fields": {
+          "metric": "median days"
+        }
+      }
+    ],
+    "highlight": [
+      "kr-1",
+      "obj-1"
+    ]
+  }
+}

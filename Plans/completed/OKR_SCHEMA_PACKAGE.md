@@ -5,8 +5,9 @@ tags:
   - tooling
   - web
   - service
-status: development
+status: completed
 created: 2026-09-11
+completed_on: 2026-09-11
 ---
 # Plan: Add a versioned `@okr-viewer/schema` package shared by web and service
 
@@ -132,4 +133,48 @@ Run with `docker exec -w /src dev npm run build:schema`.
 
 ## Completion notes
 
-*(fill in at completion)*
+- **Planned vs. actual.** All six phases landed as written. The workspace layout, the
+  fork-based type generation, the precompiled Ajv validators, the document envelope and the
+  Export/Import buttons all work the way the plan describes, and every check in `## Verification`
+  passes. The fork earns its place: `dist/types.d.ts` declares each of the 22 types exactly once,
+  with no `OkrNode1`. The Anthropic API accepted the flattened `oneOf` tool schema on the first
+  try, so the fallback in `## Risks` was never needed. Vite pre-bundled Ajv's CJS runtime deps
+  with correct interop on its own, so the `optimizeDeps.include` escape hatch in Phase 6 step 5
+  was also unnecessary.
+
+- **Mid-flight adjustments.** Four, each forced by something the plan could not have known:
+  1. **`index.js` could not read `package.json` or import JSON.** Phase 4 called for
+     `PACKAGE_VERSION` from `package.json` and the tool schema via a JSON import. Both break in
+     the browser — `node:fs` has no bundler equivalent, and `import … with { type: 'json' }` is
+     Node-only. The build now emits `dist/meta.js`, a plain ESM module holding both, so the same
+     `index.js` loads unmodified in Node and in Vite. `SCHEMA_VERSION` moved to its own
+     `version.js` so `migrations/` can read it without importing `index.js`, which imports
+     `migrations/`.
+  2. **Ajv's ESM standalone output still calls `require()`.** With `code: { esm: true }` Ajv
+     exports correctly but reaches for `ajv/dist/runtime/ucs2length` and `ajv-formats/dist/formats`
+     with `require`, which throws in an ES module. The build now hoists each one into a real
+     `import` (adding the `.js` extension ESM demands), and fails the build if any `require(`
+     survives.
+  3. **`oneOf` error messages were unusable, and not fixable by filtering.** A single malformed
+     action made Ajv report all four branches' complaints at once. Attributing an error to its
+     branch turned out to be impossible: resolving a `$ref` rewrites `schemaPath` relative to the
+     target, so `{op:'edit', fields:{notes:1}}` and the `add` branch's "missing label" both report
+     against `#/properties/…`. The fix is to compile the four branches as their own validators
+     (`action.schema.json#/definitions/editAction` and friends), read the `op` by hand, and
+     validate only that branch. Errors are now one line naming one path, at any nesting depth —
+     `/changes/0/actions/0/fields: must have required property 'parent'`. `schema/test/errors.test.js`
+     pins this down.
+  4. **Step 6's type check needed a tsconfig, not CLI flags.** `tsc --noEmit --strict` pulls in
+     every hoisted `@types/*` package against an ES5 lib and fails on `@types/lodash`.
+     `schema/tsconfig.check.json` pins `lib`, `moduleResolution` and `types: []`.
+
+- **Surprises / residual risks.** Dropping `cleanFields` means the service no longer *coerces* the
+  model's output, only accepts or rejects it: `contributes: "0.8"` as a string is now dropped
+  rather than silently turned into `0.8`, and text fields are no longer trimmed or truncated to
+  400 characters — over-long ones are rejected instead. That is the intended trade (the tool
+  schema tells the model exactly what to send, and `[chat] dropped` makes failures visible), but
+  it is stricter than what shipped before, and a prompt change that makes the model sloppier would
+  show up as dropped actions rather than degraded ones. `web/` and `service/` consume the
+  generated types through JSDoc only, so nothing type-checks them in CI yet; a `tsc --checkJs`
+  pass over both is the obvious follow-up. `#release` remains a moving branch, pinned in the
+  lockfile at `1286d0e`.

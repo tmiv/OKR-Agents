@@ -1,0 +1,7 @@
+{
+  "schema": "action",
+  "data": {
+    "op": "delete",
+    "id": "kr-1"
+  }
+}

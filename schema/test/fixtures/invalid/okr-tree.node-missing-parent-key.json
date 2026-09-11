@@ -1,0 +1,13 @@
+{
+  "schema": "okr-tree",
+  "at": "/nodes/0",
+  "data": {
+    "nodes": [
+      {
+        "id": "co-1",
+        "level": "company",
+        "label": "Root"
+      }
+    ]
+  }
+}

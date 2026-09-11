@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://okr-viewer.dev/schema/v1/okr-document.schema.json",
+  "title": "OkrDocument",
+  "description": "The unit of export and import: everything the viewer knows about one company's OKRs, stamped with the schema version that wrote it.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "description": "Major version of the document format. A reader refuses anything newer than it understands and migrates anything older.",
+      "minimum": 1
+    },
+    "meta": {
+      "$ref": "#/definitions/meta",
+      "description": "Where this document came from."
+    },
+    "company": {
+      "$ref": "company.schema.json",
+      "description": "The org structure, if known."
+    },
+    "tree": {
+      "$ref": "okr-tree.schema.json",
+      "description": "The OKR tree itself."
+    },
+    "history": {
+      "$ref": "history.schema.json",
+      "description": "Metric readings and past changes, if any have been recorded."
+    }
+  },
+  "required": ["schemaVersion", "meta", "tree"],
+  "additionalProperties": false,
+  "definitions": {
+    "meta": {
+      "title": "DocumentMeta",
+      "description": "Provenance for the document.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable name for this export.",
+          "maxLength": 200
+        },
+        "period": {
+          "type": "string",
+          "description": "The planning period the tree covers, for example \"FY26\" or \"2026-Q3\".",
+          "maxLength": 100
+        },
+        "exportedAt": {
+          "type": "string",
+          "description": "When the document was written, as an RFC 3339 timestamp.",
+          "format": "date-time"
+        },
+        "generator": {
+          "type": "string",
+          "description": "What wrote it, for example \"@okr-viewer/schema 0.1.0\".",
+          "maxLength": 200
+        }
+      },
+      "required": ["exportedAt"],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,3 +1,5 @@
+import { RESPOND_INPUT_SCHEMA } from '@okr-viewer/schema';
+
 // The model ID lives here and only here.
 // Check https://docs.claude.com/en/docs/about-claude/models for the current
 // Sonnet-class ID before trusting this string.
@@ -5,37 +7,15 @@ export const MODEL = 'claude-sonnet-5';
 
 // One tool, forced. Claude must call it exactly once, so we get structured
 // output in a single round trip with no tool_result continuation.
+//
+// The input schema is the shared chat-response schema with every $ref
+// flattened (Claude cannot follow external refs). That means the field
+// descriptions the model reads and the rules the service enforces are the
+// same text, generated from one source in schema/src/.
 export const RESPOND_TOOL = {
   name: 'respond',
   description: 'Reply to the user about their OKR tree. Always call this exactly once.',
-  input_schema: {
-    type: 'object',
-    properties: {
-      reply: {
-        type: 'string',
-        description: 'Your answer, shown in the chat panel. Conversational, 1-3 sentences.'
-      },
-      actions: {
-        type: 'array',
-        description: 'Edits to apply to the tree. Empty array if the user only asked a question.',
-        items: {
-          type: 'object',
-          properties: {
-            op: { type: 'string', enum: ['edit', 'add', 'relink', 'delete'] },
-            id: { type: 'string' },
-            fields: { type: 'object' }
-          },
-          required: ['op', 'id']
-        }
-      },
-      highlight: {
-        type: 'array',
-        description: 'IDs of nodes your reply refers to. The camera flies to these. Use generously.',
-        items: { type: 'string' }
-      }
-    },
-    required: ['reply', 'actions', 'highlight']
-  }
+  input_schema: RESPOND_INPUT_SCHEMA
 };
 
 export function systemPrompt(tree, selectedNodeId) {

@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://okr-viewer.dev/schema/v1/company.schema.json",
+  "title": "Company",
+  "description": "The org structure the OKR tree hangs off: units and, optionally, the people in them. Node owners stay free text in v1, so nothing here is referenced by the tree yet.",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "The company's name.",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "units": {
+      "type": "array",
+      "description": "Org units, flat with parent pointers in the same style as the OKR tree.",
+      "items": {
+        "$ref": "#/definitions/unit",
+        "description": "One org unit."
+      },
+      "maxItems": 500
+    },
+    "people": {
+      "type": "array",
+      "description": "People, each attached to exactly one unit.",
+      "items": {
+        "$ref": "#/definitions/person",
+        "description": "One person."
+      },
+      "maxItems": 5000
+    }
+  },
+  "required": ["name", "units"],
+  "additionalProperties": false,
+  "definitions": {
+    "unit": {
+      "title": "CompanyUnit",
+      "description": "A team, department or division.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable unique identifier for the unit.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name, for example \"Field Marketing\".",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "parent": {
+          "type": ["string", "null"],
+          "description": "Id of the parent unit, or null for the top of the org.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "lead": {
+          "type": "string",
+          "description": "Id of the person who leads this unit, if known.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        }
+      },
+      "required": ["id", "name", "parent"],
+      "additionalProperties": false
+    },
+    "person": {
+      "title": "CompanyPerson",
+      "description": "Someone who can own or lead something.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Stable unique identifier for the person.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "name": {
+          "type": "string",
+          "description": "Display name.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "unitId": {
+          "type": "string",
+          "description": "Id of the unit this person belongs to.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        }
+      },
+      "required": ["id", "name", "unitId"],
+      "additionalProperties": false
+    }
+  }
+}

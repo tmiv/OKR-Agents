@@ -5,6 +5,7 @@
 // "misalignment" the demo is built to find. The weak KRs are deliberately
 // vague, activity-shaped, or unmeasurable so there is something to fix.
 
+/** @type {import('@okr-viewer/schema').OkrTree} */
 export const initialTree = {
   nodes: [
     {

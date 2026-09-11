@@ -1,0 +1,11 @@
+{
+  "schema": "action",
+  "data": {
+    "op": "edit",
+    "id": "kr-1",
+    "fields": {
+      "label": "Cut it to 5 days",
+      "contributes": 0.8
+    }
+  }
+}

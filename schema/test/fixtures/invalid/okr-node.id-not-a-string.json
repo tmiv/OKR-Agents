@@ -1,0 +1,10 @@
+{
+  "schema": "okr-node",
+  "at": "/id",
+  "data": {
+    "id": 1,
+    "level": "kr",
+    "parent": "obj-1",
+    "label": "x"
+  }
+}

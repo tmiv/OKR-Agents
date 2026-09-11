@@ -131,16 +131,21 @@ Called with `tool_choice: { type: 'tool', name: 'respond' }`. Guaranteed structu
 
 Requires Node 20.19+ (Vite 8 and Express 5 both need it).
 
+The repo is one npm workspace with three packages, so there is a single install
+at the root and a single lockfile. Installing also builds `schema/` (its
+`prepare` script), which both other packages import.
+
 ```bash
 git clone <repo> && cd okr-viewer
+npm install                                   # installs all three, builds schema/
+cp service/.env.example service/.env          # add ANTHROPIC_API_KEY
 
-# service
-cd service && npm i && cp .env.example .env   # add ANTHROPIC_API_KEY
-npm run dev                                    # :8787
-
-# web
-cd ../web && npm i && npm run dev              # :5173
+npm run dev:service                           # :8787
+npm run dev:web                               # :5173, in a second shell
 ```
+
+Other root scripts: `npm run build:schema` after editing anything in
+`schema/src/`, and `npm run test:schema` to run the schema's own tests.
 
 `vite.config.js` proxies `/api` → `:8787`, so there's no CORS to fight in dev:
 
@@ -158,9 +163,18 @@ Model ID goes in one place (`service/prompt.js`). Check <https://docs.claude.com
 
 ```
 okr-viewer/
+├── package.json                npm workspace root; one lockfile for all three
+├── schema/                     @okr-viewer/schema — the shape, owned in one place
+│   ├── src/*.schema.json       draft-07 schemas: node, tree, company, history,
+│   │                           action, chat request/response, document envelope
+│   ├── scripts/build.mjs       → dist/types.d.ts, dist/validators.js, tool schema
+│   ├── index.js                validate*(), checkTreeSemantics(), create/parseDocument
+│   ├── version.js              SCHEMA_VERSION, the document format version
+│   ├── migrations/             one function per major step (empty at v1)
+│   └── test/                   fixtures + round-trip tests
 ├── web/
 │   ├── src/
-│   │   ├── App.svelte          layout, owns tree state + undo stack
+│   │   ├── App.svelte          layout, owns tree state + undo stack, export/import
 │   │   ├── Graph.svelte        3d-force-graph, bind:this + onMount
 │   │   ├── Chat.svelte         message list, input, loading state
 │   │   ├── Detail.svelte       selected-node sidebar
@@ -172,6 +186,9 @@ okr-viewer/
     ├── prompt.js               system prompt + RESPOND_TOOL
     └── validate.js             drop actions/highlights with unknown IDs
 ```
+
+`schema/dist/` is generated and gitignored. Edit `schema/src/`, run
+`npm run build:schema`, and both consumers pick the change up.
 
 ---
 

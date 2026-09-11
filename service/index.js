@@ -2,7 +2,8 @@ import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { MODEL, RESPOND_TOOL, systemPrompt } from './prompt.js';
-import { validateTree, sanitizeHistory, mergeTurns, validateResponse } from './validate.js';
+import { sanitizeHistory, mergeTurns, validateResponse } from './validate.js';
+import { checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
 
 const PORT = Number(process.env.PORT) || 8787;
 const app = express();
@@ -15,13 +16,20 @@ const getClient = () => (client ??= new Anthropic());
 app.get('/api/health', (_req, res) => res.json({ ok: true, model: MODEL }));
 
 app.post('/api/chat', async (req, res) => {
-  const { tree, message, selectedNodeId = null, history = [] } = req.body ?? {};
-
-  const treeError = validateTree(tree);
-  if (treeError) return res.status(400).json({ error: treeError });
-  if (typeof message !== 'string' || !message.trim()) {
-    return res.status(400).json({ error: 'message must be a non-empty string' });
+  // One structural check for the whole body, straight from the shared schema.
+  const request = validateChatRequest(req.body);
+  if (!request.ok) {
+    return res.status(400).json({ error: 'The request does not match the chat schema.', details: request.errors });
   }
+  const { tree, message, selectedNodeId = null, history = [] } = request.value;
+
+  // Shape is not enough: a tree can be well-formed and still be unusable.
+  // Warnings (an off-ladder link, say) are normal mid-edit, so they only log.
+  const semantics = checkTreeSemantics(tree);
+  if (semantics.errors.length) {
+    return res.status(400).json({ error: 'The tree is structurally broken.', details: semantics.errors });
+  }
+  if (semantics.warnings.length) console.warn('[chat] tree warnings:', JSON.stringify(semantics.warnings));
 
   const selected = typeof selectedNodeId === 'string' && tree.nodes.some((n) => n.id === selectedNodeId) ? selectedNodeId : null;
   const messages = mergeTurns([...sanitizeHistory(history), { role: 'user', content: message.trim() }]);

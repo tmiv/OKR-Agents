@@ -1,0 +1,11 @@
+{
+  "schema": "chat-response",
+  "at": "/highlight/0",
+  "data": {
+    "reply": "ok",
+    "actions": [],
+    "highlight": [
+      42
+    ]
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "schema": "action",
+  "at": "/op",
+  "data": {
+    "op": "explode",
+    "id": "kr-1"
+  }
+}

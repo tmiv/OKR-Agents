@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://okr-viewer.dev/schema/v1/index.schema.json",
+  "title": "OkrSchemaIndex",
+  "description": "Synthetic root that references every schema in the package so one json2ts run emits every named type exactly once. Never validated against.",
+  "type": "object",
+  "properties": {
+    "document": {
+      "$ref": "okr-document.schema.json",
+      "description": "The export/import envelope."
+    },
+    "tree": {
+      "$ref": "okr-tree.schema.json",
+      "description": "The OKR tree."
+    },
+    "node": {
+      "$ref": "okr-node.schema.json",
+      "description": "One OKR node."
+    },
+    "company": {
+      "$ref": "company.schema.json",
+      "description": "The org structure."
+    },
+    "history": {
+      "$ref": "history.schema.json",
+      "description": "Metric readings and past changes."
+    },
+    "action": {
+      "$ref": "action.schema.json",
+      "description": "One edit to the tree."
+    },
+    "chatRequest": {
+      "$ref": "chat-request.schema.json",
+      "description": "The /api/chat request body."
+    },
+    "chatResponse": {
+      "$ref": "chat-response.schema.json",
+      "description": "The /api/chat response body, and the respond tool's input."
+    }
+  },
+  "required": ["document", "tree", "node", "company", "history", "action", "chatRequest", "chatResponse"],
+  "additionalProperties": false
+}

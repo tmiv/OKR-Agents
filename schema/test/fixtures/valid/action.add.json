@@ -1,0 +1,15 @@
+{
+  "schema": "action",
+  "data": {
+    "op": "add",
+    "id": "kr-new",
+    "fields": {
+      "level": "kr",
+      "parent": "obj-1",
+      "label": "Ship the thing",
+      "metric": "things shipped",
+      "target": "0 -> 1 by Q3",
+      "contributes": 0.7
+    }
+  }
+}

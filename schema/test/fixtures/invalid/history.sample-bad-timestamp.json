@@ -1,0 +1,14 @@
+{
+  "schema": "history",
+  "at": "/metricSamples/0/at",
+  "data": {
+    "metricSamples": [
+      {
+        "nodeId": "kr-1",
+        "at": "last tuesday",
+        "value": 1
+      }
+    ],
+    "changes": []
+  }
+}

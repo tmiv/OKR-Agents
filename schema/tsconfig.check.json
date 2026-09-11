@@ -1,0 +1,14 @@
+{
+  "// ": "Type-check only, run as step 6 of scripts/build.mjs. Never emits.",
+  "compilerOptions": {
+    "noEmit": true,
+    "strict": true,
+    "target": "es2022",
+    "lib": ["es2022"],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "skipLibCheck": false,
+    "types": []
+  },
+  "files": ["index.d.ts", "dist/types.d.ts", "dist/validators.d.ts", "dist/meta.d.ts"]
+}

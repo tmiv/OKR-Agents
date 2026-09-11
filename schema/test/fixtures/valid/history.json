@@ -1,0 +1,29 @@
+{
+  "schema": "history",
+  "data": {
+    "metricSamples": [
+      {
+        "nodeId": "kr-1",
+        "at": "2026-09-01T00:00:00Z",
+        "value": 11,
+        "note": "after the onboarding fix"
+      }
+    ],
+    "changes": [
+      {
+        "at": "2026-09-02T10:30:00Z",
+        "actor": "assistant",
+        "reason": "Made kr-1 measurable.",
+        "actions": [
+          {
+            "op": "edit",
+            "id": "kr-1",
+            "fields": {
+              "target": "14 -> 5 by Q4"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

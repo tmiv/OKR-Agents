@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@okr-viewer/schema": "^0.1.0",
     "3d-force-graph": "^1.80.0",
     "three": ">=0.179 <1"
   },

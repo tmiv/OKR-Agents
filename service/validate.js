@@ -1,22 +1,16 @@
 // Claude will occasionally invent node IDs. Everything it sends back is
 // filtered against the tree the browser sent us, so nothing unknown reaches
 // the renderer.
+//
+// Two layers, and the split matters:
+//
+//   @okr-viewer/schema's validateAction()  — shape. Is this an action at all?
+//   the checks below                       — reference. Does it fit *this* tree?
+//
+// Shape lives in the package because the browser needs the same answer. The
+// referential checks are tree-relative and stay here.
 
-const LEVELS = new Set(['company', 'objective', 'kr']);
-const TEXT_FIELDS = ['label', 'owner', 'metric', 'target'];
-const MAX_TEXT = 400;
-
-export function validateTree(tree) {
-  if (!tree || !Array.isArray(tree.nodes)) return 'tree.nodes must be an array';
-  if (tree.nodes.length > 500) return 'tree is too large (max 500 nodes)';
-  const ids = new Set();
-  for (const n of tree.nodes) {
-    if (!n || typeof n.id !== 'string' || !n.id) return 'every node needs a string id';
-    if (ids.has(n.id)) return `duplicate node id "${n.id}"`;
-    ids.add(n.id);
-  }
-  return null;
-}
+import { validateAction } from '@okr-viewer/schema';
 
 // Keep only well-formed turns, cap the length, and merge consecutive
 // same-role turns so the API always sees strict user/assistant alternation.
@@ -39,21 +33,6 @@ export function mergeTurns(turns) {
   return out;
 }
 
-function cleanFields(raw, { allowLevel = false } = {}) {
-  const src = raw && typeof raw === 'object' ? raw : {};
-  const out = {};
-  for (const k of TEXT_FIELDS) {
-    if (k in src && src[k] != null) out[k] = String(src[k]).trim().slice(0, MAX_TEXT);
-  }
-  if ('contributes' in src) {
-    const n = Number(src.contributes);
-    if (Number.isFinite(n)) out.contributes = Math.min(1, Math.max(0, n));
-  }
-  if ('parent' in src) out.parent = src.parent == null ? null : String(src.parent);
-  if (allowLevel && LEVELS.has(src.level)) out.level = src.level;
-  return out;
-}
-
 export function validateResponse(tree, input) {
   const known = new Set(tree.nodes.map((n) => n.id));
   const parentOf = new Map(tree.nodes.map((n) => [n.id, n.parent]));
@@ -73,24 +52,31 @@ export function validateResponse(tree, input) {
 
   for (const a of Array.isArray(input?.actions) ? input.actions : []) {
     const reject = (reason) => dropped.push({ action: a, reason });
-    if (!a || typeof a.id !== 'string' || !a.id) { reject('missing id'); continue; }
+
+    // Shape first: op, id and the per-op field whitelist all come from the
+    // shared schema, so anything past here has the keys it claims to have.
+    const shape = validateAction(a);
+    if (!shape.ok) {
+      reject(shape.errors.join('; '));
+      continue;
+    }
+
     const { op, id } = a;
+    const fields = { ...a.fields };
 
     if (op === 'edit' || op === 'relink') {
       if (!known.has(id)) { reject(`unknown id ${id}`); continue; }
-      const fields = cleanFields(a.fields);
       if ('parent' in fields && !validParent(id, fields.parent)) {
         reject(`bad parent ${fields.parent} for ${id}`);
         delete fields.parent;
       }
-      if (op === 'relink' && !('parent' in fields)) continue;
+      // A relink whose only field was the rejected parent has nothing left.
       if (!Object.keys(fields).length) { reject('no usable fields'); continue; }
       if ('parent' in fields) parentOf.set(id, fields.parent);
       actions.push({ op, id, fields });
     } else if (op === 'add') {
       if (known.has(id)) { reject(`add with existing id ${id}`); continue; }
-      const fields = cleanFields(a.fields, { allowLevel: true });
-      if (!fields.label) { reject('add without label'); continue; }
+      // The model is never allowed to mint a second company root.
       if (!fields.level || fields.level === 'company') fields.level = 'kr';
       if (!(fields.parent != null && known.has(fields.parent))) { reject(`add with bad parent ${fields.parent}`); continue; }
       known.add(id);
@@ -108,8 +94,6 @@ export function validateResponse(tree, input) {
       }
       for (const g of gone) { known.delete(g); parentOf.delete(g); }
       actions.push({ op, id });
-    } else {
-      reject(`unknown op ${op}`);
     }
   }
 

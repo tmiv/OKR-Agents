@@ -1,0 +1,92 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://okr-viewer.dev/schema/v1/history.schema.json",
+  "title": "History",
+  "description": "What has happened to the tree over time: readings of key-result metrics, and the batches of edits that changed the structure. Schema only in v1 — nothing writes this yet.",
+  "type": "object",
+  "properties": {
+    "metricSamples": {
+      "type": "array",
+      "description": "Point-in-time readings of a node's metric, oldest first.",
+      "items": {
+        "$ref": "#/definitions/metricSample",
+        "description": "One reading."
+      },
+      "maxItems": 100000
+    },
+    "changes": {
+      "type": "array",
+      "description": "Batches of edits applied to the tree, oldest first.",
+      "items": {
+        "$ref": "#/definitions/change",
+        "description": "One batch of edits, applied together."
+      },
+      "maxItems": 10000
+    }
+  },
+  "required": ["metricSamples", "changes"],
+  "additionalProperties": false,
+  "definitions": {
+    "metricSample": {
+      "title": "MetricSample",
+      "description": "One reading of one node's metric.",
+      "type": "object",
+      "properties": {
+        "nodeId": {
+          "type": "string",
+          "description": "Id of the node the reading belongs to.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "at": {
+          "type": "string",
+          "description": "When the reading was taken, as an RFC 3339 timestamp.",
+          "format": "date-time"
+        },
+        "value": {
+          "type": "number",
+          "description": "The measured value, in whatever unit the node's metric names."
+        },
+        "note": {
+          "type": "string",
+          "description": "Optional context for the reading, for example why it moved.",
+          "maxLength": 1000
+        }
+      },
+      "required": ["nodeId", "at", "value"],
+      "additionalProperties": false
+    },
+    "change": {
+      "title": "TreeChange",
+      "description": "A batch of actions applied to the tree in one go, with who applied them and why.",
+      "type": "object",
+      "properties": {
+        "at": {
+          "type": "string",
+          "description": "When the batch was applied, as an RFC 3339 timestamp.",
+          "format": "date-time"
+        },
+        "actor": {
+          "type": "string",
+          "description": "Who applied the batch: the user directly, the assistant, or an import.",
+          "enum": ["user", "assistant", "import"]
+        },
+        "reason": {
+          "type": "string",
+          "description": "Plain-language explanation of the change, usually the assistant's reply.",
+          "maxLength": 4000
+        },
+        "actions": {
+          "type": "array",
+          "description": "The actions applied, in order.",
+          "items": {
+            "$ref": "action.schema.json",
+            "description": "One edit to the tree."
+          },
+          "maxItems": 500
+        }
+      },
+      "required": ["at", "actor", "actions"],
+      "additionalProperties": false
+    }
+  }
+}

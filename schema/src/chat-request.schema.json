@@ -1,0 +1,56 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://okr-viewer.dev/schema/v1/chat-request.schema.json",
+  "title": "ChatRequest",
+  "description": "The body the browser POSTs to /api/chat. It carries the whole tree every time; the service is stateless.",
+  "type": "object",
+  "properties": {
+    "tree": {
+      "$ref": "okr-tree.schema.json",
+      "description": "The tree as the browser currently holds it."
+    },
+    "message": {
+      "type": "string",
+      "description": "What the user just typed.",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "selectedNodeId": {
+      "type": ["string", "null"],
+      "description": "Id of the node the user has selected, or null. \"this\" and \"it\" in the message refer to it.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+    },
+    "history": {
+      "type": "array",
+      "description": "Earlier turns of the conversation, oldest first.",
+      "items": {
+        "$ref": "#/definitions/turn",
+        "description": "One conversation turn."
+      },
+      "maxItems": 50
+    }
+  },
+  "required": ["tree", "message"],
+  "additionalProperties": false,
+  "definitions": {
+    "turn": {
+      "title": "ChatTurn",
+      "description": "One turn of the conversation.",
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "description": "Who spoke.",
+          "enum": ["user", "assistant"]
+        },
+        "content": {
+          "type": "string",
+          "description": "What was said.",
+          "maxLength": 20000
+        }
+      },
+      "required": ["role", "content"],
+      "additionalProperties": false
+    }
+  }
+}

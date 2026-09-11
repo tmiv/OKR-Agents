@@ -1,0 +1,11 @@
+{
+  "schema": "action",
+  "at": "/fields",
+  "data": {
+    "op": "edit",
+    "id": "kr-1",
+    "fields": {
+      "level": "objective"
+    }
+  }
+}

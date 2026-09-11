@@ -1,0 +1,14 @@
+{
+  "schema": "history",
+  "at": "/changes/0/actor",
+  "data": {
+    "metricSamples": [],
+    "changes": [
+      {
+        "at": "2026-09-02T10:30:00Z",
+        "actor": "robot",
+        "actions": []
+      }
+    ]
+  }
+}

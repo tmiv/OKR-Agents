@@ -1,0 +1,13 @@
+{
+  "schema": "okr-node",
+  "data": {
+    "id": "kr-1",
+    "level": "kr",
+    "parent": "obj-1",
+    "label": "Cut time-to-first-workflow from 14 days to 5",
+    "owner": "Product",
+    "metric": "median days to first run",
+    "target": "14 -> 5 by Q4",
+    "contributes": 0.9
+  }
+}

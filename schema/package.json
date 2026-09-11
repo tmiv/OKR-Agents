@@ -1,0 +1,37 @@
+{
+  "name": "@okr-viewer/schema",
+  "version": "0.1.0",
+  "description": "Versioned JSON Schemas for the OKR document, shared by web/ and service/.",
+  "type": "module",
+  "license": "UNLICENSED",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./json/*": "./dist/json/*"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "version.js",
+    "src",
+    "dist",
+    "migrations"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepare": "node scripts/build.mjs",
+    "test": "node --test \"test/**/*.test.js\"",
+    "clean": "node scripts/clean.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  },
+  "devDependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.9.3",
+    "json-schema-to-typescript": "github:LudaThomas/json-schema-to-typescript#release",
+    "typescript": "^5.9.2"
+  }
+}
