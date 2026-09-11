@@ -147,6 +147,7 @@
 
   function select(id) {
     selectedId = id;
+    if (highlight.length) highlight = []; // a user selection supersedes the assistant's pointer
   }
 
   function recall(ids) {
