@@ -178,7 +178,8 @@ okr-viewer/
 │   │   ├── Graph.svelte        3d-force-graph, bind:this + onMount
 │   │   ├── Chat.svelte         message list, input, loading state
 │   │   ├── Detail.svelte       selected-node sidebar
-│   │   ├── lib/tree.js         the hand-written OKR tree
+│   │   ├── assets/datasets/    hand-written OkrDocument JSON + manifest.json
+│   │   ├── lib/datasets.js     bundles them, validates them, picks the default
 │   │   └── lib/apply.js        applyAction(tree, action) → new tree
 │   └── vite.config.js
 └── service/
@@ -198,7 +199,7 @@ Each step is shippable on its own. If the clock runs out, you stop at a checkpoi
 
 | # | Step | Est. | If you stop here |
 |---|------|------|------------------|
-| 1 | Hand-write `tree.js`, render with `3d-force-graph` (`dagMode: 'td'`), click → camera + detail panel | 50m | A working 3D OKR browser |
+| 1 | Hand-write `assets/datasets/*.json`, load via `lib/datasets.js`, render with `3d-force-graph` (`dagMode: 'td'`), click → camera + detail panel | 50m | A working 3D OKR browser |
 | 2 | Chat panel → `/api/chat`, whole tree in the system prompt, Claude answers questions | 30m | "Ask your OKRs anything" — already demoable |
 | 3 | Honor `highlight[]`: camera fly-to + pulse | 20m | **The wow.** Answers move the view |
 | 4 | Honor `actions[]`: apply, re-render, push undo snapshot | 40m | The full pitch |

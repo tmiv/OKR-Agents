@@ -2,28 +2,26 @@
   import Graph from './Graph.svelte';
   import Chat from './Chat.svelte';
   import Detail from './Detail.svelte';
-  import { initialTree } from './lib/tree.js';
+  import { DATASETS, DEFAULT_DATASET_ID, getDataset } from './lib/datasets.js';
   import { applyActions } from './lib/apply.js';
-  import { checkTreeSemantics, createDocument, parseDocument, validateChatResponse, validateOkrTree } from '@okr-viewer/schema';
+  import { createDocument, parseDocument, validateChatResponse } from '@okr-viewer/schema';
 
-  // A bad hand edit to tree.js should fail at boot, not halfway through a demo.
-  // Dev only: the check is dead code in the production bundle.
-  if (import.meta.env.DEV) {
-    const structural = validateOkrTree(initialTree);
-    if (!structural.ok) console.error('[tree.js] initialTree is not a valid OkrTree:', structural.errors);
-    const { errors, warnings } = checkTreeSemantics(initialTree);
-    if (errors.length) console.error('[tree.js] initialTree is structurally broken:', errors);
-    if (warnings.length) console.warn('[tree.js] initialTree warnings:', warnings);
-  }
+  // datasets.js validates every bundled document at boot in dev.
+  let datasetId = $state(DEFAULT_DATASET_ID);
 
   // The tree is $state.raw on purpose: apply.js always returns a new tree, so
   // deep reactivity buys nothing and structuredClone() stays a plain clone.
-  let tree = $state.raw(structuredClone(initialTree));
+  let tree = $state.raw(structuredClone(getDataset(DEFAULT_DATASET_ID).document.tree));
+
+  // Undo entries carry the dataset id as well as the tree, so undoing a dataset
+  // switch puts the picker back where it was.
   let undoStack = $state.raw([]);
   let selectedId = $state(null);
   let highlight = $state.raw([]);
   let messages = $state([]);
   let loading = $state(false);
+
+  const snapshot = () => ({ tree: structuredClone(tree), datasetId });
 
   const selected = $derived(tree.nodes.find((n) => n.id === selectedId) ?? null);
   const weakLinks = $derived(tree.nodes.filter((n) => n.parent && (n.contributes ?? 1) < 0.4).length);
@@ -55,7 +53,7 @@
       }
       const { reply, actions, highlight: ids } = checked.value;
       if (actions.length) {
-        undoStack = [...undoStack, structuredClone(tree)]; // snapshot before we mutate
+        undoStack = [...undoStack, snapshot()]; // snapshot before we mutate
         tree = applyActions(tree, actions);
       }
       highlight = ids;
@@ -69,17 +67,36 @@
 
   function undo() {
     if (!undoStack.length) return;
-    tree = undoStack[undoStack.length - 1];
+    const previous = undoStack[undoStack.length - 1];
+    tree = previous.tree;
+    datasetId = previous.datasetId;
     undoStack = undoStack.slice(0, -1);
     highlight = [];
     messages.push({ role: 'assistant', content: 'Reverted the last change.', note: true });
   }
 
   function reset() {
-    undoStack = [...undoStack, structuredClone(tree)];
-    tree = structuredClone(initialTree);
+    undoStack = [...undoStack, snapshot()];
+    tree = structuredClone(getDataset(datasetId).document.tree);
     highlight = [];
     selectedId = null;
+  }
+
+  // Switching datasets is the same snapshot-then-replace as import: undoable,
+  // and it says in the chat what just landed.
+  function switchDataset(id) {
+    if (id === datasetId) return;
+    const dataset = getDataset(id);
+    undoStack = [...undoStack, snapshot()];
+    datasetId = dataset.id;
+    tree = structuredClone(dataset.document.tree);
+    highlight = [];
+    selectedId = null;
+    messages.push({
+      role: 'assistant',
+      content: `Loaded "${dataset.title}" (${tree.nodes.length} nodes). Undo to go back.`,
+      note: true
+    });
   }
 
   // ── export / import ───────────────────────────────────────────────────────
@@ -91,7 +108,7 @@
   let fileInput;
 
   function exportTree() {
-    const doc = createDocument({ tree, meta: { title: 'OKR Viewer export' } });
+    const doc = createDocument({ tree, meta: { title: getDataset(datasetId).title } });
     const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url;
@@ -116,7 +133,7 @@
       return;
     }
 
-    undoStack = [...undoStack, structuredClone(tree)]; // same snapshot-then-replace as reset()
+    undoStack = [...undoStack, snapshot()]; // same snapshot-then-replace as reset()
     tree = out.document.tree;
     highlight = [];
     selectedId = null;
@@ -155,6 +172,12 @@
       {tree.nodes.length} nodes · <span class:warn={weakLinks}>{weakLinks} weak link{weakLinks === 1 ? '' : 's'}</span>
     </div>
     <div class="buttons">
+      <!-- onchange, not bind:value, so switchDataset() snapshots the old id before it changes -->
+      <select value={datasetId} onchange={(e) => switchDataset(e.target.value)} title="Load one of the bundled OKR documents">
+        {#each DATASETS as dataset (dataset.id)}
+          <option value={dataset.id}>{dataset.title}</option>
+        {/each}
+      </select>
       <button onclick={undo} disabled={!undoStack.length} title="⌘Z">
         ↶ Undo{undoStack.length ? ` (${undoStack.length})` : ''}
       </button>

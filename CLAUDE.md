@@ -163,8 +163,6 @@ Vision and ordering for the whole round:
 Teams-as-agents rationale: [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md).
 
 Independent, any order:
-- [Plans/development/BUNDLED_DATASETS.md](Plans/development/BUNDLED_DATASETS.md) — default graph
-  and alternates as bundled `OkrDocument` JSON with a picker; deletes `tree.js`.
 - [Plans/development/CAMERA_LEVEL_AUTO_MOVES.md](Plans/development/CAMERA_LEVEL_AUTO_MOVES.md) —
   programmatic camera moves level to world up; trackball stays free for the user.
 - [Plans/development/CLEAR_HIGHLIGHT_ON_SELECT.md](Plans/development/CLEAR_HIGHLIGHT_ON_SELECT.md) —
@@ -180,7 +178,8 @@ In dependency order:
 4. [Plans/development/CHAT_TABS_AND_INTERVIEWS.md](Plans/development/CHAT_TABS_AND_INTERVIEWS.md) —
    chat tabs with mode + subject; "interview me" launchers.
 
-Completed: [Plans/completed/OKR_SCHEMA_PACKAGE.md](Plans/completed/OKR_SCHEMA_PACKAGE.md).
+Completed: [Plans/completed/OKR_SCHEMA_PACKAGE.md](Plans/completed/OKR_SCHEMA_PACKAGE.md),
+[Plans/completed/BUNDLED_DATASETS.md](Plans/completed/BUNDLED_DATASETS.md).
 
 Future horizons (no plans yet): agents that execute and measure OKRs, a progress dashboard, and a
 shared realtime document store. See the Horizons section of the vision doc and

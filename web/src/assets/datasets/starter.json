@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "title": "Starter tree",
+    "period": "FY26",
+    "exportedAt": "2026-09-11T00:00:00Z",
+    "generator": "hand-authored"
+  },
+  "tree": {
+    "nodes": [
+      {
+        "id": "co-1",
+        "level": "company",
+        "parent": null,
+        "label": "Grow a business customers recommend without being asked",
+        "owner": "Exec",
+        "metric": "annual recurring revenue and referral share of new customers",
+        "target": "$4M → $7M ARR with 30% referred",
+        "contributes": 1
+      },
+      {
+        "id": "obj-1",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "New customers get real value in their first week",
+        "owner": "Product",
+        "metric": "week-1 activation rate",
+        "target": "28% → 45%",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-1",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Cut setup time from three days to four hours",
+        "owner": "Product",
+        "metric": "median hours from signup to first live account",
+        "target": "72h → 4h by Q3",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-2",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Lift week-1 activation from 28% to 45%",
+        "owner": "Growth",
+        "metric": "% of new customers finishing setup within seven days",
+        "target": "28% → 45% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-3",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Refresh the onboarding emails",
+        "owner": "Lifecycle",
+        "metric": "",
+        "target": "",
+        "contributes": 0.25
+      },
+      {
+        "id": "obj-2",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Turn happy customers into new ones",
+        "owner": "Growth",
+        "metric": "referral-sourced share of new customers",
+        "target": "12% → 30%",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-4",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Raise referral-sourced new customers from 12% to 30%",
+        "owner": "Growth",
+        "metric": "% of new customers who name a referral at signup",
+        "target": "12% → 30% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-5",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Be more active in the community",
+        "owner": "Marketing",
+        "metric": "",
+        "target": "",
+        "contributes": 0.2
+      },
+      {
+        "id": "kr-6",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Run a customer advisory board",
+        "owner": "Customer Success",
+        "metric": "advisory sessions held",
+        "target": "0 → 4 by Q4",
+        "contributes": 0.35
+      }
+    ]
+  }
+}

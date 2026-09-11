@@ -1,0 +1,4 @@
+{
+  "default": "workflow-platform-fy26",
+  "order": ["workflow-platform-fy26", "starter", "regional-clinic-network"]
+}

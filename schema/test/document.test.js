@@ -1,10 +1,10 @@
 // createDocument → JSON → parseDocument is the export/import path the web app
 // uses, so it is tested as a round trip rather than a pair of units.
 
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
-import { initialTree } from '../../web/src/lib/tree.js';
 import {
   MIGRATIONS,
   PACKAGE_VERSION,
@@ -15,15 +15,22 @@ import {
   validateOkrTree
 } from '../index.js';
 
-test('the app’s initialTree is valid and raises no warnings', () => {
-  const structural = validateOkrTree(initialTree);
-  assert.ok(structural.ok, `initialTree failed validation:\n  ${structural.errors?.join('\n  ')}`);
-  assert.deepEqual(checkTreeSemantics(initialTree), { errors: [], warnings: [] });
+// The tree the app boots with. datasets.test.js validates every bundled
+// document; here it is the fixture the round trips run on, so a real tree with
+// real edge cases goes through createDocument/parseDocument.
+const defaultTree = JSON.parse(
+  readFileSync(new URL('../../web/src/assets/datasets/workflow-platform-fy26.json', import.meta.url))
+).tree;
+
+test('the default dataset’s tree is valid and raises no warnings', () => {
+  const structural = validateOkrTree(defaultTree);
+  assert.ok(structural.ok, `the default dataset failed validation:\n  ${structural.errors?.join('\n  ')}`);
+  assert.deepEqual(checkTreeSemantics(defaultTree), { errors: [], warnings: [] });
 });
 
 test('createDocument stamps version, timestamp and generator', () => {
   const before = Date.now();
-  const doc = createDocument({ tree: initialTree });
+  const doc = createDocument({ tree: defaultTree });
   assert.equal(doc.schemaVersion, SCHEMA_VERSION);
   assert.equal(doc.generator, undefined, 'generator belongs under meta');
   assert.equal(doc.meta.generator, `@okr-viewer/schema ${PACKAGE_VERSION}`);
@@ -33,22 +40,22 @@ test('createDocument stamps version, timestamp and generator', () => {
 });
 
 test('caller meta survives, but exportedAt and generator are filled in', () => {
-  const doc = createDocument({ tree: initialTree, meta: { title: 'Acme FY26', period: 'FY26' } });
+  const doc = createDocument({ tree: defaultTree, meta: { title: 'Acme FY26', period: 'FY26' } });
   assert.equal(doc.meta.title, 'Acme FY26');
   assert.equal(doc.meta.period, 'FY26');
   assert.ok(doc.meta.exportedAt);
 });
 
 test('round trip through JSON preserves the tree exactly', () => {
-  const doc = createDocument({ tree: initialTree, meta: { title: 'Round trip' } });
+  const doc = createDocument({ tree: defaultTree, meta: { title: 'Round trip' } });
   const out = parseDocument(JSON.stringify(doc, null, 2));
   assert.ok(out.ok, `round trip failed:\n  ${out.errors?.join('\n  ')}`);
-  assert.deepEqual(out.document.tree, initialTree);
+  assert.deepEqual(out.document.tree, defaultTree);
   assert.deepEqual(out.warnings, []);
 });
 
 test('parseDocument accepts an already-parsed object', () => {
-  const out = parseDocument(createDocument({ tree: initialTree }));
+  const out = parseDocument(createDocument({ tree: defaultTree }));
   assert.ok(out.ok);
 });
 
@@ -65,14 +72,14 @@ test('a company and history round trip too', () => {
       }
     ]
   };
-  const out = parseDocument(JSON.stringify(createDocument({ tree: initialTree, company, history })));
+  const out = parseDocument(JSON.stringify(createDocument({ tree: defaultTree, company, history })));
   assert.ok(out.ok, `failed:\n  ${out.errors?.join('\n  ')}`);
   assert.deepEqual(out.document.company, company);
   assert.deepEqual(out.document.history, history);
 });
 
 test('a newer schemaVersion is refused with a clear message', () => {
-  const doc = { ...createDocument({ tree: initialTree }), schemaVersion: SCHEMA_VERSION + 1 };
+  const doc = { ...createDocument({ tree: defaultTree }), schemaVersion: SCHEMA_VERSION + 1 };
   const out = parseDocument(doc);
   assert.equal(out.ok, false);
   assert.match(out.errors[0], /version 2, but this build only reads up to 1/);
@@ -80,7 +87,7 @@ test('a newer schemaVersion is refused with a clear message', () => {
 
 test('an older schemaVersion with no migration is refused, not silently accepted', () => {
   assert.deepEqual(MIGRATIONS, {}, 'v1 is the first format, so the ladder starts empty');
-  const out = parseDocument({ ...createDocument({ tree: initialTree }), schemaVersion: 0 });
+  const out = parseDocument({ ...createDocument({ tree: defaultTree }), schemaVersion: 0 });
   assert.equal(out.ok, false);
   assert.match(out.errors[0], /must be an integer >= 1/);
 });

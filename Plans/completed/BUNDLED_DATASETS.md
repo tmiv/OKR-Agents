@@ -3,8 +3,9 @@ tags:
   - plan
   - web
   - data
-status: development
+status: completed
 created: 2026-09-11
+completed_on: 2026-09-11
 predecessors:
   - completed/OKR_SCHEMA_PACKAGE.md
 ---
@@ -137,3 +138,26 @@ Ids in every file follow `co-*`, `obj-*`, `kr-*` so the prompt's id guidance
   loading state.
 - Rollback: restore `tree.js` from git, revert `App.svelte` and the test. Datasets are additive
   files.
+
+## Completion notes
+
+- **Planned vs. actual.** The phases landed as written. `datasets.js` is the only new module;
+  `import.meta.glob('../assets/datasets/*.json', { eager: true, import: 'default' })` plus the
+  manifest gives the picker its order, and the three datasets
+  (`workflow-platform-fy26` 27 nodes, `starter` 9, `regional-clinic-network` 30) all pass
+  `parseDocument` with zero warnings. `tree.js` is gone; `schema/test/document.test.js` now reads
+  the default dataset off disk, and `schema/test/datasets.test.js` holds every file to the
+  document bar plus the demo's own bar (≥3 weak links, ≥2 unmeasurable KRs per dataset).
+- **Mid-flight adjustments.** Two small deviations from the phase text. (a) Undo snapshots are now
+  `{ tree, datasetId }` rather than a bare tree — Phase 3.5 asked for the picker to follow undo,
+  and a helper `snapshot()` keeps the four push sites honest. (b) The initial tree reads
+  `getDataset(DEFAULT_DATASET_ID)` rather than `getDataset(datasetId)`; Svelte 5 warns
+  `state_referenced_locally` on the latter, and the two are the same value at init.
+- **Surprises / residual risks.** `import.meta.glob` matches `manifest.json` too, so the loader
+  skips that slug explicitly — a dataset may never be named `manifest`. The `[datasets]` boot
+  validation is `import.meta.env.DEV`-only and is tree-shaken out of `vite build`, so it was
+  verified by a one-off build with `define: { 'import.meta.env.DEV': true }`; a corrupted label
+  logs `[datasets] starter.json: invalid document: /tree/nodes/7/label: must NOT have fewer than
+  1 characters`, and a bogus `manifest.default` throws at import time as intended. Datasets are
+  inlined in the main chunk (~20 KB of JSON today); the lazy-glob escape hatch in Risks still
+  applies if they grow.

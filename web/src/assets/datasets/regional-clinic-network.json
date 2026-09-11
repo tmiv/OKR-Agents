@@ -1,0 +1,318 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "title": "Regional clinic network, FY26",
+    "period": "FY26",
+    "exportedAt": "2026-09-11T00:00:00Z",
+    "generator": "hand-authored"
+  },
+  "tree": {
+    "nodes": [
+      {
+        "id": "co-1",
+        "level": "company",
+        "parent": null,
+        "label": "Give the region timely, dependable care at a cost the network can sustain",
+        "owner": "Board",
+        "metric": "annual patient visits and operating margin",
+        "target": "142k → 165k visits at 4% or better margin",
+        "contributes": 1
+      },
+
+      {
+        "id": "obj-1",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Patients can be seen when they need to be seen",
+        "owner": "Patient Access",
+        "metric": "third-next-available appointment, primary care",
+        "target": "18 → 7 days",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-1",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Cut third-next-available primary care appointment from 18 days to 7",
+        "owner": "Patient Access",
+        "metric": "third-next-available appointment, primary care, network average",
+        "target": "18 → 7 days by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-2",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Answer 90% of appointment line calls within 60 seconds",
+        "owner": "Contact Center",
+        "metric": "% of inbound scheduling calls answered in under 60 seconds",
+        "target": "61% → 90% by Q3",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-3",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Reduce the no-show rate from 14% to 8%",
+        "owner": "Patient Access",
+        "metric": "no-show rate across all clinic sites",
+        "target": "14% → 8% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-4",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Roll out the new patient portal",
+        "owner": "Digital Health",
+        "metric": "",
+        "target": "",
+        "contributes": 0.3
+      },
+      {
+        "id": "kr-5",
+        "level": "kr",
+        "parent": "obj-1",
+        "label": "Open Saturday hours at the three busiest sites",
+        "owner": "Clinic Operations",
+        "metric": "sites offering Saturday clinics at 70%+ slot fill",
+        "target": "0 → 3 by Q3",
+        "contributes": 0.65
+      },
+
+      {
+        "id": "obj-2",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Care quality is measurably better than last year, everywhere",
+        "owner": "Chief Medical Officer",
+        "metric": "composite clinical quality score",
+        "target": "72 → 85",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-6",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Raise blood pressure control from 58% to 75% of hypertensive patients",
+        "owner": "Primary Care",
+        "metric": "% of hypertensive patients with BP under 140/90 at last visit",
+        "target": "58% → 75% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-7",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Lift diabetes control from 61% to 74% of patients under A1c 8",
+        "owner": "Primary Care",
+        "metric": "% of diabetic patients with most recent A1c under 8",
+        "target": "61% → 74% by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-8",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Cut 30-day readmissions from 15.2% to 11%",
+        "owner": "Care Transitions",
+        "metric": "30-day all-cause readmission rate",
+        "target": "15.2% → 11% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-9",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Raise colorectal cancer screening from 49% to 65% of eligible patients",
+        "owner": "Population Health",
+        "metric": "% of screening-eligible patients up to date",
+        "target": "49% → 65% by Q4",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-10",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Refresh the clinical policy binders",
+        "owner": "Quality",
+        "metric": "",
+        "target": "",
+        "contributes": 0.2
+      },
+      {
+        "id": "kr-11",
+        "level": "kr",
+        "parent": "obj-2",
+        "label": "Reach 95% hand hygiene compliance on every inpatient unit",
+        "owner": "Infection Prevention",
+        "metric": "observed hand hygiene compliance rate",
+        "target": "81% → 95% by Q3",
+        "contributes": 0.7
+      },
+
+      {
+        "id": "obj-3",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "We get paid correctly, the first time, for the care we deliver",
+        "owner": "Revenue Cycle",
+        "metric": "net collection rate and days in accounts receivable",
+        "target": "94% → 98% collected, 52 → 38 days",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-12",
+        "level": "kr",
+        "parent": "obj-3",
+        "label": "Cut days in accounts receivable from 52 to 38",
+        "owner": "Revenue Cycle",
+        "metric": "days in A/R, all payers",
+        "target": "52 → 38 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-13",
+        "level": "kr",
+        "parent": "obj-3",
+        "label": "Reduce first-pass claim denials from 11% to 5%",
+        "owner": "Billing",
+        "metric": "% of claims denied on first submission",
+        "target": "11% → 5% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-14",
+        "level": "kr",
+        "parent": "obj-3",
+        "label": "Collect 60% of patient responsibility at the time of service",
+        "owner": "Patient Financial Services",
+        "metric": "% of patient balance collected point-of-service",
+        "target": "23% → 60% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-15",
+        "level": "kr",
+        "parent": "obj-3",
+        "label": "Switch to the new claims clearinghouse",
+        "owner": "Billing IT",
+        "metric": "clinic sites live on the new clearinghouse",
+        "target": "all 11 by Q3",
+        "contributes": 0.35
+      },
+      {
+        "id": "kr-16",
+        "level": "kr",
+        "parent": "obj-3",
+        "label": "Raise the clean claim rate from 86% to 96%",
+        "owner": "Coding",
+        "metric": "% of claims accepted without rework",
+        "target": "86% → 96% by Q4",
+        "contributes": 0.85
+      },
+
+      {
+        "id": "obj-4",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Every shift is staffed by people who intend to stay",
+        "owner": "People",
+        "metric": "RN vacancy rate and agency staffing spend",
+        "target": "19% → 8% vacancy, agency spend down $4.2M",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-17",
+        "level": "kr",
+        "parent": "obj-4",
+        "label": "Cut the RN vacancy rate from 19% to 8%",
+        "owner": "Nursing",
+        "metric": "RN vacancy rate across the network",
+        "target": "19% → 8% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-18",
+        "level": "kr",
+        "parent": "obj-4",
+        "label": "Reduce agency staffing spend from $9.1M to $4.9M",
+        "owner": "Workforce Planning",
+        "metric": "annualised agency and travel staffing spend",
+        "target": "$9.1M → $4.9M by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-19",
+        "level": "kr",
+        "parent": "obj-4",
+        "label": "Bring first-year nurse turnover from 31% to 18%",
+        "owner": "Nursing",
+        "metric": "12-month turnover among nurses in their first year",
+        "target": "31% → 18% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-20",
+        "level": "kr",
+        "parent": "obj-4",
+        "label": "Improve staff morale",
+        "owner": "People",
+        "metric": "",
+        "target": "",
+        "contributes": 0.2
+      },
+      {
+        "id": "kr-21",
+        "level": "kr",
+        "parent": "obj-4",
+        "label": "Fill 85% of open clinical roles within 45 days",
+        "owner": "Talent",
+        "metric": "% of clinical requisitions filled within 45 days of opening",
+        "target": "48% → 85% by Q4",
+        "contributes": 0.7
+      },
+
+      {
+        "id": "obj-5",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Run the clinics efficiently enough to fund the next site",
+        "owner": "Operations",
+        "metric": "fully loaded cost per primary care visit",
+        "target": "$214 → $186",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-22",
+        "level": "kr",
+        "parent": "obj-5",
+        "label": "Reduce cost per primary care visit from $214 to $186",
+        "owner": "Finance",
+        "metric": "fully loaded cost per primary care visit",
+        "target": "$214 → $186 by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-23",
+        "level": "kr",
+        "parent": "obj-5",
+        "label": "Raise exam room utilisation from 62% to 78%",
+        "owner": "Clinic Operations",
+        "metric": "% of scheduled exam room hours actually used",
+        "target": "62% → 78% by Q4",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-24",
+        "level": "kr",
+        "parent": "obj-5",
+        "label": "Consolidate supply vendors",
+        "owner": "Supply Chain",
+        "metric": "",
+        "target": "",
+        "contributes": 0.3
+      }
+    ]
+  }
+}
