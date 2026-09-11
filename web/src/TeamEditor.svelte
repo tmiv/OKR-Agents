@@ -1,7 +1,17 @@
 <script>
   import { unitDescendants } from './lib/company.js';
 
-  let { unit, company, tree, onEdit, onSelect, onBack, onClose, onFocusField = () => {} } = $props();
+  let {
+    unit,
+    company,
+    tree,
+    onEdit,
+    onSelect,
+    onBack,
+    onClose,
+    onFocusField = () => {},
+    onPreview = () => {}
+  } = $props();
 
   // A team panel is an editor: there is no read mode to toggle into, because a
   // charter is a thing you write, not a thing you look up. Same discipline as
@@ -122,6 +132,14 @@
 
   const owned = $derived(tree.nodes.filter((n) => n.unitId === unit.id));
 
+  // Hovering or tabbing to a link points the 3D view at what it refers to.
+  const hover = (ids) => ({
+    onmouseenter: () => onPreview(ids),
+    onmouseleave: () => onPreview([]),
+    onfocus: () => onPreview(ids),
+    onblur: () => onPreview([])
+  });
+
   function removeUnit() {
     const what = owned.length
       ? `Delete the ${unit.name} team? ${owned.length === 1 ? 'Its 1 node stays' : `Its ${owned.length} nodes stay`} in the tree and lose their team.`
@@ -218,7 +236,7 @@
   {#if owned.length}
     <ul>
       {#each owned as n (n.id)}
-        <li><button class="link" onclick={() => onSelect(n.id)}>{n.label}</button></li>
+        <li><button class="link" {...hover([n.id])} onclick={() => onSelect(n.id)}>{n.label}</button></li>
       {/each}
     </ul>
   {:else}

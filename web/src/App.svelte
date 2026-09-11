@@ -48,6 +48,9 @@
   let undoStack = $state.raw([]);
   let selectedId = $state(null);
   let highlight = $state.raw([]);
+  // Hover pointer from the side panel into the 3D view. Transient and purely
+  // visual: it never commits, never enters undo, and never moves the camera.
+  let preview = $state.raw([]);
   let messages = $state([]);
   let loading = $state(false);
   let editing = $state(false);
@@ -57,6 +60,14 @@
   // once: null | { kind: 'node' } | { kind: 'teams' } | { kind: 'team', id }.
   // Which node is a separate question — `selectedId` also drives the graph.
   let panel = $state(null);
+
+  // A hover preview belongs to the panel that raised it: swapping or closing
+  // the panel drops it, so a link that vanishes under the cursor can't leave a
+  // node stuck bright.
+  $effect(() => {
+    panel?.kind;
+    preview = [];
+  });
 
   const snapshot = () => ({
     tree: structuredClone(tree),
@@ -377,7 +388,7 @@
 
   <main>
     <section class="stage">
-      <Graph {tree} {company} {selectedId} {highlight} {showTeamLabels} onSelect={select} />
+      <Graph {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} />
       {#if panel?.kind === 'node' && selected}
         <Detail
           node={selected}
@@ -386,6 +397,7 @@
           {editing}
           onSelect={select}
           onOpenTeam={openTeam}
+          onPreview={(ids) => (preview = ids)}
           onClose={() => {
             selectedId = null;
             editing = false;
@@ -399,6 +411,7 @@
           {company}
           {tree}
           onOpen={openTeam}
+          onPreview={(ids) => (preview = ids)}
           onClose={() => (panel = null)}
           onAdd={() => {
             const action = { op: 'addUnit', id: freshUnitId('New team'), fields: { name: 'New team', parent: null } };
@@ -412,6 +425,7 @@
           {company}
           {tree}
           onSelect={select}
+          onPreview={(ids) => (preview = ids)}
           onBack={showTeams}
           onClose={() => (panel = null)}
           onEdit={(action) => commit([action], { actor: 'user', reason: describe(action) })}

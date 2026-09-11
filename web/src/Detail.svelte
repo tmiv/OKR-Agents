@@ -3,7 +3,18 @@
   import { descendants } from './lib/apply.js';
   import { unitName } from './lib/company.js';
 
-  let { node, tree, company = null, editing = false, onSelect, onClose, onToggleEdit, onEdit, onOpenTeam } = $props();
+  let {
+    node,
+    tree,
+    company = null,
+    editing = false,
+    onSelect,
+    onClose,
+    onToggleEdit,
+    onEdit,
+    onOpenTeam,
+    onPreview = () => {}
+  } = $props();
 
   // The owner field is a team picker when there are teams to pick, and free
   // text when there are not — an imported file without a `company` still has to
@@ -15,6 +26,18 @@
   const LEVEL_NAME = { company: 'Company objective', objective: 'Team objective', kr: 'Key result' };
   const parent = $derived(node.parent ? tree.nodes.find((n) => n.id === node.parent) ?? null : null);
   const children = $derived(tree.nodes.filter((n) => n.parent === node.id));
+  // Nodes the owning team holds, for the hover preview on the owner link.
+  const teamNodes = $derived(
+    node.unitId ? tree.nodes.filter((n) => n.unitId === node.unitId).map((n) => n.id) : []
+  );
+
+  // Hovering or tabbing to a link points the 3D view at what it refers to.
+  const hover = (ids) => ({
+    onmouseenter: () => onPreview(ids),
+    onmouseleave: () => onPreview([]),
+    onfocus: () => onPreview(ids),
+    onblur: () => onPreview([])
+  });
 
   const pct = (c) => Math.round((c ?? 0) * 100);
   const tone = (c) => ((c ?? 0) < 0.4 ? 'bad' : (c ?? 0) < 0.7 ? 'meh' : 'good');
@@ -205,7 +228,7 @@
           aria-label="Owner"
         />
       {:else if ownerTeam}
-        <button class="link" onclick={() => onOpenTeam?.(node.unitId)}>{ownerTeam}</button>
+        <button class="link" {...hover(teamNodes)} onclick={() => onOpenTeam?.(node.unitId)}>{ownerTeam}</button>
       {:else}
         {node.owner || '—'}
       {/if}
@@ -246,7 +269,7 @@
             {/each}
           </select>
         {:else}
-          <button class="link" onclick={() => onSelect(parent.id)}>{parent.label}</button>
+          <button class="link" {...hover([parent.id])} onclick={() => onSelect(parent.id)}>{parent.label}</button>
         {/if}
       </dd>
       <dt>Fit</dt>
@@ -276,7 +299,7 @@
     <ul>
       {#each children as c (c.id)}
         <li>
-          <button class="link" onclick={() => onSelect(c.id)}>{c.label}</button>
+          <button class="link" {...hover([c.id])} onclick={() => onSelect(c.id)}>{c.label}</button>
           <span class="pct {tone(c.contributes)}">{pct(c.contributes)}%</span>
         </li>
       {/each}

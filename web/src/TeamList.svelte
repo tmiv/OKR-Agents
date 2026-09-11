@@ -1,5 +1,5 @@
 <script>
-  let { company, tree, onOpen, onAdd, onClose } = $props();
+  let { company, tree, onOpen, onAdd, onClose, onPreview = () => {} } = $props();
 
   // The org as an indented tree, same shape as the OKR tree: flat units with
   // parent pointers, walked depth-first. Units whose parent is missing are
@@ -16,7 +16,7 @@
     const out = [];
     const walk = (parent, depth) => {
       for (const u of byParent.get(parent) ?? []) {
-        out.push({ unit: u, depth, owned: tree.nodes.filter((n) => n.unitId === u.id).length });
+        out.push({ unit: u, depth, owned: tree.nodes.filter((n) => n.unitId === u.id).map((n) => n.id) });
         walk(u.id, depth + 1);
       }
     };
@@ -25,6 +25,14 @@
   });
 
   const unassigned = $derived(tree.nodes.filter((n) => n.unitId == null).length);
+
+  // Hovering or tabbing to a team points the 3D view at the nodes it owns.
+  const hover = (ids) => ({
+    onmouseenter: () => onPreview(ids),
+    onmouseleave: () => onPreview([]),
+    onfocus: () => onPreview(ids),
+    onblur: () => onPreview([])
+  });
 </script>
 
 <aside class="detail teams">
@@ -41,9 +49,13 @@
     <ul class="tree">
       {#each rows as row (row.unit.id)}
         <li style="padding-left: {row.depth * 14}px">
-          <button class="link" onclick={() => onOpen(row.unit.id)}>{row.unit.name}</button>
-          <span class="count" class:none={!row.owned} title="{row.owned} node{row.owned === 1 ? '' : 's'} owned">
-            {row.owned}
+          <button class="link" {...hover(row.owned)} onclick={() => onOpen(row.unit.id)}>{row.unit.name}</button>
+          <span
+            class="count"
+            class:none={!row.owned.length}
+            title="{row.owned.length} node{row.owned.length === 1 ? '' : 's'} owned"
+          >
+            {row.owned.length}
           </span>
         </li>
       {/each}

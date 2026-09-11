@@ -5,7 +5,15 @@
   import SpriteText from 'three-spritetext';
   import { unitName } from './lib/company.js';
 
-  let { tree, company = null, selectedId = null, highlight = [], showTeamLabels = false, onSelect } = $props();
+  let {
+    tree,
+    company = null,
+    selectedId = null,
+    highlight = [],
+    preview = [],
+    showTeamLabels = false,
+    onSelect
+  } = $props();
 
   let el;
   // The graph instance lives outside Svelte's reactive system on purpose:
@@ -13,6 +21,9 @@
   let graph;
   const meshes = new Map(); // node id → THREE.Mesh, for the pulse loop
   let highlightSet = new Set();
+  // Transient hover pointer from the side panel. Unlike `highlight` it never
+  // moves the camera: the mouse is already where the user is looking.
+  let previewSet = new Set();
   let raf;
   const WORLD_UP = new THREE.Vector3(0, 1, 0);
   // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
@@ -138,14 +149,20 @@
     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
     for (const [id, mesh] of meshes) {
       const hi = highlightSet.has(id);
+      const prev = previewSet.has(id);
       const sel = id === selectedId;
-      const target = hi ? 1.3 + 0.35 * pulse : sel ? 1.35 : 1;
+      const target = hi ? 1.3 + 0.35 * pulse : prev ? 1.5 : sel ? 1.35 : 1;
       mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.2);
       const mat = mesh.material;
       if (hi) {
         mat.color.copy(RED).lerp(WHITE, 0.25 * pulse);
         mat.emissive.copy(RED);
         mat.emissiveIntensity = 0.3 + 0.7 * pulse;
+      } else if (prev) {
+        // Steady white bloom, no pulse — a pointer, not an alarm.
+        mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.85);
+        mat.emissive.copy(WHITE);
+        mat.emissiveIntensity = 0.9;
       } else if (sel) {
         mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.5);
         mat.emissive.copy(mesh.userData.baseColor);
@@ -228,6 +245,10 @@
   $effect(() => {
     highlightSet = new Set(highlight);
     if (highlight.length) flyTo(highlight);
+  });
+
+  $effect(() => {
+    previewSet = new Set(preview);
   });
 </script>
 
