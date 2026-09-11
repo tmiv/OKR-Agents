@@ -3,8 +3,9 @@ tags:
   - plan
   - web
   - graph
-status: development
+status: completed
 created: 2026-09-11
+completed_on: 2026-09-11
 ---
 # Plan: Clear chat highlights on any user selection in the 3D view
 
@@ -74,3 +75,19 @@ click) clears the chat highlight; a tumble does not.
 
 - An explicit "clear highlights" button. Selection is the gesture.
 - Clearing on hover or on typing in chat.
+
+## Completion notes
+
+- **Planned vs. actual:** Phase 1 step 1 shipped exactly as written — three lines in `select()`
+  (`web/src/App.svelte:131-134`). No other file changed. `Graph.svelte` stayed untouched, so the
+  highlight policy really does live in one place.
+- **Mid-flight adjustments:** none. Phase 1 step 2 (the 4px dead zone) was deliberately not
+  shipped: verification step 3 passed, so there was nothing to fix.
+- **Surprises / residual risks:** `three-render-objects` is stricter than the plan assumed — for
+  `pointerType === 'mouse'` *any* `pointermove` while pressed sets `isPointerDragging`
+  (`web/node_modules/three-render-objects/dist/three-render-objects.mjs:519-530`), not just moves
+  past 1px; the 1px relaxation applies to touch/pen only. So a tumble can never leak a click on a
+  mouse or touchpad. Residual risk: a real touchscreen tap that wobbles ≤1px is still a click,
+  which is the intended behaviour. Verification was run against a stubbed `/api/chat` (no API key
+  in this environment) returning a fixed three-id highlight; the highlight path exercised is the
+  same one a real reply takes.
