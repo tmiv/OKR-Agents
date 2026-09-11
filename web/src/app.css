@@ -122,6 +122,33 @@ main { flex: 1; display: flex; min-height: 0; }
 .detail ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
 .detail li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
 .detail .id { color: var(--muted); font-size: 11px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; margin: 12px 0 0; }
+
+/* ── detail panel, edit mode ────────────────────────────────────────── */
+.detail .tools { display: flex; align-items: center; gap: 6px; }
+.detail .edit-toggle {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  padding: 3px 10px; border-radius: 999px;
+  background: transparent; color: var(--muted);
+}
+.detail .edit-toggle:hover { border-color: var(--accent); color: var(--text); }
+.detail .edit-toggle.on { border-color: var(--accent); color: var(--accent); }
+/* inputs dressed like the chat composer, so the panel stays one surface */
+.detail input:not([type="range"]),
+.detail textarea,
+.detail select {
+  width: 100%; font: inherit; color: inherit;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+  padding: 4px 8px;
+}
+.detail input:focus, .detail textarea:focus, .detail select:focus { outline: none; border-color: var(--accent); }
+.detail textarea.label-input { resize: vertical; font-size: 16px; line-height: 1.3; margin: 8px 0 12px; }
+.detail .invalid, .detail .invalid:focus { border-color: var(--bad); outline: 1px solid var(--bad); }
+.detail input.range { flex: 1; width: auto; accent-color: var(--accent); padding: 0; }
+.detail select option { background: var(--panel-2); color: var(--text); }
+.detail .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.detail .actions button { font-size: 12px; padding: 4px 10px; }
+.detail .actions .danger { color: var(--bad); }
+.detail .actions .danger:hover { border-color: var(--bad); }
 .bar .good, .pct.good { background: var(--good); }
 .bar .meh, .pct.meh { background: var(--meh); }
 .bar .bad, .pct.bad { background: var(--bad); }

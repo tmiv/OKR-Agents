@@ -163,19 +163,18 @@ Vision and ordering for the whole round:
 Teams-as-agents rationale: [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md).
 
 In dependency order:
-1. [Plans/development/OKR_NODE_EDITOR.md](Plans/development/OKR_NODE_EDITOR.md) — edit mode in
-   Detail; introduces `commit()` and history recording.
-2. [Plans/development/TEAM_MODEL_AND_EDITOR.md](Plans/development/TEAM_MODEL_AND_EDITOR.md) —
+1. [Plans/development/TEAM_MODEL_AND_EDITOR.md](Plans/development/TEAM_MODEL_AND_EDITOR.md) —
    team charter, `unitId`, team Actions, TeamEditor, team labels, `company` in the request.
-3. [Plans/development/CHAT_CONTEXT.md](Plans/development/CHAT_CONTEXT.md) — view context
+2. [Plans/development/CHAT_CONTEXT.md](Plans/development/CHAT_CONTEXT.md) — view context
    (panel, focused field, highlights) sent with every message.
-4. [Plans/development/CHAT_TABS_AND_INTERVIEWS.md](Plans/development/CHAT_TABS_AND_INTERVIEWS.md) —
+3. [Plans/development/CHAT_TABS_AND_INTERVIEWS.md](Plans/development/CHAT_TABS_AND_INTERVIEWS.md) —
    chat tabs with mode + subject; "interview me" launchers.
 
 Completed: [Plans/completed/OKR_SCHEMA_PACKAGE.md](Plans/completed/OKR_SCHEMA_PACKAGE.md),
 [Plans/completed/BUNDLED_DATASETS.md](Plans/completed/BUNDLED_DATASETS.md),
 [Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md](Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md),
-[Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md](Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md).
+[Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md](Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md),
+[Plans/completed/OKR_NODE_EDITOR.md](Plans/completed/OKR_NODE_EDITOR.md).
 
 Future horizons (no plans yet): agents that execute and measure OKRs, a progress dashboard, and a
 shared realtime document store. See the Horizons section of the vision doc and

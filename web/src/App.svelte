@@ -4,7 +4,13 @@
   import Detail from './Detail.svelte';
   import { DATASETS, DEFAULT_DATASET_ID, getDataset } from './lib/datasets.js';
   import { applyActions } from './lib/apply.js';
-  import { createDocument, parseDocument, validateChatResponse } from '@okr-viewer/schema';
+  import {
+    createDocument,
+    parseDocument,
+    validateAction,
+    validateChatResponse,
+    validateHistory
+  } from '@okr-viewer/schema';
 
   // datasets.js validates every bundled document at boot in dev.
   let datasetId = $state(DEFAULT_DATASET_ID);
@@ -13,21 +19,91 @@
   // deep reactivity buys nothing and structuredClone() stays a plain clone.
   let tree = $state.raw(structuredClone(getDataset(DEFAULT_DATASET_ID).document.tree));
 
-  // Undo entries carry the dataset id as well as the tree, so undoing a dataset
-  // switch puts the picker back where it was.
+  // What has happened to this tree: every commit appends a change. It is state,
+  // not an audit log — undo restores the history alongside the tree, so an
+  // undone edit leaves no trace. Datasets may carry their own history one day;
+  // until then a fresh dataset starts empty.
+  const emptyHistory = () => ({ metricSamples: [], changes: [] });
+  const historyOf = (id) => structuredClone(getDataset(id).document.history ?? emptyHistory());
+
+  let history = $state.raw(historyOf(DEFAULT_DATASET_ID));
+
+  // Undo entries carry the dataset id and the history as well as the tree, so
+  // undoing a dataset switch puts the picker back where it was and undoing an
+  // edit takes its history entry with it.
   let undoStack = $state.raw([]);
   let selectedId = $state(null);
   let highlight = $state.raw([]);
   let messages = $state([]);
   let loading = $state(false);
+  let editing = $state(false);
 
-  const snapshot = () => ({ tree: structuredClone(tree), datasetId });
+  const snapshot = () => ({ tree: structuredClone(tree), datasetId, history: structuredClone(history) });
 
   const selected = $derived(tree.nodes.find((n) => n.id === selectedId) ?? null);
   const weakLinks = $derived(tree.nodes.filter((n) => n.parent && (n.contributes ?? 1) < 0.4).length);
 
+  // ── the one commit path ───────────────────────────────────────────────────
+  //
+  // Every mutation of the tree goes through here, whoever authored it: the
+  // assistant's actions, the user's edits in the Detail panel, the empty batch
+  // that marks an import. One place that validates, snapshots for undo,
+  // applies, and writes the change into history — so user and model edits are
+  // indistinguishable downstream.
+  //
+  // `undoable: false` is for callers that already snapshotted before replacing
+  // the tree wholesale (import), so one import is one undo step.
+  function commit(actions = [], { actor, reason, undoable = true } = {}) {
+    const valid = [];
+    for (const action of actions) {
+      const checked = validateAction(action);
+      if (checked.ok) valid.push(action);
+      else if (import.meta.env.DEV) console.warn('[commit] dropped an invalid action:', checked.errors, action);
+    }
+    // An empty batch on purpose (import) is a legal change; a batch whose every
+    // action was dropped is not a change at all.
+    if (actions.length && !valid.length) return;
+
+    if (undoable) undoStack = [...undoStack, snapshot()];
+    if (valid.length) tree = applyActions(tree, valid);
+
+    const change = { at: new Date().toISOString(), actor, actions: valid };
+    if (reason) change.reason = String(reason).slice(0, 4000); // schema: maxLength 4000
+    history = { ...history, changes: [...history.changes, change] };
+
+    if (import.meta.env.DEV) {
+      const out = validateHistory(history);
+      if (!out.ok) console.error('[commit] history no longer validates:', out.errors);
+    }
+  }
+
+  // A short reason for a change the user made by hand, so the log reads like
+  // the assistant's replies do.
+  function describe(action) {
+    const node = tree.nodes.find((n) => n.id === action.id);
+    const label = node?.label ?? action.id;
+    const short = label.length > 60 ? `${label.slice(0, 57)}…` : label;
+    switch (action.op) {
+      case 'edit':
+        return `Edited ${Object.keys(action.fields).join(', ')} of "${short}"`;
+      case 'relink': {
+        const to = tree.nodes.find((n) => n.id === action.fields.parent)?.label ?? action.fields.parent;
+        return `Moved "${short}" under "${to}"`;
+      }
+      case 'add': {
+        // The node does not exist yet, so name where it lands instead.
+        const under = tree.nodes.find((n) => n.id === action.fields.parent)?.label ?? action.fields.parent;
+        return `Added "${action.fields.label}" under "${under}"`;
+      }
+      case 'delete':
+        return `Deleted "${short}" and everything under it`;
+      default:
+        return `Changed "${short}"`;
+    }
+  }
+
   async function send(message) {
-    const history = messages
+    const chatHistory = messages
       .filter((m) => !m.error)
       .slice(-10)
       .map(({ role, content }) => ({ role, content }));
@@ -37,7 +113,7 @@
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ tree, message, selectedNodeId: selectedId, history })
+        body: JSON.stringify({ tree, message, selectedNodeId: selectedId, history: chatHistory })
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -52,10 +128,7 @@
         throw new Error(`the service sent a response this app can't read (${checked.errors.slice(0, 3).join('; ')})`);
       }
       const { reply, actions, highlight: ids } = checked.value;
-      if (actions.length) {
-        undoStack = [...undoStack, snapshot()]; // snapshot before we mutate
-        tree = applyActions(tree, actions);
-      }
+      if (actions.length) commit(actions, { actor: 'assistant', reason: reply });
       highlight = ids;
       messages.push({ role: 'assistant', content: reply, highlight: ids, actions: actions.length });
     } catch (err) {
@@ -70,6 +143,7 @@
     const previous = undoStack[undoStack.length - 1];
     tree = previous.tree;
     datasetId = previous.datasetId;
+    history = previous.history; // a true revert: the change entry goes with the change
     undoStack = undoStack.slice(0, -1);
     highlight = [];
     messages.push({ role: 'assistant', content: 'Reverted the last change.', note: true });
@@ -78,8 +152,10 @@
   function reset() {
     undoStack = [...undoStack, snapshot()];
     tree = structuredClone(getDataset(datasetId).document.tree);
+    history = historyOf(datasetId); // back to the dataset's own history, not ours
     highlight = [];
     selectedId = null;
+    editing = false;
   }
 
   // Switching datasets is the same snapshot-then-replace as import: undoable,
@@ -90,8 +166,10 @@
     undoStack = [...undoStack, snapshot()];
     datasetId = dataset.id;
     tree = structuredClone(dataset.document.tree);
+    history = historyOf(dataset.id);
     highlight = [];
     selectedId = null;
+    editing = false;
     messages.push({
       role: 'assistant',
       content: `Loaded "${dataset.title}" (${tree.nodes.length} nodes). Undo to go back.`,
@@ -108,7 +186,7 @@
   let fileInput;
 
   function exportTree() {
-    const doc = createDocument({ tree, meta: { title: getDataset(datasetId).title } });
+    const doc = createDocument({ tree, history, meta: { title: getDataset(datasetId).title } });
     const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: 'application/json' }));
     const a = document.createElement('a');
     a.href = url;
@@ -135,8 +213,13 @@
 
     undoStack = [...undoStack, snapshot()]; // same snapshot-then-replace as reset()
     tree = out.document.tree;
+    history = structuredClone(out.document.history ?? emptyHistory());
     highlight = [];
     selectedId = null;
+    editing = false;
+    // The snapshot above already covers the import, so this commit only writes
+    // the boundary marker: an empty batch saying where the file came from.
+    commit([], { actor: 'import', reason: `Imported ${file.name}`, undoable: false });
     const warned = out.warnings.length ? ` ${out.warnings.length} warning${out.warnings.length === 1 ? '' : 's'}: ${out.warnings.slice(0, 3).join('; ')}` : '';
     messages.push({
       role: 'assistant',
@@ -145,8 +228,12 @@
     });
   }
 
-  function select(id) {
+  // `keepEditing` is for the Detail panel's "add a child": the new node is
+  // selected and stays in edit mode with its label focused. Every other caller
+  // (the graph, a link in the panel) leaves edit mode.
+  function select(id, keepEditing = false) {
     selectedId = id;
+    if (!keepEditing) editing = false;
     if (highlight.length) highlight = []; // a user selection supersedes the assistant's pointer
   }
 
@@ -156,7 +243,7 @@
 
   function onKey(e) {
     const tag = e.target?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
     if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
       e.preventDefault();
       undo();
@@ -193,7 +280,18 @@
     <section class="stage">
       <Graph {tree} {selectedId} {highlight} onSelect={select} />
       {#if selected}
-        <Detail node={selected} {tree} onSelect={select} onClose={() => (selectedId = null)} />
+        <Detail
+          node={selected}
+          {tree}
+          {editing}
+          onSelect={select}
+          onClose={() => {
+            selectedId = null;
+            editing = false;
+          }}
+          onToggleEdit={() => (editing = !editing)}
+          onEdit={(action) => commit([action], { actor: 'user', reason: describe(action) })}
+        />
       {/if}
       <div class="legend">
         <span><i class="sw company"></i> Company</span>

@@ -4,8 +4,9 @@ tags:
   - web
   - schema
   - editing
-status: development
+status: completed
 created: 2026-09-11
+completed_on: 2026-09-11
 predecessors:
   - completed/OKR_SCHEMA_PACKAGE.md
 successors:
@@ -134,3 +135,32 @@ appends to `history.changes`; history rides along in Export/Import.
   undo instead.
 - Rollback: the Detail changes are additive; `commit()` is a refactor of existing behaviour.
   Revert the two files.
+
+## Completion notes
+
+- **Planned vs. actual.** All three phases landed as written, in one pass on `okr-node-editor`:
+  `commit()` + `history` in `web/src/App.svelte`, edit mode in `web/src/Detail.svelte`, the
+  `.detail` edit styles in `web/src/app.css`, and
+  `schema/test/fixtures/valid/history.user-change.json`. The per-field commit-on-blur-or-Enter
+  shape, Actions-as-the-only-mutation-path, and "level is not editable" all held up unchanged.
+  Line citations had drifted: `tree.js` is gone (datasets now), `App.svelte`'s undo entries are
+  `{ tree, datasetId }` built by `snapshot()`, and `select(id)` clears `highlight` — the new
+  history field slots into `snapshot()` rather than replacing it, so the stack entry is
+  `{ tree, datasetId, history }`.
+- **Mid-flight adjustments.** (1) `commit()` grew an `undoable` option: `importTree()` already
+  snapshots before replacing the tree, so the import marker commits with `undoable: false` and
+  one import stays one undo step. The plan's Verification line "Undo count is 0" after import
+  does not match the app — import has been snapshot-then-replace since BUNDLED_DATASETS; the
+  count goes up by exactly one. (2) `switchDataset()`, which post-dates the plan, resets history
+  the same way `reset()` does. (3) Detail keeps a small `sent` map per node, because the blur
+  that follows an Enter commit fires before the new `node` prop arrives and would otherwise
+  re-send the same edit. (4) The `.invalid` mark on an empty label clears on the next keystroke,
+  not on that follow-up blur, or it would flash and vanish. (5) `select(id, keepEditing)` — the
+  "add a child" path is the only caller that keeps edit mode on.
+- **Surprises / residual risks.** `send()` had a local `const history` for the chat transcript
+  that now shadows the state; renamed to `chatHistory` — worth remembering when CHAT_CONTEXT
+  extends that request body. The assistant half of the Verification ("its reply reflects the
+  edited text") could not be run for real: no API key for `/api/chat`. It was exercised with a
+  stubbed `fetch` response instead, which confirmed the request body carries the hand-edited
+  tree and that an assistant batch commits with `reason` equal to its reply — but no model was
+  involved. `history` is cloned on every commit (Risks above); still microseconds at demo scale.

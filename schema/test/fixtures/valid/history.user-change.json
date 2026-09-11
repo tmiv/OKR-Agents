@@ -1,0 +1,42 @@
+{
+  "schema": "history",
+  "data": {
+    "metricSamples": [],
+    "changes": [
+      {
+        "at": "2026-09-11T09:14:02.101Z",
+        "actor": "user",
+        "reason": "Edited label of \"Cut onboarding time\"",
+        "actions": [
+          {
+            "op": "edit",
+            "id": "kr-4",
+            "fields": {
+              "label": "Cut time-to-first-value to under a day"
+            }
+          }
+        ]
+      },
+      {
+        "at": "2026-09-11T09:15:40.882Z",
+        "actor": "user",
+        "reason": "Moved \"Cut time-to-first-value to under a day\" under \"Sales\"",
+        "actions": [
+          {
+            "op": "relink",
+            "id": "kr-9",
+            "fields": {
+              "parent": "obj-sales"
+            }
+          }
+        ]
+      },
+      {
+        "at": "2026-09-11T09:16:11.004Z",
+        "actor": "import",
+        "reason": "Imported okr-2026-09-11.json",
+        "actions": []
+      }
+    ]
+  }
+}
