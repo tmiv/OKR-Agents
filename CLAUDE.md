@@ -162,12 +162,6 @@ Vision and ordering for the whole round:
 [Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
 Teams-as-agents rationale: [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md).
 
-Independent, any order:
-- [Plans/development/CAMERA_LEVEL_AUTO_MOVES.md](Plans/development/CAMERA_LEVEL_AUTO_MOVES.md) —
-  programmatic camera moves level to world up; trackball stays free for the user.
-- [Plans/development/CLEAR_HIGHLIGHT_ON_SELECT.md](Plans/development/CLEAR_HIGHLIGHT_ON_SELECT.md) —
-  any user selection in the scene clears the assistant's highlight.
-
 In dependency order:
 1. [Plans/development/OKR_NODE_EDITOR.md](Plans/development/OKR_NODE_EDITOR.md) — edit mode in
    Detail; introduces `commit()` and history recording.
@@ -179,7 +173,9 @@ In dependency order:
    chat tabs with mode + subject; "interview me" launchers.
 
 Completed: [Plans/completed/OKR_SCHEMA_PACKAGE.md](Plans/completed/OKR_SCHEMA_PACKAGE.md),
-[Plans/completed/BUNDLED_DATASETS.md](Plans/completed/BUNDLED_DATASETS.md).
+[Plans/completed/BUNDLED_DATASETS.md](Plans/completed/BUNDLED_DATASETS.md),
+[Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md](Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md),
+[Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md](Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md).
 
 Future horizons (no plans yet): agents that execute and measure OKRs, a progress dashboard, and a
 shared realtime document store. See the Horizons section of the vision doc and
