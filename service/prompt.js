@@ -50,7 +50,83 @@ When the user asks what a team owns, answer from its charter and from the nodes 
 `;
 }
 
-export function systemPrompt(tree, company, selectedNodeId) {
+// The user's screen, written out in labels rather than ids — the model answers
+// in labels, so it should not have to think in ids to get there. This is the
+// "seeing" half of pointing plus seeing: the user points with the open panel,
+// the cursor and the set still pulsing from the last reply, and these lines are
+// how that pointing arrives. Everything here has already been filtered against
+// this tree by sanitizeContext(), so every id below resolves.
+//
+// A client that sends no `context` at all gets the one sentence it always got.
+function viewBlock(tree, company, selectedNodeId, context) {
+  if (!context) {
+    return selectedNodeId
+      ? `The user currently has node "${selectedNodeId}" selected. Assume "this", "it", or "the selected one" refers to that node unless context says otherwise.`
+      : 'No node is currently selected.';
+  }
+
+  const nodes = new Map(tree.nodes.map((n) => [n.id, n]));
+  const units = new Map((Array.isArray(company?.units) ? company.units : []).map((u) => [u.id, u]));
+  const quoted = (id) => `"${nodes.get(id)?.label ?? id}"`;
+  const teamName = (id) => units.get(id)?.name ?? id;
+
+  const panel = context.panel ?? null;
+  const highlighted = context.highlighted ?? [];
+  const selected = selectedNodeId ? nodes.get(selectedNodeId) : null;
+  const lines = [];
+
+  if (context.dataset) lines.push(`The open document is "${context.dataset}".`);
+
+  if (selected) {
+    const team = selected.unitId ? `, owned by ${teamName(selected.unitId)}` : '';
+    lines.push(
+      `Selected node: ${quoted(selected.id)} (${selected.level}${team}). "This", "it" and "the selected one" mean this node.`
+    );
+  }
+
+  if (panel?.kind === 'node') {
+    lines.push(
+      panel.editing
+        ? 'Its edit panel is open, so the user is changing the node rather than reading it.'
+        : 'Its detail panel is open.'
+    );
+  } else if (panel?.kind === 'team') {
+    const owned = tree.nodes.filter((n) => n.unitId === panel.id).length;
+    lines.push(
+      `The ${teamName(panel.id)} team's charter is open in the editor, so "this team", "the team" and "we" mean ${teamName(panel.id)} (id \`${panel.id}\`). ${owned} node${owned === 1 ? '' : 's'} in the tree ${owned === 1 ? 'belongs' : 'belong'} to it.`
+    );
+  } else if (panel?.kind === 'teams') {
+    lines.push(`The list of all ${units.size} teams is open. No single team or node is in focus.`);
+  }
+
+  if (panel?.field) {
+    const whose = panel.kind === 'team' ? `the ${teamName(panel.id)} team` : 'that node';
+    lines.push(
+      `The cursor is in the \`${panel.field}\` field of ${whose} right now, so "this" most likely means that field.`
+    );
+  }
+
+  if (highlighted.length) {
+    lines.push(
+      `Still pulsing from your last reply: ${highlighted.map(quoted).join(', ')}. "Those", "them" and "these" mean exactly these.`
+    );
+  }
+
+  if (!selected && !panel && !highlighted.length) lines.push('No node is currently selected.');
+
+  return `## What the user is looking at
+${lines.join('\n')}
+
+Resolve what they point at, and never ask them for an id:
+- "this", "it", "here" → the field the cursor is in, on whatever the open panel is showing; with no cursor, the node or team in the open panel; with neither, the selected node.
+- "those", "them", "these" → exactly the nodes still pulsing, all of them and nothing else.
+- "the team", "this team", "we" → the team whose charter is open, else the team that owns the selected node.
+- Only ask the user which node or team they mean when nothing above names one. When something above names one, use it and say which one you used.
+
+Two examples. With the cursor in \`target\` on a key result, "what should this be?" is asking you to propose a target for that key result: answer with a concrete one and highlight it, and only send an \`edit\` if they tell you to apply it. With three key results pulsing, "fix those" means rewrite those three and no others.`;
+}
+
+export function systemPrompt(tree, company, selectedNodeId, context = null) {
   return `You are an OKR coach embedded in a 3D visualization of a company's objectives and key results. The user sees the tree as a graph and talks to you about it. You answer by calling the \`respond\` tool exactly once.
 
 ## The tree
@@ -60,11 +136,6 @@ Nodes are flat with parent pointers. Levels: company (the single root) → objec
 ${JSON.stringify(tree.nodes)}
 </tree>
 ${teamsBlock(company)}
-${
-  selectedNodeId
-    ? `The user currently has node "${selectedNodeId}" selected. Assume "this", "it", or "the selected one" refers to that node unless context says otherwise.`
-    : 'No node is currently selected.'
-}
 
 ## How to respond
 - \`reply\`: 1–3 conversational sentences. Refer to nodes by their label, never by id. No JSON, no bullet lists.
@@ -82,5 +153,7 @@ ${
 - Never invent ids. Never change a node's level. Never touch the company objective unless asked.
 - When you edit, say what changed and why in plain language.
 
-Be direct and specific. A good OKR coach names the problem ("this is an activity, not an outcome") and proposes the fix.`;
+Be direct and specific. A good OKR coach names the problem ("this is an activity, not an outcome") and proposes the fix.
+
+${viewBlock(tree, company, selectedNodeId, context)}`;
 }

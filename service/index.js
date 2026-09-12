@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { MODEL, RESPOND_TOOL, systemPrompt } from './prompt.js';
-import { sanitizeHistory, mergeTurns, validateResponse } from './validate.js';
+import { sanitizeContext, sanitizeHistory, mergeTurns, validateResponse } from './validate.js';
 import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
 
 const PORT = Number(process.env.PORT) || 8787;
@@ -21,7 +21,7 @@ app.post('/api/chat', async (req, res) => {
   if (!request.ok) {
     return res.status(400).json({ error: 'The request does not match the chat schema.', details: request.errors });
   }
-  const { tree, company = null, message, selectedNodeId = null, history = [] } = request.value;
+  const { tree, company = null, message, selectedNodeId = null, history = [], context = null } = request.value;
 
   // Shape is not enough: a tree can be well-formed and still be unusable.
   // Warnings (an off-ladder link, say) are normal mid-edit, so they only log.
@@ -46,6 +46,10 @@ app.post('/api/chat', async (req, res) => {
   if (ownership.warnings.length) console.warn('[chat] ownership warnings:', JSON.stringify(ownership.warnings));
 
   const selected = typeof selectedNodeId === 'string' && tree.nodes.some((n) => n.id === selectedNodeId) ? selectedNodeId : null;
+  // Same treatment for what the user is looking at: unknown ids are dropped,
+  // never rejected. A stale highlight is not a broken request.
+  const view = sanitizeContext(tree, company, context);
+  if (view.dropped.length) console.warn('[chat] context: dropped', JSON.stringify(view.dropped));
   const messages = mergeTurns([...sanitizeHistory(history), { role: 'user', content: message.trim() }]);
 
   const started = Date.now();
@@ -53,7 +57,7 @@ app.post('/api/chat', async (req, res) => {
     const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 4096,
-      system: systemPrompt(tree, company, selected),
+      system: systemPrompt(tree, company, selected, view.context),
       tools: [RESPOND_TOOL],
       tool_choice: { type: 'tool', name: 'respond' },
       messages
@@ -69,8 +73,12 @@ app.post('/api/chat', async (req, res) => {
 
     const out = validateResponse(tree, company, call.input);
     if (out.dropped.length) console.warn('[chat] dropped from model output:', JSON.stringify(out.dropped));
+    // `ctx=` says what the user was looking at, because a reply that resolved
+    // "this" to the wrong thing is a prompt bug you cannot see from the reply.
+    const p = view.context?.panel;
+    const ctx = p ? `${p.kind}${p.id ? `:${p.id}` : ''}${p.field ? `/${p.field}` : ''}` : 'none';
     console.log(
-      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights`
+      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights · ctx=${ctx}`
     );
     res.json({ reply: out.reply, actions: out.actions, highlight: out.highlight });
   } catch (err) {

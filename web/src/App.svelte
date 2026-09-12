@@ -69,6 +69,42 @@
     preview = [];
   });
 
+  // ── where the cursor is ───────────────────────────────────────────────────
+  //
+  // The editors report which field has focus, so "what should this be?" can
+  // mean the field the user is sitting in. Blur does not clear it outright:
+  // asking about a field means leaving it for the chat box first, and the
+  // field is still what the question is about. Where focus lands decides —
+  // into the chat composer and the field is held until the user goes
+  // somewhere else; anywhere else and it fades after a moment, so a question
+  // typed much later does not still claim a cursor that has moved on.
+  let focusedField = $state(null);
+  let fieldExpiry = null;
+
+  const chatHasFocus = () => !!document.activeElement?.closest('.chat');
+
+  function focusField(name) {
+    clearTimeout(fieldExpiry);
+    if (name) {
+      // TeamEditor names its fields the way the action does
+      // (`charter.mission`); the context says plainly which field it is.
+      focusedField = name.replace(/^charter\./, '');
+      return;
+    }
+    // Blur: focus has not landed yet, so look again on the next tick.
+    fieldExpiry = setTimeout(() => {
+      if (chatHasFocus()) return;
+      fieldExpiry = setTimeout(() => (focusedField = null), 1500);
+    });
+  }
+
+  // Opening another panel is leaving the field for good, expiry or not.
+  $effect(() => {
+    panel;
+    clearTimeout(fieldExpiry);
+    focusedField = null;
+  });
+
   const snapshot = () => ({
     tree: structuredClone(tree),
     company: structuredClone(company),
@@ -88,6 +124,25 @@
     if (panel?.kind === 'team' && !selectedUnit) panel = { kind: 'teams' };
   });
   const weakLinks = $derived(tree.nodes.filter((n) => n.parent && (n.contributes ?? 1) < 0.4).length);
+
+  // What the user is looking at, in the shape the chat schema calls
+  // ViewContext. One builder, because every chat request wants the same
+  // answer: pointing plus seeing is what makes "make this measurable" work
+  // without anyone typing an id. Keys that would be `undefined` are left out
+  // rather than sent — `additionalProperties: false` tolerates absence, not
+  // nulls in the wrong place.
+  const viewContext = $derived({
+    panel: panel && {
+      kind: panel.kind,
+      // A node panel takes its id from the selection; a team panel carries
+      // its own. The teams list names nothing, so it has no id.
+      ...(panel.kind === 'node' ? { ...(selectedId ? { id: selectedId } : {}), editing } : {}),
+      ...(panel.kind === 'team' ? { id: panel.id } : {}),
+      ...(focusedField ? { field: focusedField } : {})
+    },
+    highlighted: highlight,
+    dataset: getDataset(datasetId).title
+  });
 
   // ── the one commit path ───────────────────────────────────────────────────
   //
@@ -179,8 +234,16 @@
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         // `company` rides along so the assistant can answer "what does
-        // Marketing own?" from the charter rather than from owner strings.
-        body: JSON.stringify({ tree, company, message, selectedNodeId: selectedId, history: chatHistory })
+        // Marketing own?" from the charter rather than from owner strings,
+        // and `context` so it can answer "what does *this* team own?".
+        body: JSON.stringify({
+          tree,
+          company,
+          message,
+          selectedNodeId: selectedId,
+          history: chatHistory,
+          context: viewContext
+        })
       });
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
@@ -398,6 +461,7 @@
           onSelect={select}
           onOpenTeam={openTeam}
           onPreview={(ids) => (preview = ids)}
+          onFocusField={focusField}
           onClose={() => {
             selectedId = null;
             editing = false;
@@ -426,6 +490,7 @@
           {tree}
           onSelect={select}
           onPreview={(ids) => (preview = ids)}
+          onFocusField={focusField}
           onBack={showTeams}
           onClose={() => (panel = null)}
           onEdit={(action) => commit([action], { actor: 'user', reason: describe(action) })}

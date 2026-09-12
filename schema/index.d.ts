@@ -29,11 +29,13 @@ import type {
   OkrDocument,
   OkrNode,
   OkrTree,
+  OpenPanel,
   RelinkAction,
   RelinkFields,
   TeamCharter,
   TreeChange,
-  UnitFields
+  UnitFields,
+  ViewContext
 } from './dist/types.js';
 
 export type {
@@ -59,11 +61,13 @@ export type {
   OkrDocument,
   OkrNode,
   OkrTree,
+  OpenPanel,
   RelinkAction,
   RelinkFields,
   TeamCharter,
   TreeChange,
-  UnitFields
+  UnitFields,
+  ViewContext
 };
 
 /** What every `validate*` returns: the value on success, printable errors on failure. */

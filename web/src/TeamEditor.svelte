@@ -164,7 +164,10 @@
     bind:value={draft.name}
     oninput={() => (invalidName = false)}
     onfocus={() => onFocusField('name')}
-    onblur={() => commitName()}
+    onblur={() => {
+      commitName();
+      onFocusField(null);
+    }}
     onkeydown={onNameKey}
     aria-label="Team name"
   />
@@ -172,7 +175,13 @@
   <dl>
     <dt>Part of</dt>
     <dd>
-      <select value={unit.parent ?? ''} onchange={commitParent} aria-label="Part of">
+      <select
+        value={unit.parent ?? ''}
+        onchange={commitParent}
+        onfocus={() => onFocusField('parent')}
+        onblur={() => onFocusField(null)}
+        aria-label="Part of"
+      >
         <option value="">— top of the org —</option>
         {#each others as choice (choice.id)}
           <option value={choice.id}>{choice.name}</option>
@@ -187,7 +196,10 @@
     placeholder="Why this team exists, in its own words"
     bind:value={draft.mission}
     onfocus={() => onFocusField('charter.mission')}
-    onblur={() => commitProse('mission')}
+    onblur={() => {
+      commitProse('mission');
+      onFocusField(null);
+    }}
     onkeydown={(e) => onProseKey(e, 'mission')}
     aria-label="Mission"
   ></textarea>
@@ -198,7 +210,10 @@
     placeholder="The process it runs: inputs, steps, outputs, cadence"
     bind:value={draft.process}
     onfocus={() => onFocusField('charter.process')}
-    onblur={() => commitProse('process')}
+    onblur={() => {
+      commitProse('process');
+      onFocusField(null);
+    }}
     onkeydown={(e) => onProseKey(e, 'process')}
     aria-label="Process"
   ></textarea>
@@ -209,7 +224,10 @@
     placeholder="One system, metric or decision per line"
     bind:value={draft.owns}
     onfocus={() => onFocusField('charter.owns')}
-    onblur={commitOwns}
+    onblur={() => {
+      commitOwns();
+      onFocusField(null);
+    }}
     onkeydown={(e) => onProseKey(e, 'owns')}
     aria-label="Owns"
   ></textarea>
@@ -224,6 +242,8 @@
               type="checkbox"
               checked={dependsOn.includes(other.id)}
               onchange={(e) => toggleDependency(other.id, e.currentTarget.checked)}
+              onfocus={() => onFocusField('charter.dependsOn')}
+              onblur={() => onFocusField(null)}
             />
             {other.name}
           </label>

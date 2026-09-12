@@ -33,6 +33,44 @@ export function mergeTurns(turns) {
   return out;
 }
 
+// The browser's view context, filtered against the document it came with.
+//
+// Context is advisory: it says what the user is looking at, and being wrong
+// about that is never worth a 400. A panel pointed at a node or team that this
+// tree does not have names nothing, so the whole panel goes; highlights are
+// filtered one by one. Everything dropped is reported so the caller can log
+// it — a context that keeps arriving broken is a client bug worth seeing.
+export function sanitizeContext(tree, company, context) {
+  const dropped = [];
+  if (!context || typeof context !== 'object') return { context: null, dropped };
+
+  const known = new Set(tree.nodes.map((n) => n.id));
+  const knownUnits = new Set((Array.isArray(company?.units) ? company.units : []).map((u) => u.id));
+
+  let panel = null;
+  if (context.panel) {
+    const { kind, id = null, editing, field } = context.panel;
+    const needed = kind === 'node' ? known : kind === 'team' ? knownUnits : null;
+    if (needed && !(typeof id === 'string' && needed.has(id))) {
+      dropped.push(`panel ${kind}:${id ?? 'none'}`);
+    } else {
+      panel = { kind };
+      if (id != null) panel.id = id;
+      if (typeof editing === 'boolean') panel.editing = editing;
+      if (field) panel.field = field;
+    }
+  }
+
+  const wanted = Array.isArray(context.highlighted) ? context.highlighted : [];
+  const highlighted = wanted.filter((id) => known.has(id));
+  if (highlighted.length !== wanted.length) {
+    dropped.push(`highlighted ${wanted.filter((id) => !known.has(id)).join(', ')}`);
+  }
+
+  const dataset = typeof context.dataset === 'string' ? context.dataset.trim() : '';
+  return { context: { panel, highlighted, ...(dataset ? { dataset } : {}) }, dropped };
+}
+
 export function validateResponse(tree, company, input) {
   const known = new Set(tree.nodes.map((n) => n.id));
   const parentOf = new Map(tree.nodes.map((n) => [n.id, n.parent]));

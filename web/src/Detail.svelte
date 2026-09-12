@@ -13,7 +13,8 @@
     onToggleEdit,
     onEdit,
     onOpenTeam,
-    onPreview = () => {}
+    onPreview = () => {},
+    onFocusField = () => {}
   } = $props();
 
   // The owner field is a team picker when there are teams to pick, and free
@@ -202,7 +203,11 @@
       bind:this={labelEl}
       bind:value={draft.label}
       oninput={() => (invalidLabel = false)}
-      onblur={() => commitText('label')}
+      onfocus={() => onFocusField('label')}
+      onblur={() => {
+        commitText('label');
+        onFocusField(null);
+      }}
       onkeydown={(e) => onFieldKey(e, 'label')}
       aria-label="Label"
     ></textarea>
@@ -214,7 +219,13 @@
     <dt>Owner</dt>
     <dd>
       {#if editing && units.length}
-        <select value={node.unitId ?? ''} onchange={commitTeam} aria-label="Owner">
+        <select
+          value={node.unitId ?? ''}
+          onchange={commitTeam}
+          onfocus={() => onFocusField('owner')}
+          onblur={() => onFocusField(null)}
+          aria-label="Owner"
+        >
           <option value="">— none —</option>
           {#each units as u (u.id)}
             <option value={u.id}>{u.name}</option>
@@ -223,7 +234,11 @@
       {:else if editing}
         <input
           bind:value={draft.owner}
-          onblur={() => commitText('owner')}
+          onfocus={() => onFocusField('owner')}
+          onblur={() => {
+            commitText('owner');
+            onFocusField(null);
+          }}
           onkeydown={(e) => onFieldKey(e, 'owner')}
           aria-label="Owner"
         />
@@ -238,7 +253,11 @@
       {#if editing}
         <input
           bind:value={draft.metric}
-          onblur={() => commitText('metric')}
+          onfocus={() => onFocusField('metric')}
+          onblur={() => {
+            commitText('metric');
+            onFocusField(null);
+          }}
           onkeydown={(e) => onFieldKey(e, 'metric')}
           aria-label="Metric"
         />
@@ -251,7 +270,11 @@
       {#if editing}
         <input
           bind:value={draft.target}
-          onblur={() => commitText('target')}
+          onfocus={() => onFocusField('target')}
+          onblur={() => {
+            commitText('target');
+            onFocusField(null);
+          }}
           onkeydown={(e) => onFieldKey(e, 'target')}
           aria-label="Target"
         />
@@ -263,7 +286,13 @@
       <dt>Supports</dt>
       <dd>
         {#if editing}
-          <select value={node.parent} onchange={commitParent} aria-label="Supports">
+          <select
+            value={node.parent}
+            onchange={commitParent}
+            onfocus={() => onFocusField('parent')}
+            onblur={() => onFocusField(null)}
+            aria-label="Supports"
+          >
             {#each parentChoices as choice (choice.id)}
               <option value={choice.id}>{choice.label}</option>
             {/each}
@@ -283,6 +312,8 @@
             step="0.05"
             bind:value={draft.contributes}
             onchange={commitFit}
+            onfocus={() => onFocusField('contributes')}
+            onblur={() => onFocusField(null)}
             aria-label="Fit"
           />
           <span class="pct {tone(draft.contributes)}">{pct(draft.contributes)}%</span>

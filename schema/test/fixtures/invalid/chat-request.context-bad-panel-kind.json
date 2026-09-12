@@ -1,0 +1,60 @@
+{
+  "schema": "chat-request",
+  "at": "/context/panel/kind",
+  "data": {
+    "tree": {
+      "nodes": [
+        {
+          "id": "co-1",
+          "level": "company",
+          "parent": null,
+          "label": "Be the default workflow platform",
+          "owner": "Exec",
+          "metric": "paid mid-market teams",
+          "target": "6% -> 15% by FY26",
+          "contributes": 1
+        },
+        {
+          "id": "obj-1",
+          "level": "objective",
+          "parent": "co-1",
+          "label": "New accounts reach value in week one",
+          "owner": "Product",
+          "metric": "week-1 activation",
+          "target": "31% -> 50%",
+          "contributes": 0.9
+        },
+        {
+          "id": "kr-1",
+          "level": "kr",
+          "parent": "obj-1",
+          "label": "Cut time-to-first-workflow from 14 days to 5",
+          "owner": "Product",
+          "metric": "median days to first run",
+          "target": "14 -> 5 by Q4",
+          "contributes": 0.9
+        }
+      ]
+    },
+    "message": "which KRs are weak?",
+    "selectedNodeId": "kr-1",
+    "history": [
+      {
+        "role": "user",
+        "content": "hi"
+      },
+      {
+        "role": "assistant",
+        "content": "hello"
+      }
+    ],
+    "context": {
+      "panel": {
+        "kind": "charter",
+        "id": "kr-1"
+      },
+      "highlighted": [],
+      "dataset": "Workflow platform, FY26"
+    }
+  }
+}

@@ -32,11 +32,91 @@
         "description": "One conversation turn."
       },
       "maxItems": 50
+    },
+    "context": {
+      "$ref": "#/definitions/viewContext",
+      "description": "What the user has on screen as they type. Advisory: it is how \"this\", \"those\" and \"the team\" resolve without the user naming anything."
     }
   },
   "required": ["tree", "message"],
   "additionalProperties": false,
   "definitions": {
+    "viewContext": {
+      "title": "ViewContext",
+      "description": "The user's view at the moment they pressed send: which panel is open, what is pulsing in the 3D scene, which document they are in. Everything here is optional and advisory — the service drops anything that names something the tree or the org does not have.",
+      "type": "object",
+      "properties": {
+        "panel": {
+          "description": "The side panel over the 3D scene, or null when none is open. Only one panel is ever open at a time.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/openPanel",
+              "description": "The panel the user has open."
+            },
+            {
+              "type": "null",
+              "description": "No panel is open; the user is looking at the bare scene."
+            }
+          ]
+        },
+        "highlighted": {
+          "type": "array",
+          "description": "Ids of the nodes pulsing in the scene right now — the ones you highlighted in your last reply, unless the user has since selected something. \"those\", \"them\" and \"these\" refer to this set.",
+          "items": {
+            "type": "string",
+            "description": "Id of a highlighted node.",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "maxItems": 200
+        },
+        "dataset": {
+          "type": "string",
+          "description": "Title of the document the user is looking at, so you can name it the way they see it in the picker.",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "openPanel": {
+      "title": "OpenPanel",
+      "description": "The panel open over the 3D scene: one node's detail, one team's charter, or the list of teams.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "What the panel is showing: \"node\" one OKR node, \"team\" one team's charter, \"teams\" the list of all teams.",
+          "enum": ["node", "team", "teams"]
+        },
+        "id": {
+          "type": "string",
+          "description": "The node id when kind is \"node\", the team id when kind is \"team\". Absent for the teams list.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        },
+        "editing": {
+          "type": "boolean",
+          "description": "True when the node panel is in edit mode, so the user is changing the node rather than reading it. Team panels are always editable and omit this."
+        },
+        "field": {
+          "type": "string",
+          "description": "The field the user's cursor is in right now, if any. \"this\" in a message like \"what should this be?\" means that field of this node or team.",
+          "enum": [
+            "label",
+            "owner",
+            "metric",
+            "target",
+            "contributes",
+            "parent",
+            "name",
+            "mission",
+            "process",
+            "owns",
+            "dependsOn"
+          ]
+        }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
     "turn": {
       "title": "ChatTurn",
       "description": "One turn of the conversation.",

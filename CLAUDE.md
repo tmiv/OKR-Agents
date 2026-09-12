@@ -163,9 +163,7 @@ Vision and ordering for the whole round:
 Teams-as-agents rationale: [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md).
 
 In dependency order:
-1. [Plans/development/CHAT_CONTEXT.md](Plans/development/CHAT_CONTEXT.md) — view context
-   (panel, focused field, highlights) sent with every message.
-2. [Plans/development/CHAT_TABS_AND_INTERVIEWS.md](Plans/development/CHAT_TABS_AND_INTERVIEWS.md) —
+1. [Plans/development/CHAT_TABS_AND_INTERVIEWS.md](Plans/development/CHAT_TABS_AND_INTERVIEWS.md) —
    chat tabs with mode + subject; "interview me" launchers.
 
 Completed: [Plans/completed/OKR_SCHEMA_PACKAGE.md](Plans/completed/OKR_SCHEMA_PACKAGE.md),
@@ -173,7 +171,8 @@ Completed: [Plans/completed/OKR_SCHEMA_PACKAGE.md](Plans/completed/OKR_SCHEMA_PA
 [Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md](Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md),
 [Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md](Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md),
 [Plans/completed/OKR_NODE_EDITOR.md](Plans/completed/OKR_NODE_EDITOR.md),
-[Plans/completed/TEAM_MODEL_AND_EDITOR.md](Plans/completed/TEAM_MODEL_AND_EDITOR.md).
+[Plans/completed/TEAM_MODEL_AND_EDITOR.md](Plans/completed/TEAM_MODEL_AND_EDITOR.md),
+[Plans/completed/CHAT_CONTEXT.md](Plans/completed/CHAT_CONTEXT.md).
 
 Future horizons (no plans yet): agents that execute and measure OKRs, a progress dashboard, and a
 shared realtime document store. See the Horizons section of the vision doc and
