@@ -158,9 +158,7 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-The September 2026 round shipped in full. One plan is in `development/`:
-[GRAPH_KEYBOARD_SHORTCUTS](Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md), a table-driven
-shortcut registry for the 3D view (`f` frames the tree, arrows walk it). New work starts with a
+The September 2026 round shipped in full, and `development/` is empty. New work starts with a
 new plan in `development/`, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
@@ -177,7 +175,8 @@ works:
 [TEAM_MODEL_AND_EDITOR](Plans/completed/TEAM_MODEL_AND_EDITOR.md) ·
 [CHAT_CONTEXT](Plans/completed/CHAT_CONTEXT.md) ·
 [CHAT_TABS_AND_INTERVIEWS](Plans/completed/CHAT_TABS_AND_INTERVIEWS.md) ·
-[NODE_HOVER_CARD](Plans/completed/NODE_HOVER_CARD.md).
+[NODE_HOVER_CARD](Plans/completed/NODE_HOVER_CARD.md) ·
+[GRAPH_KEYBOARD_SHORTCUTS](Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md).
 
 ## What comes next (no plans yet)
 

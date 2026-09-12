@@ -78,7 +78,9 @@ main { flex: 1; display: flex; min-height: 0; }
 .graph { position: absolute; inset: 0; }
 
 .legend {
-  position: absolute; right: 14px; bottom: 12px;
+  /* clear of the bottom 19px, where three-render-objects prints its own
+     mouse-control hint; the shortcut row would otherwise sit on top of it */
+  position: absolute; right: 14px; bottom: 24px;
   display: flex; gap: 14px; flex-wrap: wrap;
   color: var(--muted); font-size: 12px;
   pointer-events: none;
@@ -89,6 +91,8 @@ main { flex: 1; display: flex; min-height: 0; }
 .legend .sw.objective { background: var(--objective); }
 .legend .sw.kr { background: var(--kr); }
 .legend .sw.line { width: 22px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--bad), var(--good)); }
+/* the shortcut hints wrap onto their own row under the swatches */
+.legend .keys { flex-basis: 100%; justify-content: flex-end; font-size: 11px; opacity: 0.65; }
 
 /* the node summary card, anchored to the hovered node in the 3D view */
 .hover-card {

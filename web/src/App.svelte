@@ -7,6 +7,7 @@
   import { DATASETS, DEFAULT_DATASET_ID, getDataset } from './lib/datasets.js';
   import { applyDocumentActions } from './lib/apply.js';
   import { unitName } from './lib/company.js';
+  import { step } from './lib/navigate.js';
   import {
     createDocument,
     parseDocument,
@@ -398,6 +399,9 @@
   // written here is a file the service would accept.
 
   let fileInput;
+  // Bound Graph instance; its `export function`s exist only after mount, so
+  // every call goes through `graph?.`.
+  let graph;
 
   function exportTree() {
     const doc = createDocument({ tree, company, history, meta: { title: getDataset(datasetId).title } });
@@ -479,13 +483,44 @@
     highlight = [...ids]; // new array so the graph effect re-runs
   }
 
+  // ── keyboard ──────────────────────────────────────────────────────────────
+  //
+  // One table, one lookup. A new binding is a new entry; the hint text in the
+  // legend is rendered from the same array, so there is one source of truth.
+
+  // An arrow step is exactly a sphere click (Graph.svelte's onNodeClick): the
+  // panel opens on the node, edit mode ends, the assistant's highlight clears.
+  // Shorter flight than a click's 800 ms, because hops are short and repeat.
+  function go(dir) {
+    const next = step(tree, selectedId, dir);
+    if (!next) return;
+    select(next.id);
+    graph?.flyTo([next.id], 600);
+  }
+
+  const SHORTCUTS = [
+    { keys: ['z'], mod: true, hint: '⌘Z undo', run: undo },
+    // Framing is a view gesture, not a pointer: it moves the camera only, and
+    // holding the key should not restart the flight every 30 ms.
+    { keys: ['f'], hint: 'F frame tree', run: () => graph?.frameAll(), repeat: false },
+    { keys: ['ArrowUp'], hint: '↑ parent', run: () => go('up') },
+    { keys: ['ArrowDown'], hint: '↓ first child', run: () => go('down') },
+    { keys: ['ArrowLeft'], hint: '← previous sibling', run: () => go('left') },
+    { keys: ['ArrowRight'], hint: '→ next sibling', run: () => go('right') }
+  ];
+
   function onKey(e) {
-    const tag = e.target?.tagName;
-    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-    if ((e.metaKey || e.ctrlKey) && e.key === 'z') {
-      e.preventDefault();
-      undo();
-    }
+    const t = e.target;
+    const tag = t?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t?.isContentEditable) return;
+    // A plain binding never fires with a modifier held, so ⌘← (back) and ⌘F
+    // (find) keep working; preventDefault runs only when a binding actually
+    // ran, so arrows stop scrolling the page but nothing else is swallowed.
+    const mod = e.metaKey || e.ctrlKey;
+    const hit = SHORTCUTS.find((s) => s.keys.includes(e.key) && !!s.mod === mod && !e.altKey);
+    if (!hit || (e.repeat && hit.repeat === false)) return;
+    e.preventDefault();
+    hit.run();
   }
 </script>
 
@@ -519,7 +554,7 @@
 
   <main>
     <section class="stage">
-      <Graph {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} />
+      <Graph bind:this={graph} {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} />
       {#if panel?.kind === 'node' && selected}
         <Detail
           node={selected}
@@ -573,6 +608,8 @@
         <span class="edge"><i class="sw line"></i> edge = how well it supports its parent</span>
         <!-- the legend is pointer-events: none, so this control opts back in -->
         <label class="toggle"><input type="checkbox" bind:checked={showTeamLabels} /> Team labels</label>
+        <!-- one source of truth for the hints: the registry itself -->
+        <span class="keys">{SHORTCUTS.map((s) => s.hint).join(' · ')}</span>
       </div>
     </section>
     <Chat

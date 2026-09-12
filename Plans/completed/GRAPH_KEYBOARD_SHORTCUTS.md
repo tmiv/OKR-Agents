@@ -4,8 +4,9 @@ tags:
   - web
   - graph
   - keyboard
-status: development
+status: completed
 created: 2026-09-12
+completed_on: 2026-09-12
 ---
 # Plan: Add a keyboard shortcut system to the 3D view
 
@@ -221,3 +222,26 @@ served from the host for the browser checks.
   `graph?.` guards every call, and `onKey` cannot fire before mount in practice.
 - **Rollback** is removing the registry and restoring the eight-line `onKey`; nothing in the
   document, schema or service changes.
+
+## Completion notes
+
+- **Planned vs. actual.** The plan executed as written, `file:line` citations included; every
+  one still pointed at the right code. `navigate.js`, the `frameAll` export, the `SHORTCUTS`
+  table and the legend row all landed in the shape the plan specified, and all eight
+  verification steps pass. Phase 3 shipped with Phase 2 rather than separately — it is four
+  lines once the registry exists.
+- **Mid-flight adjustments.** Two. (a) `.legend` moved from `bottom: 12px` to `bottom: 24px`:
+  the hint row's `flex-basis: 100%` widens the legend to the full stage, which put it on top of
+  the mouse-control hint `three-render-objects` prints in the bottom 19px. The old single-row
+  legend escaped this only because it is right-aligned and the nav text is centred. (b)
+  `step()` falls back to the root when `selectedId` names a node that is no longer in the tree,
+  not just when it is null — a dataset switch or an undo can strand a selection, and an arrow
+  key should recover rather than dead-end. Covered by a test.
+- **Surprises / residual risks.** The `three-render-objects` snap described under Risks could
+  not be judged: the up-tween and the camera tween are both driven by `requestAnimationFrame`,
+  and an automated browser pane only paints when something forces it, so a held arrow advances
+  one frame per forced paint. The *logic* under repeat is verified — held `f` ignored, held
+  arrows walk five siblings in panel order without skipping — but whether a fast held arrow
+  judders visibly still needs a human at a real keyboard. If it does, the fix is the trailing
+  60 ms debounce in `go()` the plan already sketched; `select()` should stay immediate so the
+  panel keeps up with the key.

@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from 'svelte';
+  import { onMount, untrack } from 'svelte';
   import ForceGraph3D from '3d-force-graph';
   import * as THREE from 'three';
   import SpriteText from 'three-spritetext';
@@ -138,6 +138,16 @@
     graph.cameraPosition({ x: c.x + dir.x * dist, y: c.y + dir.y * dist, z: c.z + dir.z * dist }, c, ms);
   }
 
+  // Frames the whole tree and levels the horizon. The mount-time overview and
+  // the `f` shortcut share it so both moves look the same.
+  export function frameAll(ms = 900) {
+    if (!graph) return;
+    clearTimeout(hoverTimer);
+    hovered = null;
+    graph.zoomToFit(ms, 60);
+    levelCamera(ms);
+  }
+
   function animate() {
     if (upTween) {
       const cam = graph?.camera();
@@ -235,7 +245,7 @@
     graph.graphData(toGraphData(tree, null));
     const ro = new ResizeObserver(() => graph.width(el.clientWidth).height(el.clientHeight));
     ro.observe(el);
-    setTimeout(() => { graph.zoomToFit(900, 60); levelCamera(900); }, 700);
+    setTimeout(() => frameAll(900), 700);
     animate();
 
     return () => {
@@ -254,7 +264,15 @@
     for (const id of [...meshes.keys()]) if (!alive.has(id)) meshes.delete(id);
     // A hovered node may have been edited away or edited in place; re-point at
     // whatever the new data holds for it, which also refreshes the card.
-    if (hovered) hovered = graph.graphData().nodes.find((n) => n.id === hovered.id) ?? null;
+    //
+    // untrack, and it matters: a tracked read of `hovered` would make this
+    // effect depend on the pointer, and graphData() re-heats the force layout
+    // (alpha 1, then 80 warmup ticks). Hovering a node would shove the whole
+    // tree — the node slid out from under the cursor, the hover cleared, and
+    // the clear re-heated it again.
+    untrack(() => {
+      if (hovered) hovered = graph.graphData().nodes.find((n) => n.id === hovered.id) ?? null;
+    });
   });
 
   // Node objects survive data updates (see toGraphData), so makeNodeObject does
