@@ -158,9 +158,10 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-`Plans/development/` is empty: the September 2026 round shipped in full, and nothing has been
-planned for what comes after it yet. The next piece of work starts with a new plan in
-`development/`, not by reopening one of these.
+The September 2026 round shipped in full. One plan is in `development/`:
+[GRAPH_KEYBOARD_SHORTCUTS](Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md), a table-driven
+shortcut registry for the 3D view (`f` frames the tree, arrows walk it). New work starts with a
+new plan in `development/`, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
 [Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
