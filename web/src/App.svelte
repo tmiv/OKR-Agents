@@ -51,10 +51,36 @@
   // Hover pointer from the side panel into the 3D view. Transient and purely
   // visual: it never commits, never enters undo, and never moves the camera.
   let preview = $state.raw([]);
-  let messages = $state([]);
-  let loading = $state(false);
   let editing = $state(false);
   let showTeamLabels = $state(false);
+
+  // ── chat tabs ─────────────────────────────────────────────────────────────
+  //
+  // One conversation was one array; several conversations are several arrays
+  // with a mode and a subject attached. The mode decides how the service
+  // prompts for the tab — `free` is the coach who answers, the three
+  // `interview-*` modes are the coach who asks — and the subject says what it
+  // is about. Nothing else is per-tab: undo, selection and the highlight stay
+  // global, because there is one scene and every tab edits the same document.
+
+  let chatSeq = 0;
+  const freshChat = ({ mode = 'free', subject = null, title = 'Chat' } = {}) => ({
+    id: `chat-${++chatSeq}`,
+    title,
+    mode,
+    subject,
+    messages: [],
+    loading: false
+  });
+
+  let chats = $state([freshChat()]);
+  let activeChatId = $state(chats[0].id);
+  const activeChat = $derived(chats.find((c) => c.id === activeChatId) ?? chats[0]);
+
+  // Notes the app writes about itself (an undo, an import, a dataset switch)
+  // land in the tab the user is looking at: they are about the document, not
+  // about any one conversation.
+  const note = (content, extra = {}) => activeChat.messages.push({ role: 'assistant', content, ...extra });
 
   // One panel slot over the stage, so the app never shows a node and a team at
   // once: null | { kind: 'node' } | { kind: 'teams' } | { kind: 'team', id }.
@@ -222,13 +248,25 @@
     }
   }
 
-  async function send(message) {
-    const chatHistory = messages
+  // The tab is looked up once, at send time, and everything lands back on that
+  // object — so two tabs can have requests in flight and neither reply arrives
+  // in whichever tab happens to be on screen when it returns.
+  //
+  // `hidden` is for the kick-off turn an interview opens with: the API needs a
+  // user turn to answer, and the user did not type one.
+  async function send(chatId, message, { hidden = false } = {}) {
+    const chat = chats.find((c) => c.id === chatId);
+    if (!chat) return;
+    // An interview keeps more of itself than a free chat does: eight questions
+    // and their answers is past ten turns, and a closing summary that cannot
+    // see the first answers is worse than no summary. Hidden turns go along —
+    // the kick-off is what the first question was a reply to.
+    const chatHistory = chat.messages
       .filter((m) => !m.error)
-      .slice(-10)
+      .slice(chat.mode === 'free' ? -10 : -24)
       .map(({ role, content }) => ({ role, content }));
-    messages.push({ role: 'user', content: message });
-    loading = true;
+    chat.messages.push({ role: 'user', content: message, ...(hidden ? { hidden: true } : {}) });
+    chat.loading = true;
     try {
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -236,13 +274,18 @@
         // `company` rides along so the assistant can answer "what does
         // Marketing own?" from the charter rather than from owner strings,
         // and `context` so it can answer "what does *this* team own?".
+        // `mode` and `subject` are what makes this tab an interview rather
+        // than a conversation; `context` is still what the user is looking at,
+        // which is a different question and travels beside them.
         body: JSON.stringify({
           tree,
           company,
           message,
           selectedNodeId: selectedId,
           history: chatHistory,
-          context: viewContext
+          context: viewContext,
+          mode: chat.mode,
+          subject: chat.subject
         })
       });
       if (!res.ok) {
@@ -260,12 +303,49 @@
       const { reply, actions, highlight: ids } = checked.value;
       if (actions.length) commit(actions, { actor: 'assistant', reason: reply });
       highlight = ids;
-      messages.push({ role: 'assistant', content: reply, highlight: ids, actions: actions.length });
+      chat.messages.push({ role: 'assistant', content: reply, highlight: ids, actions: actions.length });
     } catch (err) {
-      messages.push({ role: 'assistant', content: `Something went wrong: ${err.message}`, error: true });
+      chat.messages.push({ role: 'assistant', content: `Something went wrong: ${err.message}`, error: true });
     } finally {
-      loading = false;
+      chat.loading = false;
     }
+  }
+
+  // Where an "interview me about a new OKR" with nothing said about the parent
+  // should hang it: the selection, when the selection is something a node can
+  // hang under. Otherwise nothing, and the interview's first question is which
+  // objective it supports.
+  const newNodeParent = () =>
+    selected && (selected.level === 'objective' || selected.level === 'company') ? selected.id : null;
+
+  const defaultTitle = (mode, subject) => {
+    if (mode === 'interview-node') return `Interview: ${tree.nodes.find((n) => n.id === subject?.id)?.label ?? subject?.id}`;
+    if (mode === 'interview-team') return `Team: ${unitName(company, subject?.id) ?? subject?.id}`;
+    if (mode === 'interview-new') return 'Interview: new OKR';
+    return 'Chat';
+  };
+
+  // Opening an interview tab sends its own first turn, because an interview
+  // that opens with an empty transcript would sit there waiting for the user to
+  // start a conversation the assistant is supposed to be leading.
+  function newChat({ mode = 'free', subject, title } = {}) {
+    const resolved =
+      subject === undefined && mode === 'interview-new' ? { kind: 'new', parentId: newNodeParent() } : subject ?? null;
+    const chat = freshChat({ mode, subject: resolved, title: title ?? defaultTitle(mode, resolved) });
+    chats = [...chats, chat];
+    activeChatId = chat.id;
+    if (mode !== 'free') send(chat.id, 'Begin the interview.', { hidden: true });
+    return chat.id;
+  }
+
+  function closeChat(id) {
+    const i = chats.findIndex((c) => c.id === id);
+    if (i < 0) return;
+    const rest = chats.filter((c) => c.id !== id);
+    // There is always a chat panel, so there is always a tab in it: closing the
+    // last one leaves a fresh empty conversation rather than an empty frame.
+    chats = rest.length ? rest : [freshChat()];
+    if (activeChatId === id) activeChatId = (rest.length ? rest[Math.max(0, i - 1)] : chats[0]).id;
   }
 
   function undo() {
@@ -277,7 +357,7 @@
     history = previous.history; // a true revert: the change entry goes with the change
     undoStack = undoStack.slice(0, -1);
     highlight = [];
-    messages.push({ role: 'assistant', content: 'Reverted the last change.', note: true });
+    note('Reverted the last change.', { note: true });
   }
 
   // Reset, import and dataset switch all replace the document, so they replace
@@ -308,11 +388,7 @@
     selectedId = null;
     editing = false;
     panel = null;
-    messages.push({
-      role: 'assistant',
-      content: `Loaded "${dataset.title}" (${tree.nodes.length} nodes). Undo to go back.`,
-      note: true
-    });
+    note(`Loaded "${dataset.title}" (${tree.nodes.length} nodes). Undo to go back.`, { note: true });
   }
 
   // ── export / import ───────────────────────────────────────────────────────
@@ -331,7 +407,7 @@
     a.download = `okr-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    messages.push({ role: 'assistant', content: `Exported ${tree.nodes.length} nodes to ${a.download}.`, note: true });
+    note(`Exported ${tree.nodes.length} nodes to ${a.download}.`, { note: true });
   }
 
   async function importTree(e) {
@@ -341,11 +417,7 @@
 
     const out = parseDocument(await file.text());
     if (!out.ok) {
-      messages.push({
-        role: 'assistant',
-        content: `Couldn't import ${file.name}: ${out.errors.slice(0, 3).join('; ')}`,
-        error: true
-      });
+      note(`Couldn't import ${file.name}: ${out.errors.slice(0, 3).join('; ')}`, { error: true });
       return;
     }
 
@@ -364,11 +436,7 @@
     // the boundary marker: an empty batch saying where the file came from.
     commit([], { actor: 'import', reason: `Imported ${file.name}`, undoable: false });
     const warned = out.warnings.length ? ` ${out.warnings.length} warning${out.warnings.length === 1 ? '' : 's'}: ${out.warnings.slice(0, 3).join('; ')}` : '';
-    messages.push({
-      role: 'assistant',
-      content: `Imported ${tree.nodes.length} nodes from ${file.name}. Undo to go back.${warned}`,
-      note: true
-    });
+    note(`Imported ${tree.nodes.length} nodes from ${file.name}. Undo to go back.${warned}`, { note: true });
   }
 
   // `keepEditing` is for the Detail panel's "add a child": the new node is
@@ -462,6 +530,7 @@
           onOpenTeam={openTeam}
           onPreview={(ids) => (preview = ids)}
           onFocusField={focusField}
+          onNewChat={newChat}
           onClose={() => {
             selectedId = null;
             editing = false;
@@ -491,6 +560,7 @@
           onSelect={select}
           onPreview={(ids) => (preview = ids)}
           onFocusField={focusField}
+          onNewChat={newChat}
           onBack={showTeams}
           onClose={() => (panel = null)}
           onEdit={(action) => commit([action], { actor: 'user', reason: describe(action) })}
@@ -505,6 +575,16 @@
         <label class="toggle"><input type="checkbox" bind:checked={showTeamLabels} /> Team labels</label>
       </div>
     </section>
-    <Chat {messages} {loading} onSend={send} onRecall={recall} />
+    <Chat
+      {chats}
+      {activeChatId}
+      onSelectChat={(id) => (activeChatId = id)}
+      onCloseChat={closeChat}
+      onNewChat={newChat}
+      onSend={send}
+      onRecall={recall}
+      onUndo={undo}
+      canUndo={!!undoStack.length}
+    />
   </main>
 </div>

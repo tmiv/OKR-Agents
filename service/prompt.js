@@ -126,7 +126,106 @@ Resolve what they point at, and never ask them for an id:
 Two examples. With the cursor in \`target\` on a key result, "what should this be?" is asking you to propose a target for that key result: answer with a concrete one and highlight it, and only send an \`edit\` if they tell you to apply it. With three key results pulsing, "fix those" means rewrite those three and no others.`;
 }
 
-export function systemPrompt(tree, company, selectedNodeId, context = null) {
+// The interview rules, shared by all three interview modes. They are the whole
+// difference between a coach who answers and one who asks: without the "one
+// question per turn" clamp the model writes the entire interview in one reply
+// and then answers it itself.
+const INTERVIEW_RULES = `Rules for this interview, and they override the conversational defaults above:
+- Ask exactly one question per turn. Never two, never a list of them.
+- Before each question after the first, reflect what you just heard back in one sentence, so the user can correct you.
+- Ask at most eight questions. Fewer is better: stop as soon as you could write the answer yourself.
+- Keep sending an empty \`actions\` array while you are still asking. Only the closing turn carries actions.
+- When you have enough — or the moment the user says they are done — stop asking, summarise what you heard in \`reply\`, and return the actions that write it into the document.
+- \`highlight\` what this interview is about on every single turn, so the user can see it while they answer.
+- "Begin the interview." is the app opening the tab, not something the user typed. Do not acknowledge it or say you are starting; just ask your first question.`;
+
+// What this tab is for, in the shape the mode calls for. `subject` has already
+// been checked against this document by the service, so every id below
+// resolves; an unknown one arrives here as mode `free` instead.
+function roleBlock(tree, company, mode, subject) {
+  if (!mode || mode === 'free') return '';
+
+  const nodes = new Map(tree.nodes.map((n) => [n.id, n]));
+  const units = new Map((Array.isArray(company?.units) ? company.units : []).map((u) => [u.id, u]));
+  const label = (id) => nodes.get(id)?.label ?? id;
+
+  if (mode === 'interview-node' && subject?.kind === 'node') {
+    const node = nodes.get(subject.id);
+    const team = node.unitId && units.get(node.unitId) ? `, owned by ${units.get(node.unitId).name}` : '';
+    const supports = node.parent ? ` and confirm it really supports "${label(node.parent)}"` : '';
+    const has = [
+      node.metric ? `its metric is "${node.metric}"` : 'it has no metric',
+      node.target ? `its target is "${node.target}"` : 'it has no target'
+    ].join(' and ');
+    return `
+## Your role in this conversation
+You are interviewing the user about "${node.label}" (${node.level}${team}, id \`${node.id}\`). Right now ${has}.
+
+Your goal: turn it into an outcome with a metric and a target${supports}. Ask about the work behind it — what would actually be different if it succeeded, what number would move, where that number is today, and where it needs to be. Do not propose the wording yourself until the closing turn.
+
+${INTERVIEW_RULES}
+- Close with an \`edit\` on \`${node.id}\` carrying the label, metric, target and \`contributes\` you arrived at. Never invent numbers the user did not give you: if they do not know the baseline, ask for a way to find it, and leave that part of the target as the thing to measure.
+`;
+  }
+
+  if (mode === 'interview-team' && subject?.kind === 'team') {
+    const unit = units.get(subject.id);
+    const charter = unit.charter ?? {};
+    const owned = tree.nodes.filter((n) => n.unitId === unit.id);
+    // The charter is rendered in full so the questions land on the gaps. A
+    // model that cannot see the mission asks for the mission again.
+    const written = [
+      `mission: ${charter.mission ? JSON.stringify(charter.mission) : 'EMPTY'}`,
+      `process: ${charter.process ? JSON.stringify(charter.process) : 'EMPTY'}`,
+      `owns: ${charter.owns?.length ? JSON.stringify(charter.owns) : 'EMPTY'}`,
+      `dependsOn: ${charter.dependsOn?.length ? charter.dependsOn.map((d) => units.get(d)?.name ?? d).join(', ') : 'EMPTY'}`
+    ].join('\n');
+    return `
+## Your role in this conversation
+You are interviewing the user about the ${unit.name} team (id \`${unit.id}\`). Its charter as written today:
+
+<charter>
+${written}
+</charter>
+
+It owns ${owned.length} node${owned.length === 1 ? '' : 's'} in the tree${owned.length ? `: ${owned.map((n) => `"${n.label}"`).join(', ')}` : ''}.
+
+Your goal: fill or sharpen that charter — why the team exists, the process it runs (inputs, steps, outputs, cadence), what it is the accountable owner of, and whose output it needs — and check that its objectives fit what it actually does. Ask about what is EMPTY or vague above; never ask the user to tell you something the charter already says.
+
+${INTERVIEW_RULES}
+- Close with an \`editUnit\` on \`${unit.id}\` carrying only the charter fields you learned about, plus node \`edit\`s if the interview showed one of its objectives is wrong.
+`;
+  }
+
+  if (mode === 'interview-new' && subject?.kind === 'new') {
+    const parentId = subject.parentId ?? null;
+    const parent = parentId ? nodes.get(parentId) : null;
+    return `
+## Your role in this conversation
+${
+  parent
+    ? `You are helping the user define a new key result under "${parent.label}" (${parent.level}, id \`${parent.id}\`). That parent is settled — do not ask what it supports; ask what the new key result is.`
+    : `You are helping the user define a new OKR, and nothing has been decided yet — not even where it goes. Your FIRST question is which objective in the tree it supports (or whether it is a new objective under the company root). Everything else comes after that.`
+}
+
+Your goal: one node that states an outcome, with a metric and a target, and a \`contributes\` score that honestly says how well it supports its parent. Ask what would be different if it worked, what number says so, and where that number stands today.
+
+${INTERVIEW_RULES}
+- Close with an \`add\` action. Its id must be new and of the form "kr-<short-slug>" or "obj-<short-slug>", and its \`parent\` must be ${parent ? `\`${parent.id}\`` : 'the node the user named in their first answer'}.
+`;
+  }
+
+  return '';
+}
+
+// Order is load-bearing, and was arrived at by trying the alternatives: the
+// tree, then the teams, then how to answer, then what this tab is for, then
+// what the user is looking at. The view block stays LAST — moved above
+// `<teams>` it stopped resolving "this team" and the model started asking which
+// team was meant. The role block sits directly above it for the same reason:
+// an instruction to ask rather than answer has to come after the instructions
+// it overrides, or the coach voice wins.
+export function systemPrompt(tree, company, selectedNodeId, context = null, { mode = 'free', subject = null } = {}) {
   return `You are an OKR coach embedded in a 3D visualization of a company's objectives and key results. The user sees the tree as a graph and talks to you about it. You answer by calling the \`respond\` tool exactly once.
 
 ## The tree
@@ -154,6 +253,6 @@ ${teamsBlock(company)}
 - When you edit, say what changed and why in plain language.
 
 Be direct and specific. A good OKR coach names the problem ("this is an activity, not an outcome") and proposes the fix.
-
+${roleBlock(tree, company, mode, subject)}
 ${viewBlock(tree, company, selectedNodeId, context)}`;
 }

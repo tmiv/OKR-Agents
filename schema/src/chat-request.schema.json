@@ -36,11 +36,104 @@
     "context": {
       "$ref": "#/definitions/viewContext",
       "description": "What the user has on screen as they type. Advisory: it is how \"this\", \"those\" and \"the team\" resolve without the user naming anything."
+    },
+    "mode": {
+      "$ref": "#/definitions/chatMode",
+      "description": "What kind of conversation this tab is. Absent means \"free\"."
+    },
+    "subject": {
+      "$ref": "#/definitions/chatSubject",
+      "description": "The one thing an interview tab is about. Absent or null in a free conversation."
     }
   },
   "required": ["tree", "message"],
   "additionalProperties": false,
   "definitions": {
+    "chatMode": {
+      "title": "ChatMode",
+      "description": "How this conversation is being held. \"free\" is the default coach conversation: the user asks, you answer. The three interview modes invert that — you ask, one question per turn, and end by proposing actions.",
+      "type": "string",
+      "enum": ["free", "interview-node", "interview-team", "interview-new"]
+    },
+    "chatSubject": {
+      "title": "ChatSubject",
+      "description": "The one thing this conversation is about: an existing node, a team, or the parent a new node will hang under. Null in a free conversation, which is about the whole tree.",
+      "oneOf": [
+        {
+          "$ref": "#/definitions/nodeSubject",
+          "description": "One existing node in the tree."
+        },
+        {
+          "$ref": "#/definitions/teamSubject",
+          "description": "One team in company.units."
+        },
+        {
+          "$ref": "#/definitions/newNodeSubject",
+          "description": "A node that does not exist yet, and where it will go."
+        },
+        {
+          "type": "null",
+          "description": "No subject: the conversation is about the whole document."
+        }
+      ]
+    },
+    "nodeSubject": {
+      "title": "NodeSubject",
+      "description": "An interview about one existing node.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "Discriminator: node.",
+          "enum": ["node"]
+        },
+        "id": {
+          "type": "string",
+          "description": "Id of the node the interview is about.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        }
+      },
+      "required": ["kind", "id"],
+      "additionalProperties": false
+    },
+    "teamSubject": {
+      "title": "TeamSubject",
+      "description": "An interview about one team's charter.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "Discriminator: team.",
+          "enum": ["team"]
+        },
+        "id": {
+          "type": "string",
+          "description": "Id of the team in company.units the interview is about.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        }
+      },
+      "required": ["kind", "id"],
+      "additionalProperties": false
+    },
+    "newNodeSubject": {
+      "title": "NewNodeSubject",
+      "description": "An interview that ends by adding a node the tree does not have yet.",
+      "type": "object",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "Discriminator: new.",
+          "enum": ["new"]
+        },
+        "parentId": {
+          "type": ["string", "null"],
+          "description": "Id of the node the new one will hang under, or null when the user has not decided yet — in which case the first question is which objective it supports.",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+        }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
     "viewContext": {
       "title": "ViewContext",
       "description": "The user's view at the moment they pressed send: which panel is open, what is pulsing in the 3D scene, which document they are in. Everything here is optional and advisory — the service drops anything that names something the tree or the org does not have.",

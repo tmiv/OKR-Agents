@@ -14,7 +14,8 @@
     onEdit,
     onOpenTeam,
     onPreview = () => {},
-    onFocusField = () => {}
+    onFocusField = () => {},
+    onNewChat = null
   } = $props();
 
   // The owner field is a team picker when there are teams to pick, and free
@@ -194,6 +195,37 @@
       <button class="close" onclick={onClose} aria-label="Close">×</button>
     </div>
   </header>
+
+  {#if onNewChat}
+    <!-- The way into an interview about this node: a tab of its own, so the
+         questions do not land in the middle of the general conversation. -->
+    <div class="launch">
+      <button
+        class="ghost"
+        onclick={() =>
+          onNewChat({
+            mode: 'interview-node',
+            subject: { kind: 'node', id: node.id },
+            title: `Interview: ${node.label}`
+          })}
+      >
+        Interview me about this OKR
+      </button>
+      {#if editing && childLevel}
+        <button
+          class="ghost"
+          onclick={() =>
+            onNewChat({
+              mode: 'interview-new',
+              subject: { kind: 'new', parentId: node.id },
+              title: `Interview: new ${childLevel === 'objective' ? 'objective' : 'key result'}`
+            })}
+        >
+          Interview me about a new {childLevel === 'objective' ? 'objective' : 'key result'} here
+        </button>
+      {/if}
+    </div>
+  {/if}
 
   {#if editing}
     <textarea

@@ -71,6 +71,54 @@ export function sanitizeContext(tree, company, context) {
   return { context: { panel, highlighted, ...(dataset ? { dataset } : {}) }, dropped };
 }
 
+// What the tab says it is about, checked against the document it came with.
+//
+// Same spirit as sanitizeContext: a subject that names nothing is a tab whose
+// subject has been deleted, imported away or switched out from under it, and
+// that is never worth a 400 on a message the user has already typed. The mode
+// falls back to `free` and the reason is reported so it can be logged — a
+// client that keeps sending subjects this tree does not have is a bug worth
+// seeing.
+//
+// `interview-new` is the one case that survives a bad reference: a parent that
+// is gone leaves a perfectly good interview about a node that does not exist
+// yet, so only the parent is dropped and the model asks which objective it
+// supports instead.
+export function resolveTab(tree, company, mode, subject) {
+  const free = (dropped = null) => ({ mode: 'free', subject: null, dropped });
+  if (!mode || mode === 'free') return free();
+
+  const known = new Set(tree.nodes.map((n) => n.id));
+  const knownUnits = new Set((Array.isArray(company?.units) ? company.units : []).map((u) => u.id));
+
+  if (mode === 'interview-node') {
+    if (subject?.kind !== 'node') return free('no node subject — falling back to free');
+    if (!known.has(subject.id)) return free(`node ${subject.id} is not in this tree — falling back to free`);
+    return { mode, subject: { kind: 'node', id: subject.id }, dropped: null };
+  }
+
+  if (mode === 'interview-team') {
+    if (subject?.kind !== 'team') return free('no team subject — falling back to free');
+    if (!knownUnits.has(subject.id)) return free(`team ${subject.id} is not in this org — falling back to free`);
+    return { mode, subject: { kind: 'team', id: subject.id }, dropped: null };
+  }
+
+  if (mode === 'interview-new') {
+    if (subject?.kind !== 'new') return free('no new-node subject — falling back to free');
+    const parentId = subject.parentId ?? null;
+    if (parentId != null && !known.has(parentId)) {
+      return {
+        mode,
+        subject: { kind: 'new', parentId: null },
+        dropped: `parent ${parentId} is not in this tree — asking for one instead`
+      };
+    }
+    return { mode, subject: { kind: 'new', parentId }, dropped: null };
+  }
+
+  return free(`unknown mode ${mode} — falling back to free`);
+}
+
 export function validateResponse(tree, company, input) {
   const known = new Set(tree.nodes.map((n) => n.id));
   const parentOf = new Map(tree.nodes.map((n) => [n.id, n.parent]));

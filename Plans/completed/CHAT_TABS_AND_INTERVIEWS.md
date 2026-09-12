@@ -5,10 +5,11 @@ tags:
   - service
   - schema
   - chat
-status: development
+status: completed
 created: 2026-09-11
+completed_on: 2026-09-11
 predecessors:
-  - development/CHAT_CONTEXT.md
+  - completed/CHAT_CONTEXT.md
   - completed/TEAM_MODEL_AND_EDITOR.md
 ---
 # Plan: Multiple chat tabs with a mode and a subject, and buttons that open interviews
@@ -160,3 +161,72 @@ border in `var(--accent)`, `.tab .close`, the `+` menu as a small absolute popov
   turns, so the summary turn may not see the first answers. Raise the cap to 24 for interview
   tabs (schema allows 50) and keep 10 for free tabs.
 - Rollback: `chats` is a superset of `messages`; reverting to a single array is mechanical.
+
+## Completion notes
+
+- **Planned vs. actual.** All six phases landed as written, and the shape held: `mode` + `subject`
+  on the request, one `send(chatId, …)`, one `## Your role in this conversation` section in
+  `service/prompt.js`, launchers in both editors and in the `+` menu. Nothing about the response
+  needed to change — an interview closes by returning `actions`, which go through `commit()` like
+  any other edit, so undo and history came free. The file:line citations had all drifted (this
+  plan was written before its predecessors landed on `main`); the code they named was still where
+  the plan said it was, one function down.
+- **Mid-flight adjustments.**
+  - *`context` is a sibling, not a replacement.* CHAT_CONTEXT shipped between the writing and the
+    doing, so the request now carries `context` **and** `mode`/`subject`. They answer different
+    questions — what the user is looking at versus what this tab is for — and `roleBlock()` sits
+    directly above `viewBlock()` so the view block stays last, which is where it has to be.
+  - *The service had its own history cap.* The plan's risk section raised the browser's ten-turn
+    slice to 24 for interview tabs but missed `sanitizeHistory(history, maxTurns = 12)` in
+    `service/validate.js`, which would have re-truncated it. Both caps are now mode-dependent.
+  - *`interview-new` survives a stale parent.* Phase 5 says an unknown subject downgrades to
+    `free`. For `interview-new` that throws away a perfectly good interview, so a `parentId` this
+    tree does not have is dropped on its own and the interview simply asks which objective it
+    supports. `interview-node` and `interview-team` downgrade as planned.
+  - *`resolveTab()` lives in `service/validate.js`*, beside `sanitizeContext()` — it is the same
+    kind of thing (a reference check against the document that never 400s), and `index.js` stays a
+    route.
+  - *The `+` popover moved out of the scrolling strip.* `overflow-x: auto` on the tab row clips
+    absolutely positioned children vertically too, so the menu was invisible. `.tabs` is now a
+    plain flex row holding a scrolling `.strip` and the `+`.
+  - *Launch buttons sit directly under the panel header*, not inside it: the header row is a level
+    badge and Edit/Close, and a third element wrapped badly at 320px.
+  - *App notes land in the active tab.* Undo, import, export and dataset switches write their one
+    line into whichever conversation the user is looking at.
+- **Surprises / residual risks.**
+  - *The kick-off turn never leaked.* Across four interviews no reply began with "Sure, I'll begin
+    the interview" — the prompt line that calls the phrase an app signal seems to be enough. The
+    risk is still real if the rules move earlier in the prompt.
+  - *Prompt ordering held.* The role block above the view block, the view block last: interviews
+    resolved their subject and the free tab's "what should this be?" still answers about the
+    focused field. No reordering was needed.
+  - *One verification bullet is unreachable.* Phase 3.2 hides the `×` on the only tab, so
+    `closeChat()`'s "closing the last tab yields a fresh Chat" branch cannot be triggered from the
+    UI. The code keeps it as a guard; the bullet is dead as written.
+  - *Tabs are in memory only* (Decision 6), so a reload loses an interview mid-flight. That is the
+    same deal every other piece of state has today, and it will stop being acceptable at the same
+    moment.
+  - *`node --watch` stopped picking up `service/` edits* across the Docker bind mount during this
+    work — the first `build:schema` removed `dist/` under it and it never recovered. Restarting it
+    with the same invocation fixed it; a reply with an identical input-token count is the tell.
+
+### Verification transcript
+
+Run in the browser against `workflow-platform-fy26` and the live service (real model replies,
+`claude-sonnet-5`); no stubs.
+
+| Check | Result |
+|---|---|
+| Boot | one "Chat" tab, suggestion chips; "which key results don't clearly support a company objective?" answers as before |
+| `kr-7` selected → "Interview me about this OKR" | new tab "Interview: Improve our …", first question in ~2 s, `kr-7` pulsing, kick-off turn not rendered |
+| Four answers, then "that's enough" | one `edit`: label → "Grow social-sourced mid-market demo bookings from 24 to 50 per quarter", metric → HubSpot-attributed social demo bookings, target → "24 → 50 per quarter by Q4", fit 20% → 75%. Weak links 5 → 4 |
+| "Undo" pill beside the "1 edit" pill | `kr-7` back to its old label, metric and 20% fit; "Reverted the last change." in that tab; the free tab's two messages untouched |
+| Marketing's editor → "Interview me about this team" | first question is about a gap (is MQL→SQL solely Marketing's?), quoting the existing `owns` list rather than re-asking for it. Closes with an `editUnit`: `process` rewritten to the six-week cadence and weekly pipeline council, `partner co-marketing budget` added to `owns`. TeamEditor shows both |
+| `+` → "Interview me about a new OKR", `obj-3` selected | first question is about the outcome, not the parent. `mode=interview-new`, `ctx=node:obj-3` |
+| Same with nothing selected | first question asks which objective it should support |
+| Send in the free tab, switch tabs, send in the interview before the first returns | both replies land in their own tab; the busy tab shows its marker while the other is on screen |
+| Close the active middle tab | the previous tab activates; closing down to one leaves no `×` |
+| `mode: "interview-node"` with `subject.id = "kr-999"` | 200; `[chat] interview-node: node kr-999 is not in this tree — falling back to free`, then `mode=free` |
+| Cursor in `metric` on `kr-7`, then click into the chat composer, "what should this be?" | `ctx=node:kr-7/metric · mode=free` — the CHAT_CONTEXT hold still works with a per-tab composer |
+| `npm run test:schema` | 118 pass, including the three new fixtures |
+| `npm run build` (web) | clean |

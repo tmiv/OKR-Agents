@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { MODEL, RESPOND_TOOL, systemPrompt } from './prompt.js';
-import { sanitizeContext, sanitizeHistory, mergeTurns, validateResponse } from './validate.js';
+import { sanitizeContext, sanitizeHistory, mergeTurns, resolveTab, validateResponse } from './validate.js';
 import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
 
 const PORT = Number(process.env.PORT) || 8787;
@@ -21,7 +21,16 @@ app.post('/api/chat', async (req, res) => {
   if (!request.ok) {
     return res.status(400).json({ error: 'The request does not match the chat schema.', details: request.errors });
   }
-  const { tree, company = null, message, selectedNodeId = null, history = [], context = null } = request.value;
+  const {
+    tree,
+    company = null,
+    message,
+    selectedNodeId = null,
+    history = [],
+    context = null,
+    mode = 'free',
+    subject = null
+  } = request.value;
 
   // Shape is not enough: a tree can be well-formed and still be unusable.
   // Warnings (an off-ladder link, say) are normal mid-edit, so they only log.
@@ -50,14 +59,29 @@ app.post('/api/chat', async (req, res) => {
   // never rejected. A stale highlight is not a broken request.
   const view = sanitizeContext(tree, company, context);
   if (view.dropped.length) console.warn('[chat] context: dropped', JSON.stringify(view.dropped));
-  const messages = mergeTurns([...sanitizeHistory(history), { role: 'user', content: message.trim() }]);
+
+  // An interview is only an interview if its subject is in this document. A tab
+  // opened on a node the user has since deleted (or a stale tab beside an
+  // imported file) is not a broken request — it is a conversation that has lost
+  // what it was about, so it falls back to the coach prompt and says so in the
+  // log rather than 400-ing a message the user already typed.
+  const tab = resolveTab(tree, company, mode, subject);
+  if (tab.dropped) console.warn(`[chat] ${mode}: ${tab.dropped}`);
+
+  // An interview runs long: eight questions plus answers is past the free
+  // conversation's cap, and a summary that cannot see the first answers is
+  // worse than no summary.
+  const messages = mergeTurns([
+    ...sanitizeHistory(history, tab.mode === 'free' ? 12 : 24),
+    { role: 'user', content: message.trim() }
+  ]);
 
   const started = Date.now();
   try {
     const response = await getClient().messages.create({
       model: MODEL,
       max_tokens: 4096,
-      system: systemPrompt(tree, company, selected, view.context),
+      system: systemPrompt(tree, company, selected, view.context, tab),
       tools: [RESPOND_TOOL],
       tool_choice: { type: 'tool', name: 'respond' },
       messages
@@ -78,7 +102,7 @@ app.post('/api/chat', async (req, res) => {
     const p = view.context?.panel;
     const ctx = p ? `${p.kind}${p.id ? `:${p.id}` : ''}${p.field ? `/${p.field}` : ''}` : 'none';
     console.log(
-      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights · ctx=${ctx}`
+      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights · ctx=${ctx} · mode=${tab.mode}`
     );
     res.json({ reply: out.reply, actions: out.actions, highlight: out.highlight });
   } catch (err) {

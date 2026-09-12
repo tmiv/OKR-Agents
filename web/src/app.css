@@ -148,6 +148,10 @@ main { flex: 1; display: flex; min-height: 0; }
 .detail .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .detail .actions button { font-size: 12px; padding: 4px 10px; }
 .detail .actions .danger { color: var(--bad); }
+/* the interview launchers, directly under the panel header */
+.detail .launch { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 2px; }
+.detail .launch button { font-size: 11px; padding: 4px 10px; color: var(--muted); }
+.detail .launch button:hover { border-color: var(--accent); color: var(--accent); }
 .detail .actions .danger:hover { border-color: var(--bad); }
 /* ── teams panel ────────────────────────────────────────────────────── */
 /* Same surface as .detail; only what teams add is listed here. */
@@ -188,7 +192,48 @@ main { flex: 1; display: flex; min-height: 0; }
   background: var(--panel);
   border-left: 1px solid var(--border);
 }
+
+/* ── chat tabs ──────────────────────────────────────────────────────── */
+/* One row, scrolled sideways rather than wrapped: the chat panel is 380px
+   and a wrapping tab bar would eat the transcript. */
+.tabs {
+  display: flex; align-items: stretch;
+  padding: 8px 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.strip { display: flex; align-items: stretch; gap: 4px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.strip::-webkit-scrollbar { display: none; }
+.tab {
+  display: flex; align-items: center; flex: none;
+  border: 1px solid var(--border); border-bottom: 0;
+  border-radius: 8px 8px 0 0;
+  background: var(--panel-2);
+  margin-bottom: -1px;
+}
+.tab .name {
+  background: none; border: 0; padding: 5px 4px 5px 10px;
+  color: var(--muted); font-size: 12px; white-space: nowrap;
+}
+.tab .close { background: none; border: 0; padding: 0 8px 0 2px; color: var(--muted); font-size: 15px; line-height: 1; }
+.tab .close:hover { color: var(--text); }
+.tab.on { border-color: var(--accent); background: var(--panel); }
+.tab.on .name { color: var(--accent); }
+/* a tab whose request is still out says so without stealing the transcript */
+.tab.busy .name::after { content: ' ·'; animation: blink 1.2s infinite; }
+.new { position: relative; flex: none; display: flex; align-items: center; }
+.new .plus { background: none; border: 0; color: var(--muted); font-size: 16px; line-height: 1; padding: 2px 8px; }
+.new .plus:hover { color: var(--text); }
+.menu {
+  position: absolute; top: 100%; right: 0; z-index: 5;
+  display: flex; flex-direction: column; min-width: 210px;
+  background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 4px; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.menu button { background: none; border: 0; text-align: left; padding: 7px 10px; border-radius: 6px; color: var(--text); font-size: 12px; white-space: nowrap; }
+.menu button:hover { background: var(--panel); }
+
 .messages { flex: 1; overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.messages .hint { color: var(--muted); font-size: 12px; margin: 0; }
 .empty { color: var(--muted); display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
 .empty p { margin: 0 0 4px; }
 .chip { text-align: left; border-radius: 10px; padding: 8px 12px; background: var(--panel-2); color: var(--text); }

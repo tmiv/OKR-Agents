@@ -13,8 +13,8 @@ predecessors:
   - completed/BUNDLED_DATASETS.md
   - completed/OKR_NODE_EDITOR.md
 successors:
-  - development/CHAT_CONTEXT.md
-  - development/CHAT_TABS_AND_INTERVIEWS.md
+  - completed/CHAT_CONTEXT.md
+  - completed/CHAT_TABS_AND_INTERVIEWS.md
 ---
 # Plan: Model teams with a charter, reference them from nodes, and edit them in a panel
 

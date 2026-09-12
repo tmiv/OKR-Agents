@@ -12,7 +12,7 @@ predecessors:
   - completed/OKR_NODE_EDITOR.md
   - completed/TEAM_MODEL_AND_EDITOR.md
 successors:
-  - development/CHAT_TABS_AND_INTERVIEWS.md
+  - completed/CHAT_TABS_AND_INTERVIEWS.md
 ---
 # Plan: Send the user's view context with every message so the assistant resolves references
 

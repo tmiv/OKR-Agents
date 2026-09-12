@@ -10,13 +10,13 @@ created: 2026-09-11
 
 The design rationale behind the September 2026 round of plans. The plans say *what* and *where*;
 this doc says *why* and how the pieces fit. Plans that cite this doc:
-[BUNDLED_DATASETS](../Plans/development/BUNDLED_DATASETS.md),
-[CAMERA_LEVEL_AUTO_MOVES](../Plans/development/CAMERA_LEVEL_AUTO_MOVES.md),
-[CLEAR_HIGHLIGHT_ON_SELECT](../Plans/development/CLEAR_HIGHLIGHT_ON_SELECT.md),
-[OKR_NODE_EDITOR](../Plans/development/OKR_NODE_EDITOR.md),
+[BUNDLED_DATASETS](../Plans/completed/BUNDLED_DATASETS.md),
+[CAMERA_LEVEL_AUTO_MOVES](../Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md),
+[CLEAR_HIGHLIGHT_ON_SELECT](../Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md),
+[OKR_NODE_EDITOR](../Plans/completed/OKR_NODE_EDITOR.md),
 [TEAM_MODEL_AND_EDITOR](../Plans/completed/TEAM_MODEL_AND_EDITOR.md),
-[CHAT_CONTEXT](../Plans/development/CHAT_CONTEXT.md),
-[CHAT_TABS_AND_INTERVIEWS](../Plans/development/CHAT_TABS_AND_INTERVIEWS.md).
+[CHAT_CONTEXT](../Plans/completed/CHAT_CONTEXT.md),
+[CHAT_TABS_AND_INTERVIEWS](../Plans/completed/CHAT_TABS_AND_INTERVIEWS.md).
 Companion: [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md).
 
 ## The thesis, restated

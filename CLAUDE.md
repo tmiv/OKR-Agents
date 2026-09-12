@@ -158,22 +158,37 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-Vision and ordering for the whole round:
+`Plans/development/` is empty: the September 2026 round shipped in full, and nothing has been
+planned for what comes after it yet. The next piece of work starts with a new plan in
+`development/`, not by reopening one of these.
+
+Vision and ordering for the round that just landed:
 [Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
 Teams-as-agents rationale: [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md).
 
-In dependency order:
-1. [Plans/development/CHAT_TABS_AND_INTERVIEWS.md](Plans/development/CHAT_TABS_AND_INTERVIEWS.md) —
-   chat tabs with mode + subject; "interview me" launchers.
+Shipped, in the order they landed — read the completion notes before assuming how something
+works:
+[OKR_SCHEMA_PACKAGE](Plans/completed/OKR_SCHEMA_PACKAGE.md) ·
+[BUNDLED_DATASETS](Plans/completed/BUNDLED_DATASETS.md) ·
+[CAMERA_LEVEL_AUTO_MOVES](Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md) ·
+[CLEAR_HIGHLIGHT_ON_SELECT](Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md) ·
+[OKR_NODE_EDITOR](Plans/completed/OKR_NODE_EDITOR.md) ·
+[TEAM_MODEL_AND_EDITOR](Plans/completed/TEAM_MODEL_AND_EDITOR.md) ·
+[CHAT_CONTEXT](Plans/completed/CHAT_CONTEXT.md) ·
+[CHAT_TABS_AND_INTERVIEWS](Plans/completed/CHAT_TABS_AND_INTERVIEWS.md).
 
-Completed: [Plans/completed/OKR_SCHEMA_PACKAGE.md](Plans/completed/OKR_SCHEMA_PACKAGE.md),
-[Plans/completed/BUNDLED_DATASETS.md](Plans/completed/BUNDLED_DATASETS.md),
-[Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md](Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md),
-[Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md](Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md),
-[Plans/completed/OKR_NODE_EDITOR.md](Plans/completed/OKR_NODE_EDITOR.md),
-[Plans/completed/TEAM_MODEL_AND_EDITOR.md](Plans/completed/TEAM_MODEL_AND_EDITOR.md),
-[Plans/completed/CHAT_CONTEXT.md](Plans/completed/CHAT_CONTEXT.md).
+## What comes next (no plans yet)
 
-Future horizons (no plans yet): agents that execute and measure OKRs, a progress dashboard, and a
-shared realtime document store. See the Horizons section of the vision doc and
-[Concepts/Agents as Executors - Design.md](Concepts/Agents%20as%20Executors%20-%20Design.md).
+The forward-looking half of this workspace. Each of these has a concept doc and no plan; writing
+the plan is the first step.
+
+- **Team agent discussions** — personas built from a team's charter, agents reviewing each
+  other's OKRs, a debate the user moderates, and a closing turn that proposes edits. The four
+  modes are chosen and written up in the "four discussion modes" section of
+  [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md); chat tabs
+  left `mode` an enum so they are additive. Nearest to hand.
+- **Agents that execute and measure OKRs**, and a progress dashboard reading what they record —
+  [Concepts/Agents as Executors - Design.md](Concepts/Agents%20as%20Executors%20-%20Design.md)
+  (Horizon 2 of the vision doc).
+- **A shared, realtime document** so a team edits and chats against one `OkrDocument` at once
+  (Horizon 3). Nothing persists today, tabs included.

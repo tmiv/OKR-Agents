@@ -10,7 +10,8 @@
     onBack,
     onClose,
     onFocusField = () => {},
-    onPreview = () => {}
+    onPreview = () => {},
+    onNewChat = null
   } = $props();
 
   // A team panel is an editor: there is no read mode to toggle into, because a
@@ -157,6 +158,20 @@
       <button class="close" onclick={onClose} aria-label="Close">×</button>
     </div>
   </header>
+
+  {#if onNewChat}
+    <!-- A charter is the hardest thing in the app to write from a blank page,
+         so the interview that writes it starts here. -->
+    <div class="launch">
+      <button
+        class="ghost"
+        onclick={() =>
+          onNewChat({ mode: 'interview-team', subject: { kind: 'team', id: unit.id }, title: `Team: ${unit.name}` })}
+      >
+        Interview me about this team
+      </button>
+    </div>
+  {/if}
 
   <input
     class="label-input"
