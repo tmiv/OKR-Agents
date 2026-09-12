@@ -16,6 +16,11 @@
   const loading = $derived(active?.loading ?? false);
   const isInterview = $derived(!!active && active.mode !== 'free');
 
+  // A tab the app has written a note into ("Loaded …", "Imported …") has not
+  // been talked in yet, so it still deserves its opening prompt and chips.
+  // Only a turn someone took — a question asked, an answer given — retires them.
+  const untouched = $derived(!messages.some((m) => !m.note && !m.error));
+
   // One composer element, one draft per tab. The element stays put across a tab
   // switch on purpose: it is inside `.chat`, which is how App decides that
   // leaving a field for the chat box holds that field — tearing it down and
@@ -91,18 +96,6 @@
   </div>
 
   <div class="messages" bind:this={listEl}>
-    {#if !messages.length && !loading}
-      <div class="empty">
-        {#if isInterview}
-          <p>The assistant asks, you answer. Say “that’s enough” to wrap up.</p>
-        {:else}
-          <p>Ask the tree anything, or tell it what to change.</p>
-          {#each suggestions as s}
-            <button class="chip" onclick={() => onSend(active.id, s)} disabled={loading}>{s}</button>
-          {/each}
-        {/if}
-      </div>
-    {/if}
     {#if isInterview && loading && !messages.some((m) => m.role === 'assistant')}
       <p class="hint">The assistant asks, you answer. Say “that’s enough” to wrap up.</p>
     {/if}
@@ -130,6 +123,18 @@
         </div>
       {/if}
     {/each}
+    {#if untouched && !loading}
+      <div class="empty">
+        {#if isInterview}
+          <p>The assistant asks, you answer. Say “that’s enough” to wrap up.</p>
+        {:else}
+          <p>Ask the tree anything, or tell it what to change.</p>
+          {#each suggestions as s}
+            <button class="chip" onclick={() => onSend(active.id, s)} disabled={loading}>{s}</button>
+          {/each}
+        {/if}
+      </div>
+    {/if}
     {#if loading}
       <div class="msg assistant"><div class="bubble thinking"><span></span><span></span><span></span></div></div>
     {/if}

@@ -43,9 +43,11 @@
 
   let history = $state.raw(historyOf(DEFAULT_DATASET_ID));
 
-  // Undo entries carry the dataset id and the history as well as the tree, so
-  // undoing a dataset switch puts the picker back where it was and undoing an
-  // edit takes its history entry with it.
+  // Undo entries are edits to whatever document is on the stage: loading
+  // another one empties the stack rather than stacking across the boundary
+  // (see resetSession). A snapshot is still the whole document state, dataset
+  // id included, so an undo takes its history entry back with it and nothing
+  // has to remember which halves an edit could have touched.
   let undoStack = $state.raw([]);
   let selectedId = $state(null);
   let highlight = $state.raw([]);
@@ -361,35 +363,47 @@
     note('Reverted the last change.', { note: true });
   }
 
+  // Putting a different document on the stage is a fresh start, not an edit, so
+  // everything the old one left behind goes with it: the camera pulls back to
+  // the whole tree, the panels close, the conversation starts over — a chat
+  // about the old tree's nodes is a chat about nodes that no longer exist —
+  // and the undo stack empties. Those snapshots are of a document that is no
+  // longer on the stage, so an undo through one would not step back, it would
+  // swap the document out from under whatever the user has done since.
+  function resetSession() {
+    undoStack = [];
+    highlight = [];
+    preview = [];
+    selectedId = null;
+    editing = false;
+    panel = null;
+    chats = [freshChat()];
+    activeChatId = chats[0].id;
+    // The new layout has no positions yet; Graph waits for the simulation.
+    graph?.frameWhenSettled();
+  }
+
   // Reset, import and dataset switch all replace the document, so they replace
   // both halves of it: a tree from one dataset beside another's org would leave
   // every unitId dangling.
   function reset() {
-    undoStack = [...undoStack, snapshot()];
     tree = structuredClone(getDataset(datasetId).document.tree);
     company = companyOf(datasetId);
     history = historyOf(datasetId); // back to the dataset's own history, not ours
-    highlight = [];
-    selectedId = null;
-    editing = false;
-    panel = null;
+    resetSession();
   }
 
-  // Switching datasets is the same snapshot-then-replace as import: undoable,
-  // and it says in the chat what just landed.
+  // Switching datasets replaces the document outright, the same way import
+  // does, and it says in the chat what just landed.
   function switchDataset(id) {
     if (id === datasetId) return;
     const dataset = getDataset(id);
-    undoStack = [...undoStack, snapshot()];
     datasetId = dataset.id;
     tree = structuredClone(dataset.document.tree);
     company = companyOf(dataset.id);
     history = historyOf(dataset.id);
-    highlight = [];
-    selectedId = null;
-    editing = false;
-    panel = null;
-    note(`Loaded "${dataset.title}" (${tree.nodes.length} nodes). Undo to go back.`, { note: true });
+    resetSession(); // the note below lands in the fresh tab resetSession just opened
+    note(`Loaded "${dataset.title}" (${tree.nodes.length} nodes).`, { note: true });
   }
 
   // ── export / import ───────────────────────────────────────────────────────
@@ -425,22 +439,19 @@
       return;
     }
 
-    undoStack = [...undoStack, snapshot()]; // same snapshot-then-replace as reset()
     tree = out.document.tree;
     // A file written before teams existed has no `company`; it gets an empty
     // org named after the file rather than keeping ours, which would claim
     // teams the imported tree never referenced. Its `owner` text still shows.
     company = structuredClone(out.document.company ?? { name: out.document.meta?.title ?? file.name, units: [] });
     history = structuredClone(out.document.history ?? emptyHistory());
-    highlight = [];
-    selectedId = null;
-    editing = false;
-    panel = null;
-    // The snapshot above already covers the import, so this commit only writes
-    // the boundary marker: an empty batch saying where the file came from.
+    resetSession();
+    // An empty batch, purely to mark the boundary in the imported document's
+    // own history: this is where the file came from. `undoable: false` because
+    // resetSession has just emptied the stack and an import is not a step back.
     commit([], { actor: 'import', reason: `Imported ${file.name}`, undoable: false });
     const warned = out.warnings.length ? ` ${out.warnings.length} warning${out.warnings.length === 1 ? '' : 's'}: ${out.warnings.slice(0, 3).join('; ')}` : '';
-    note(`Imported ${tree.nodes.length} nodes from ${file.name}. Undo to go back.${warned}`, { note: true });
+    note(`Imported ${tree.nodes.length} nodes from ${file.name}.${warned}`, { note: true });
   }
 
   // `keepEditing` is for the Detail panel's "add a child": the new node is

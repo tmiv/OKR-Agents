@@ -27,6 +27,11 @@
   // moves the camera: the mouse is already where the user is looking.
   let previewSet = new Set();
   let raf;
+  // An in-progress settle-then-frame (see frameWhenSettled): how many more
+  // looks it owes, when the next one is due, and the flight time to use.
+  let settleLeft = 0;
+  let settleNext = 0;
+  let settleMs = 900;
   // Which node the pointer is over — the only part of the hover card that is
   // Svelte state. $state.raw because the force layout mutates these node objects
   // every tick and we only ever swap which one is held, never write through it.
@@ -159,10 +164,20 @@
       h.normalize().multiplyScalar(Math.sqrt(1 - MAX_Y ** 2));
       dir.set(h.x, Math.sign(dir.y) * MAX_Y, h.z);
     }
-    graph.cameraPosition(
-      { x: aim.x + dir.x * dist, y: aim.y + dir.y * dist, z: aim.z + dir.z * dist }, aim, ms
-    );
+    const to = { x: aim.x + dir.x * dist, y: aim.y + dir.y * dist, z: aim.z + dir.z * dist };
+    // A stage with no size yet — the first frames after mount, or a collapsed
+    // pane — gives the camera a 0/0 aspect, and fitDistance hands back NaN. The
+    // cost of writing that through is not one lost move: the next frame reads
+    // the camera back to work out its bearing, so one NaN poisons every move
+    // after it and the view never recovers. Skip the move instead; the caller
+    // that is following a settling layout will come round again.
+    if (!Number.isFinite(to.x) || !Number.isFinite(to.y) || !Number.isFinite(to.z)) return;
+    graph.cameraPosition(to, aim, ms);
   }
+
+  // A node counts as positioned only when all three coordinates are: one NaN
+  // among them poisons the centroid, and through it the camera.
+  const placed = (n) => Number.isFinite(n.x) && Number.isFinite(n.y) && Number.isFinite(n.z);
 
   // An arbitrary set of nodes with no single subject: aim at their centroid.
   export function flyTo(ids, ms = 1200) {
@@ -170,7 +185,7 @@
     clearTimeout(hoverTimer);
     hovered = null;
     const want = new Set(ids);
-    const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && Number.isFinite(n.x));
+    const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && placed(n));
     if (!nodes.length) return;
     const c = { x: 0, y: 0, z: 0 };
     for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
@@ -185,23 +200,56 @@
     clearTimeout(hoverTimer);
     hovered = null;
     const want = new Set(neighborhoodOf(tree, id));
-    const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && Number.isFinite(n.x));
+    const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && placed(n));
     const self = nodes.find((n) => n.id === id);
     if (!self) return; // no position yet: leave the camera where it is
     frame(nodes, { x: self.x, y: self.y, z: self.z }, ms);
   }
 
-  // Frames the whole tree and levels the horizon. The mount-time overview and
-  // the `f` shortcut share it so both moves look the same.
+  // Frames the whole tree and levels the horizon. The mount-time overview, the
+  // `f` shortcut and every document swap share it, so the move always looks the
+  // same. It aims the same measure-and-solve flyTo uses at every node rather
+  // than calling the library's zoomToFit, which estimates the distance from
+  // where the nodes happen to land on screen right now: from a camera sitting
+  // inside the tree that estimate is meaningless, and a swap that arrived
+  // zoomed in stayed zoomed in.
   export function frameAll(ms = 900) {
     if (!graph) return;
-    clearTimeout(hoverTimer);
-    hovered = null;
-    graph.zoomToFit(ms, 60);
-    levelCamera(ms);
+    flyTo(graph.graphData().nodes.map((n) => n.id), ms);
+  }
+
+  // A document the graph has not laid out yet has no positions worth framing:
+  // graphData() re-heats the simulation and the tree goes on expanding for a
+  // second or more, so a single frame is either too early (and crops the tree)
+  // or too late (and the user stares through the old camera meanwhile). The
+  // engine's own stop signal is no help — force-graph runs a fixed 15 s
+  // cooldown and only then reports a stop.
+  //
+  // So don't try to find the moment the growing ends: follow it. Each look only
+  // slides the camera along its current bearing, and each retargets a tween
+  // already in flight, so the repeats read as one continuous pull-back rather
+  // than a series of jumps, and the last one lands on the finished tree.
+  //
+  // The looks are counted off the render loop rather than a timer, because the
+  // render loop is the clock the layout itself runs on: force-graph ticks the
+  // simulation once per rendered frame. A tab nobody is looking at renders
+  // nothing and so lays out nothing, and a wall-clock timer there would spend
+  // every look on a tree that had not moved since the last one.
+  const SETTLE_STEP = 150;  // ms between looks
+  const SETTLE_STEPS = 16;  // ~2.4 s of following at a watched tab's frame rate
+
+  export function frameWhenSettled(ms = 900) {
+    settleMs = ms;
+    settleLeft = SETTLE_STEPS;
+    settleNext = performance.now() + SETTLE_STEP;
   }
 
   function animate() {
+    if (settleLeft > 0 && performance.now() >= settleNext) {
+      settleLeft--;
+      settleNext = performance.now() + SETTLE_STEP;
+      frameAll(settleMs);
+    }
     if (upTween) {
       const cam = graph?.camera();
       if (!cam) {
@@ -298,7 +346,7 @@
     graph.graphData(toGraphData(tree, null));
     const ro = new ResizeObserver(() => graph.width(el.clientWidth).height(el.clientHeight));
     ro.observe(el);
-    setTimeout(() => frameAll(900), 700);
+    frameWhenSettled();
     animate();
 
     return () => {
