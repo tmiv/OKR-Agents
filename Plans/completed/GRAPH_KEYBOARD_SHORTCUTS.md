@@ -66,6 +66,12 @@ sibling), where each step selects the node and flies the camera to it exactly as
 4. **No wrap-around, no-ops at the edges.** Right on the last sibling, left on the first, up on
    the root and down on a leaf do nothing. Predictable beats clever; wrap-around in a
    three-item list is disorienting.
+   > **Amended 2026-09-12, after the plan landed:** reversed for left/right at the user's
+   > request. `siblingOf` now wraps, so right on the last sibling lands on the first and left on
+   > the first lands on the last; a full lap returns where it started. Up on the root and down
+   > on a leaf are unchanged — still no-ops. A node with no siblings is also unchanged: it
+   > returns null rather than re-selecting itself, so the key does not re-fly the camera to
+   > where it already is.
 5. **With nothing selected, any arrow selects the root** (the one node with `parent: null`).
    This is also the way in from a Teams panel: `select()` swaps the panel slot to the node.
 6. **`f` moves the camera only.** It does not change selection and does not clear a highlight:
@@ -237,6 +243,11 @@ served from the host for the browser checks.
   `step()` falls back to the root when `selectedId` names a node that is no longer in the tree,
   not just when it is null — a dataset switch or an undo can strand a selection, and an arrow
   key should recover rather than dead-end. Covered by a test.
+- **Reversed after landing.** Decision 4's no-wrap rule for left/right was reversed the same
+  day (see the amendment on that decision). The change was confined to `siblingOf` in
+  `web/src/lib/navigate.js` and its tests — the registry, `go()` and `step()` needed nothing,
+  which is the table-driven structure paying off. Verification step 2's "`←` on the first KR
+  does nothing" no longer holds and is superseded by the amendment; the rest of that step stands.
 - **Surprises / residual risks.** The `three-render-objects` snap described under Risks could
   not be judged: the up-tween and the camera tween are both driven by `requestAnimationFrame`,
   and an automated browser pane only paints when something forces it, so a held arrow advances

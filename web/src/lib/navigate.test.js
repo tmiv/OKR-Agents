@@ -32,17 +32,35 @@ test('first child is the first in array order', () => {
   assert.equal(firstChildOf(tree, 'kr-3'), null);
 });
 
-test('siblings walk array order and stop at both ends', () => {
+test('siblings walk array order', () => {
   assert.equal(siblingOf(tree, 'kr-1', 1).id, 'kr-2');
   assert.equal(siblingOf(tree, 'kr-2', 1).id, 'kr-3');
-  assert.equal(siblingOf(tree, 'kr-3', 1), null);
-  assert.equal(siblingOf(tree, 'kr-1', -1), null);
   assert.equal(siblingOf(tree, 'obj-b', -1).id, 'obj-a');
 });
 
-test('the root is its own only sibling, so left and right are no-ops there', () => {
+test('siblings wrap at both ends', () => {
+  assert.equal(siblingOf(tree, 'kr-3', 1).id, 'kr-1');
+  assert.equal(siblingOf(tree, 'kr-1', -1).id, 'kr-3');
+  assert.equal(siblingOf(tree, 'obj-b', 1).id, 'obj-a');
+  assert.equal(siblingOf(tree, 'obj-a', -1).id, 'obj-b');
+});
+
+test('a full lap returns to where it started', () => {
+  let id = 'kr-1';
+  for (let i = 0; i < 3; i++) id = siblingOf(tree, id, 1).id;
+  assert.equal(id, 'kr-1');
+  for (let i = 0; i < 3; i++) id = siblingOf(tree, id, -1).id;
+  assert.equal(id, 'kr-1');
+});
+
+test('an only child has nowhere to wrap to, so left and right are no-ops', () => {
+  // the root is the only node with a null parent
   assert.equal(siblingOf(tree, 'root', 1), null);
   assert.equal(siblingOf(tree, 'root', -1), null);
+  // and so is a lone key result under its objective
+  const lonely = { nodes: [{ id: 'r', parent: null }, { id: 'only', parent: 'r' }] };
+  assert.equal(siblingOf(lonely, 'only', 1), null);
+  assert.equal(siblingOf(lonely, 'only', -1), null);
 });
 
 test('with nothing selected every arrow selects the root', () => {
@@ -62,9 +80,9 @@ test('step maps the four arrows onto the walk', () => {
   assert.equal(step(tree, 'kr-2', 'left').id, 'kr-1');
 });
 
-test('the edges of the walk are null, not a wrap', () => {
+test('up and down still stop at the ends; left and right wrap', () => {
   assert.equal(step(tree, 'root', 'up'), null);
   assert.equal(step(tree, 'kr-3', 'down'), null);
-  assert.equal(step(tree, 'kr-3', 'right'), null);
-  assert.equal(step(tree, 'kr-1', 'left'), null);
+  assert.equal(step(tree, 'kr-3', 'right').id, 'kr-1');
+  assert.equal(step(tree, 'kr-1', 'left').id, 'kr-3');
 });

@@ -18,15 +18,19 @@ export function parentOf(tree, id) {
 
 export const firstChildOf = (tree, id) => tree.nodes.find((n) => n.parent === id) ?? null;
 
-// step: -1 | +1. Null at either end — no wrap-around, because wrapping a
-// three-item list is more disorienting than a key that does nothing.
+// step: -1 | +1, wrapping: right on the last sibling lands on the first, left
+// on the first lands on the last. An only child still returns null, so a key
+// that cannot go anywhere stays a no-op rather than re-selecting the node and
+// re-flying the camera to where it already is.
 export function siblingOf(tree, id, step) {
   const n = byId(tree, id);
   if (!n) return null;
   const sibs = tree.nodes.filter((s) => s.parent === n.parent);
+  if (sibs.length < 2) return null;
   const i = sibs.findIndex((s) => s.id === id);
   if (i < 0) return null;
-  return sibs[i + step] ?? null;
+  // step is ±1, so i + step + length is never negative.
+  return sibs[(i + step + sibs.length) % sibs.length];
 }
 
 // The one entry point for the four arrows. With nothing selected any arrow
