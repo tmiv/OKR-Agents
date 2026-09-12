@@ -4,6 +4,7 @@
   import * as THREE from 'three';
   import SpriteText from 'three-spritetext';
   import { unitName } from './lib/company.js';
+  import { neighborhoodOf } from './lib/navigate.js';
   import NodeCard from './NodeCard.svelte';
 
   let {
@@ -42,6 +43,12 @@
     objective: { color: '#4f9cff', size: 6.5 },
     kr: { color: '#5ad38a', size: 3.6 }
   };
+  const FRAME_MARGIN = 1.15; // breathing room around the bounding sphere
+  const MIN_DIST = 140;      // a lone node must not fill the screen
+
+  // The spheres have real size: a frame measured from centres alone crops the
+  // company node, whose radius is 10 world units.
+  const nodeRadius = (n) => LEVEL[n.level]?.size ?? LEVEL.kr.size;
   const WHITE = new THREE.Color('#ffffff');
   const RED = new THREE.Color('#ff3b30');
 
@@ -116,6 +123,48 @@
     upTween = { from, to, start: performance.now(), ms };
   }
 
+  // Distance at which a sphere of radius r about the aim point fills the frame.
+  // Whichever of the two half-angles is smaller is the one that clips.
+  function fitDistance(r) {
+    const cam = graph.camera();
+    const halfV = (cam.fov * Math.PI) / 360;
+    const halfH = Math.atan(Math.tan(halfV) * cam.aspect);
+    return r / Math.sin(Math.min(halfV, halfH));
+  }
+
+  // dagMode('td') puts parent and children directly above and below, so a
+  // bearing down the tree's axis collapses the separation the frame exists to
+  // show. Come in at least this far off it.
+  const MAX_Y = Math.cos((20 * Math.PI) / 180);
+
+  // The one framing move: pull back along the current bearing until everything
+  // in `nodes` fits, aiming at `aim` rather than at the world origin (which is
+  // all `zoomToFit` can do).
+  function frame(nodes, aim, ms) {
+    levelCamera(ms);
+    let r = 0;
+    for (const n of nodes) {
+      r = Math.max(r, Math.hypot(n.x - aim.x, n.y - aim.y, n.z - aim.z) + nodeRadius(n));
+    }
+    const dist = Math.max(MIN_DIST, fitDistance(r * FRAME_MARGIN));
+    // Approach along the camera's current bearing so the move feels continuous.
+    const cam = graph.cameraPosition();
+    const dir = new THREE.Vector3(cam.x - aim.x, cam.y - aim.y, cam.z - aim.z);
+    if (dir.length() < 1) dir.set(0, 0.3, 1);
+    dir.normalize();
+    // Azimuth is preserved, so the move still reads as "from where I was".
+    if (Math.abs(dir.y) > MAX_Y) {
+      const h = new THREE.Vector3(dir.x, 0, dir.z);
+      if (h.lengthSq() < 1e-6) h.set(0, 0, 1);
+      h.normalize().multiplyScalar(Math.sqrt(1 - MAX_Y ** 2));
+      dir.set(h.x, Math.sign(dir.y) * MAX_Y, h.z);
+    }
+    graph.cameraPosition(
+      { x: aim.x + dir.x * dist, y: aim.y + dir.y * dist, z: aim.z + dir.z * dist }, aim, ms
+    );
+  }
+
+  // An arbitrary set of nodes with no single subject: aim at their centroid.
   export function flyTo(ids, ms = 1200) {
     if (!graph || !ids?.length) return;
     clearTimeout(hoverTimer);
@@ -123,19 +172,23 @@
     const want = new Set(ids);
     const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && Number.isFinite(n.x));
     if (!nodes.length) return;
-    levelCamera(ms);
     const c = { x: 0, y: 0, z: 0 };
     for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
     c.x /= nodes.length; c.y /= nodes.length; c.z /= nodes.length;
-    let radius = 0;
-    for (const n of nodes) radius = Math.max(radius, Math.hypot(n.x - c.x, n.y - c.y, n.z - c.z));
-    const dist = Math.max(140, radius * 2.2 + 120);
-    // Approach along the camera's current bearing so the move feels continuous.
-    const cam = graph.cameraPosition();
-    const dir = new THREE.Vector3(cam.x - c.x, cam.y - c.y, cam.z - c.z);
-    if (dir.length() < 1) dir.set(0, 0.3, 1);
-    dir.normalize();
-    graph.cameraPosition({ x: c.x + dir.x * dist, y: c.y + dir.y * dist, z: c.z + dir.z * dist }, c, ms);
+    frame(nodes, c, ms);
+  }
+
+  // Selecting a node frames its neighbourhood but keeps the node itself centred:
+  // the selection is what the panel is about, so it is what the eye holds.
+  export function focusNode(id, ms = 800) {
+    if (!graph || !id) return;
+    clearTimeout(hoverTimer);
+    hovered = null;
+    const want = new Set(neighborhoodOf(tree, id));
+    const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && Number.isFinite(n.x));
+    const self = nodes.find((n) => n.id === id);
+    if (!self) return; // no position yet: leave the camera where it is
+    frame(nodes, { x: self.x, y: self.y, z: self.z }, ms);
   }
 
   // Frames the whole tree and levels the horizon. The mount-time overview and
@@ -227,7 +280,7 @@
       .linkDirectionalParticleSpeed(0.005)
       .d3VelocityDecay(0.3)
       .warmupTicks(80)
-      .onNodeClick((n) => { onSelect?.(n.id); flyTo([n.id], 800); })
+      .onNodeClick((n) => { onSelect?.(n.id); focusNode(n.id, 800); })
       // Fires with null on every frame the pointer is over empty space, so it
       // stays cheap: clear a timer, and touch state only on the way in or out.
       .onNodeHover((n) => {

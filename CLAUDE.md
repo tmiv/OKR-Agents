@@ -176,7 +176,8 @@ works:
 [CHAT_CONTEXT](Plans/completed/CHAT_CONTEXT.md) ·
 [CHAT_TABS_AND_INTERVIEWS](Plans/completed/CHAT_TABS_AND_INTERVIEWS.md) ·
 [NODE_HOVER_CARD](Plans/completed/NODE_HOVER_CARD.md) ·
-[GRAPH_KEYBOARD_SHORTCUTS](Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md).
+[GRAPH_KEYBOARD_SHORTCUTS](Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md) ·
+[FRAME_NODE_NEIGHBORHOOD](Plans/completed/FRAME_NODE_NEIGHBORHOOD.md).
 
 ## What comes next (no plans yet)
 

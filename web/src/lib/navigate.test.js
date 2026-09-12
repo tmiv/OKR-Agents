@@ -1,6 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { rootOf, parentOf, firstChildOf, siblingOf, step } from './navigate.js';
+import {
+  rootOf, parentOf, firstChildOf, childrenOf, siblingOf, neighborhoodOf, step
+} from './navigate.js';
 
 // Six nodes: a root, two objectives, three KRs under the first objective.
 // Deliberately not in tree order in the array — sibling order is array order,
@@ -85,4 +87,31 @@ test('up and down still stop at the ends; left and right wrap', () => {
   assert.equal(step(tree, 'kr-3', 'down'), null);
   assert.equal(step(tree, 'kr-3', 'right').id, 'kr-1');
   assert.equal(step(tree, 'kr-1', 'left').id, 'kr-3');
+});
+
+// Compared as sets: `neighborhoodOf` documents its order as "no particular".
+const set = (ids) => new Set(ids);
+
+test('children are every node pointing at the id, and a leaf has none', () => {
+  assert.deepEqual(set(childrenOf(tree, 'obj-a').map((n) => n.id)), set(['kr-1', 'kr-2', 'kr-3']));
+  assert.deepEqual(childrenOf(tree, 'obj-b'), []);
+});
+
+test('a neighbourhood is the node, its parent, and its direct children', () => {
+  assert.deepEqual(
+    set(neighborhoodOf(tree, 'obj-a')),
+    set(['root', 'obj-a', 'kr-1', 'kr-2', 'kr-3'])
+  );
+});
+
+test('a leaf frames itself and its parent', () => {
+  assert.deepEqual(set(neighborhoodOf(tree, 'kr-2')), set(['kr-2', 'obj-a']));
+});
+
+test('the root has no parent to add', () => {
+  assert.deepEqual(set(neighborhoodOf(tree, 'root')), set(['root', 'obj-a', 'obj-b']));
+});
+
+test('an id that is not in the tree frames nothing', () => {
+  assert.deepEqual(neighborhoodOf(tree, 'gone'), []);
 });

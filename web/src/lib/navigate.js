@@ -18,6 +18,8 @@ export function parentOf(tree, id) {
 
 export const firstChildOf = (tree, id) => tree.nodes.find((n) => n.parent === id) ?? null;
 
+export const childrenOf = (tree, id) => tree.nodes.filter((n) => n.parent === id);
+
 // step: -1 | +1, wrapping: right on the last sibling lands on the first, left
 // on the first lands on the last. An only child still returns null, so a key
 // that cannot go anywhere stays a no-op rather than re-selecting the node and
@@ -31,6 +33,16 @@ export function siblingOf(tree, id, step) {
   if (i < 0) return null;
   // step is ±1, so i + step + length is never negative.
   return sibs[(i + step + sibs.length) % sibs.length];
+}
+
+// The frame a selection deserves: the node, what it rolls up to, and what rolls
+// into it. Ids, in no particular order — the camera only averages positions.
+// Returns [] for an id that is not in the tree, so a stale selection is a no-op.
+export function neighborhoodOf(tree, id) {
+  const n = tree.nodes.find((x) => x.id === id);
+  if (!n) return [];
+  const p = parentOf(tree, id);
+  return [id, ...(p ? [p.id] : []), ...childrenOf(tree, id).map((c) => c.id)];
 }
 
 // The one entry point for the four arrows. With nothing selected any arrow

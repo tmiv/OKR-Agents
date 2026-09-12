@@ -495,7 +495,7 @@
     const next = step(tree, selectedId, dir);
     if (!next) return;
     select(next.id);
-    graph?.flyTo([next.id], 600);
+    graph?.focusNode(next.id, 600);
   }
 
   const SHORTCUTS = [
