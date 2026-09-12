@@ -1,4 +1,4 @@
 {
   "default": "workflow-platform-fy26",
-  "order": ["workflow-platform-fy26", "starter", "regional-clinic-network"]
+  "order": ["workflow-platform-fy26", "polaris-group-fy26", "starter", "regional-clinic-network"]
 }

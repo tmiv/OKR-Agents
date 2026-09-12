@@ -1,0 +1,2169 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "title": "Polaris Group, FY26",
+    "period": "FY26",
+    "exportedAt": "2026-09-12T00:00:00Z",
+    "generator": "hand-authored"
+  },
+  "company": {
+    "name": "Polaris Group",
+    "units": [
+      {
+        "id": "group-exec",
+        "name": "Group Exec",
+        "parent": null,
+        "charter": {
+          "mission": "We own the capital allocation of a conglomerate: which businesses get funded, which get sold, and which get told no. Our product is the portfolio, not any one thing in it.",
+          "process": "Division plans and the bets' quarterly gates come in once a year and a single group objective goes out. Divisions bring their numbers to a monthly business review; anything that trades one division's quarter against another's is settled there, in writing, and published to the group.",
+          "owns": [
+            "the group objective",
+            "capital allocation across divisions",
+            "the decision to start or shut a bet",
+            "the shareholder narrative",
+            "the reporting segment structure"
+          ],
+          "dependsOn": [
+            "finance",
+            "group-capital"
+          ]
+        }
+      },
+      {
+        "id": "beacon",
+        "name": "Beacon",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We run the advertising-funded consumer business that pays for everything else in the group. Our job is to keep that engine growing while the products it funds slowly stop needing it.",
+          "process": "We plan one operating budget across Search, Ads, Streamside, Maps, Commerce, Platforms and Hardware, reviewed monthly against revenue per user rather than per product. Product decisions that move ad load or default placements come to us before they ship, because they move the group's funding.",
+          "owns": [
+            "advertising revenue",
+            "consumer product portfolio",
+            "ad load across surfaces",
+            "default placements",
+            "the consumer data policy"
+          ],
+          "dependsOn": [
+            "infra",
+            "halo",
+            "trust"
+          ]
+        }
+      },
+      {
+        "id": "search",
+        "name": "Search",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We are the first place a person goes when they want to know something, and we intend to stay that even when the answer arrives without a link to click.",
+          "process": "Quality changes run through a live experiment and a human rater panel before launch; nothing ships on offline metrics alone. We hold a weekly quality review where the rater data and the complaint queue are read out before anyone shows a graph.",
+          "owns": [
+            "result quality",
+            "the ranking stack",
+            "generated answers on the results page",
+            "crawl and index freshness",
+            "result latency"
+          ],
+          "dependsOn": [
+            "halo",
+            "infra",
+            "ads"
+          ]
+        }
+      },
+      {
+        "id": "search-quality",
+        "name": "Search Quality",
+        "parent": "search"
+      },
+      {
+        "id": "ads",
+        "name": "Ads",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We turn attention into revenue for the group and into measurable customers for advertisers, and we try to do it with fewer ads each year rather than more.",
+          "process": "Advertiser demand and publisher supply are planned as one market. Auction and format changes go through a revenue-impact review with Finance and a user-impact review with Search or Streamside before launch, and we publish the take rate we charge.",
+          "owns": [
+            "revenue per query",
+            "the auction",
+            "ad formats and ad load",
+            "advertiser measurement",
+            "the publisher revenue share"
+          ],
+          "dependsOn": [
+            "search",
+            "video",
+            "finance"
+          ]
+        }
+      },
+      {
+        "id": "ads-demand",
+        "name": "Advertiser Platform",
+        "parent": "ads"
+      },
+      {
+        "id": "ads-supply",
+        "name": "Publisher Platform",
+        "parent": "ads"
+      },
+      {
+        "id": "ads-measurement",
+        "name": "Measurement",
+        "parent": "ads"
+      },
+      {
+        "id": "video",
+        "name": "Streamside",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We want Streamside to be where a creator can make a living, because a platform that only pays the top thousand people is one good competitor away from empty.",
+          "process": "Creator payouts, subscription revenue and ad revenue are planned together against one number: creators earning a full-time income. We review the payout formula quarterly with Creator Partnerships in the room and publish changes 90 days before they take effect.",
+          "owns": [
+            "creator payouts",
+            "subscription revenue",
+            "recommendation ranking",
+            "the monetisation policy",
+            "the creator appeals process"
+          ],
+          "dependsOn": [
+            "ads",
+            "trust",
+            "infra"
+          ]
+        }
+      },
+      {
+        "id": "creators",
+        "name": "Creator Partnerships",
+        "parent": "video"
+      },
+      {
+        "id": "video-ads",
+        "name": "Streamside Ads",
+        "parent": "video"
+      },
+      {
+        "id": "video-subs",
+        "name": "Subscriptions",
+        "parent": "video"
+      },
+      {
+        "id": "geo",
+        "name": "Maps & Geo",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We keep the map of the world accurate enough that people trust it for the last mile, and we want local businesses to transact on it rather than merely appear on it.",
+          "process": "Freshness comes from three streams: imagery, business-supplied edits and user reports, reconciled nightly. Licensing renewals are planned 18 months out because a country going dark is not a quarter we can recover.",
+          "owns": [
+            "map data accuracy and freshness",
+            "the local business listing",
+            "in-map transactions",
+            "map data licensing",
+            "navigation quality"
+          ],
+          "dependsOn": [
+            "commerce",
+            "infra"
+          ]
+        }
+      },
+      {
+        "id": "commerce",
+        "name": "Commerce",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We want the search for a product to end on our surfaces instead of starting on ours and finishing on a marketplace, which means owning the checkout and not only the click.",
+          "process": "Retailer inventory feeds, checkout and fraud are one system with one on-call. Merchant onboarding runs self-serve by default; anything requiring a human is treated as a bug in the onboarding flow and written up.",
+          "owns": [
+            "gross merchandise value",
+            "in-surface checkout",
+            "retailer inventory feeds",
+            "commerce fraud losses",
+            "merchant onboarding"
+          ],
+          "dependsOn": [
+            "search",
+            "ads",
+            "geo"
+          ]
+        }
+      },
+      {
+        "id": "assistant",
+        "name": "Assistant",
+        "parent": "beacon"
+      },
+      {
+        "id": "platforms",
+        "name": "Platforms",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We keep the group's software on the devices people actually buy, from someone else's phone to a headset that does not exist yet, so the consumer products are never a guest on a rival's platform.",
+          "process": "One OS release train a year, monthly security drops, and a developer preview that opens six months ahead. Partner OEMs get the release on the same day we do; anything that would give first-party hardware an advantage goes to Legal before it ships.",
+          "owns": [
+            "the OS release train",
+            "the developer SDK",
+            "default app placement",
+            "the app distribution terms",
+            "browser engine decisions"
+          ],
+          "dependsOn": [
+            "hardware",
+            "legal",
+            "security"
+          ]
+        }
+      },
+      {
+        "id": "mobile-os",
+        "name": "Mobile OS",
+        "parent": "platforms"
+      },
+      {
+        "id": "browser",
+        "name": "Browser",
+        "parent": "platforms"
+      },
+      {
+        "id": "xr",
+        "name": "XR",
+        "parent": "platforms"
+      },
+      {
+        "id": "hardware",
+        "name": "Hardware",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We build the group's own devices, and this year we intend them to pay for themselves rather than serve as a demonstration of what the software could do on better silicon.",
+          "process": "Programs run on an 18-month clock from architecture lock to mass production, with a cost gate at nine months that kills the program rather than trimming it. Silicon and Devices plan as one roadmap because the margin lives in the gap between them.",
+          "owns": [
+            "hardware gross margin",
+            "the device roadmap",
+            "in-house silicon",
+            "supply chain commitments",
+            "device warranty and returns"
+          ],
+          "dependsOn": [
+            "platforms",
+            "silicon",
+            "finance"
+          ]
+        }
+      },
+      {
+        "id": "devices",
+        "name": "Devices",
+        "parent": "hardware"
+      },
+      {
+        "id": "silicon",
+        "name": "Silicon",
+        "parent": "hardware"
+      },
+      {
+        "id": "cloud",
+        "name": "Beacon Cloud",
+        "parent": "beacon",
+        "charter": {
+          "mission": "We are the group's second engine. We are not trying to win on price; we are trying to stop being the vendor that gets added to the comparison slide and never to the shortlist.",
+          "process": "Enterprise commitments are forecast weekly from a single pipeline with Cloud Sales. Feature bets come from lost bake-offs rather than from competitor feature lists, and every loss is written up with the reason inside five days.",
+          "owns": [
+            "new enterprise commitments",
+            "regional availability",
+            "model serving for external customers",
+            "the enterprise support SLA",
+            "the public price list"
+          ],
+          "dependsOn": [
+            "infra",
+            "halo",
+            "marketing"
+          ]
+        }
+      },
+      {
+        "id": "cloud-infra",
+        "name": "Cloud Infrastructure",
+        "parent": "cloud"
+      },
+      {
+        "id": "cloud-data",
+        "name": "Data & Analytics",
+        "parent": "cloud"
+      },
+      {
+        "id": "cloud-ai",
+        "name": "Cloud AI",
+        "parent": "cloud"
+      },
+      {
+        "id": "cloud-sales",
+        "name": "Cloud Sales",
+        "parent": "cloud"
+      },
+      {
+        "id": "workspace",
+        "name": "Workspace",
+        "parent": "cloud"
+      },
+      {
+        "id": "halo",
+        "name": "Halo Labs",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We do the frontier research and we get it into products people already use. A model that only exists in a paper has not done its job, and a product that ships a model we cannot explain has not done its either.",
+          "process": "Research runs on its own clock; productisation runs on the divisions'. Applied AI holds a shared serving stack that every first-party surface uses, so a model improvement reaches nine products at once. No frontier launch leaves the gate without Model Safety signing it off.",
+          "owns": [
+            "frontier model training",
+            "the shared serving stack",
+            "model evaluation and red-teaming",
+            "the cost per token served",
+            "the publication policy"
+          ],
+          "dependsOn": [
+            "infra",
+            "cloud",
+            "security"
+          ]
+        }
+      },
+      {
+        "id": "halo-research",
+        "name": "Frontier Research",
+        "parent": "halo"
+      },
+      {
+        "id": "halo-applied",
+        "name": "Applied AI",
+        "parent": "halo"
+      },
+      {
+        "id": "halo-safety",
+        "name": "Model Safety",
+        "parent": "halo"
+      },
+      {
+        "id": "bets",
+        "name": "Other Bets",
+        "parent": "group-exec"
+      },
+      {
+        "id": "wayfarer",
+        "name": "Wayfarer",
+        "parent": "bets",
+        "charter": {
+          "mission": "We are trying to prove that driverless transport is a business with unit economics, not a demonstration that gets renewed every year because it looks like the future.",
+          "process": "City launches run off a written playbook rather than a launch team, and a city that needs a team is a playbook bug. Safety data is collected continuously and published quarterly with the raw incident records, whether or not a regulator has asked.",
+          "owns": [
+            "paid rides per week",
+            "cost per paid mile",
+            "the city launch playbook",
+            "the safety record",
+            "remote assistance operations"
+          ],
+          "dependsOn": [
+            "group-capital",
+            "halo",
+            "legal"
+          ]
+        }
+      },
+      {
+        "id": "wayfarer-ops",
+        "name": "Rider Operations",
+        "parent": "wayfarer"
+      },
+      {
+        "id": "wayfarer-eng",
+        "name": "Driver Engineering",
+        "parent": "wayfarer"
+      },
+      {
+        "id": "vitals",
+        "name": "Vitals",
+        "parent": "bets",
+        "charter": {
+          "mission": "We turn health research into products a clinician will actually order. Our failure mode is nine promising pilots and nothing a patient can be prescribed.",
+          "process": "Every program carries a named buyer and a regulatory path from day one, reviewed at the quarterly gate; a program that cannot name both is stopped rather than reduced. Trial results are published in full, including the arms that did not work.",
+          "owns": [
+            "regulatory clearance for group health products",
+            "the clinical trial programme",
+            "health-system deployments",
+            "the programme portfolio",
+            "clinical data governance"
+          ],
+          "dependsOn": [
+            "group-capital",
+            "legal",
+            "security"
+          ]
+        }
+      },
+      {
+        "id": "kite",
+        "name": "Kite",
+        "parent": "bets",
+        "charter": {
+          "mission": "We connect people that terrestrial networks will not reach for another twenty years, at a cost per covered user a carrier in that market can actually pay.",
+          "process": "We do not sell to consumers. Coverage is sold wholesale to national carriers on multi-year contracts, and the engineering roadmap is driven by cost per covered user rather than by peak throughput.",
+          "owns": [
+            "covered population",
+            "cost per covered user",
+            "wholesale carrier contracts",
+            "fleet operations and servicing",
+            "spectrum agreements"
+          ],
+          "dependsOn": [
+            "group-capital",
+            "policy"
+          ]
+        }
+      },
+      {
+        "id": "aster",
+        "name": "Aster",
+        "parent": "bets",
+        "charter": {
+          "mission": "We are a long-dated energy bet. Our job this decade is not revenue; it is to reach a grid-scale customer and a cost curve that someone outside the group is willing to finance.",
+          "process": "We run to a published cost model that Finance signs off on, and every experiment is scored by how much it moves the 2032 number rather than by whether it worked. External funding is pursued deliberately, because a bet only the group will fund is a bet nobody has checked.",
+          "owns": [
+            "contracted pilot capacity",
+            "round-trip efficiency",
+            "the published cost curve",
+            "external phase funding"
+          ],
+          "dependsOn": [
+            "group-capital",
+            "finance"
+          ]
+        }
+      },
+      {
+        "id": "group-capital",
+        "name": "Group Capital",
+        "parent": "bets",
+        "charter": {
+          "mission": "We are the investor inside the group. We fund the bets, we gate them, and we are the ones who have to say the word when a bet has run out of road.",
+          "process": "Every bet passes a quarterly gate on two questions: who is the buyer, and is there a signed pilot. Bets that fail twice are wound down or sold. Every bet sits on the same board cadence with the same pack, so they can be compared rather than described.",
+          "owns": [
+            "the bet portfolio",
+            "Other Bets operating loss",
+            "the buyer-and-pilot gate",
+            "wind-downs and divestitures",
+            "external co-investment"
+          ],
+          "dependsOn": [
+            "group-exec",
+            "finance",
+            "legal"
+          ]
+        }
+      },
+      {
+        "id": "infra",
+        "name": "Infrastructure",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We run the compute, storage, network and power the whole group sits on, and we intend it to cost less per unit of work every year even as the work grows faster than the budget.",
+          "process": "Capacity is planned three years out against the AI training and serving forecast, with a six-month rolling revision. Accelerator, data centre and network roadmaps are one plan; a weekly capacity review reads out committed power before it reads out anything else.",
+          "owns": [
+            "cost per unit of served compute",
+            "data centre capacity and power",
+            "in-house accelerators",
+            "the network backbone",
+            "the carbon-free energy match"
+          ],
+          "dependsOn": [
+            "halo",
+            "cloud",
+            "finance"
+          ]
+        }
+      },
+      {
+        "id": "datacenters",
+        "name": "Data Centers",
+        "parent": "infra"
+      },
+      {
+        "id": "networks",
+        "name": "Networks",
+        "parent": "infra"
+      },
+      {
+        "id": "accelerators",
+        "name": "Accelerators",
+        "parent": "infra"
+      },
+      {
+        "id": "storage",
+        "name": "Storage & Serving",
+        "parent": "infra"
+      },
+      {
+        "id": "trust",
+        "name": "Trust & Safety",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We keep the group's surfaces safe enough that no regulator has to write the policy for us. We would rather take the hit for enforcing a rule than have one imposed on us.",
+          "process": "Policy is written by Content Policy, enforced by Enforcement Operations, and the two are deliberately separate so a policy cannot be quietly softened because it is hard to enforce. Severity-1 queues are staffed continuously; appeal overturn rates are published internally every month.",
+          "owns": [
+            "violative view rate",
+            "the content policy",
+            "enforcement operations and SLAs",
+            "the appeals process",
+            "synthetic media provenance"
+          ],
+          "dependsOn": [
+            "video",
+            "search",
+            "legal"
+          ]
+        }
+      },
+      {
+        "id": "content-policy",
+        "name": "Content Policy",
+        "parent": "trust"
+      },
+      {
+        "id": "enforcement",
+        "name": "Enforcement Operations",
+        "parent": "trust"
+      },
+      {
+        "id": "security",
+        "name": "Security & Privacy",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We make a breach of one product stop being a breach of the account. Our measure is not how many attacks we stopped but how little a successful one gets.",
+          "process": "Every production service sits behind the zero-trust proxy or has a dated exception signed by a director. Critical findings run to a seven-day SLA, not to the end of the quarter, and we run unannounced exercises against production rather than against a staging clone.",
+          "owns": [
+            "account authentication",
+            "the zero-trust proxy",
+            "credential revocation",
+            "vulnerability SLAs",
+            "incident response"
+          ],
+          "dependsOn": [
+            "infra",
+            "platforms",
+            "halo"
+          ]
+        }
+      },
+      {
+        "id": "legal",
+        "name": "Legal & Public Policy",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We turn regulatory pressure into specifications engineers can build against, early enough that the build is a roadmap item rather than an emergency.",
+          "process": "Competition matters are run to agreed remedies rather than to indefinite appeals, and within 30 days of an agreement the product team gets a written remedy spec. Public Policy files the group's position in every market writing rules that will bind us, whether or not we were invited.",
+          "owns": [
+            "competition matters and remedies",
+            "the remedy specifications",
+            "regulatory filings",
+            "the transparency report",
+            "outside counsel spend"
+          ],
+          "dependsOn": [
+            "group-exec",
+            "trust",
+            "platforms"
+          ]
+        }
+      },
+      {
+        "id": "antitrust",
+        "name": "Competition",
+        "parent": "legal"
+      },
+      {
+        "id": "policy",
+        "name": "Public Policy",
+        "parent": "legal"
+      },
+      {
+        "id": "people",
+        "name": "People",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We keep the people the operating plan quietly assumes are already here, and we move people into the roles the plan needs rather than only hiring them from outside.",
+          "process": "A rolling hiring plan runs against the operating plan with priority roles named by division. Internal mobility is treated as a hiring channel with its own funnel, and promotion rates are reconciled against the stated rates by level every half.",
+          "owns": [
+            "regretted attrition",
+            "the hiring plan and priority roles",
+            "internal mobility",
+            "compensation bands",
+            "the promotion process"
+          ],
+          "dependsOn": [
+            "group-exec",
+            "finance"
+          ]
+        }
+      },
+      {
+        "id": "talent",
+        "name": "Talent",
+        "parent": "people"
+      },
+      {
+        "id": "learning",
+        "name": "Learning & Development",
+        "parent": "people"
+      },
+      {
+        "id": "finance",
+        "name": "Finance",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We fund the second engine out of the first engine's efficiency rather than out of new money, and we give every division numbers it cannot argue with.",
+          "process": "One unit-economics model serves the whole group, so divisions argue about assumptions rather than about methodology. Capex is planned against operating cash flow with a hard line at the buyback, and the books close on a five-day clock.",
+          "owns": [
+            "operating expense as a share of revenue",
+            "the unit-economics model",
+            "capital expenditure funding",
+            "the close calendar",
+            "segment reporting"
+          ],
+          "dependsOn": [
+            "group-exec",
+            "infra"
+          ]
+        }
+      },
+      {
+        "id": "fp-a",
+        "name": "FP&A",
+        "parent": "finance"
+      },
+      {
+        "id": "treasury",
+        "name": "Treasury",
+        "parent": "finance"
+      },
+      {
+        "id": "marketing",
+        "name": "Marketing",
+        "parent": "group-exec",
+        "charter": {
+          "mission": "We make the group's second engine legible to the people who buy it. An enterprise buyer who cannot name our cloud is a deal Sales never gets invited to.",
+          "process": "Brand and Product Marketing plan one calendar against the pipeline Cloud Sales needs. Launch kits are measured by rep usage rather than by delivery, and campaign production is pulled in-house where the volume justifies it.",
+          "owns": [
+            "brand awareness among enterprise buyers",
+            "the launch kit",
+            "campaign production",
+            "the group brand architecture",
+            "the developer conference"
+          ],
+          "dependsOn": [
+            "cloud",
+            "product-marketing",
+            "finance"
+          ]
+        }
+      },
+      {
+        "id": "brand",
+        "name": "Brand",
+        "parent": "marketing"
+      },
+      {
+        "id": "product-marketing",
+        "name": "Product Marketing",
+        "parent": "marketing"
+      }
+    ]
+  },
+  "tree": {
+    "nodes": [
+      {
+        "id": "co-1",
+        "level": "company",
+        "parent": null,
+        "label": "Move the group's centre of gravity from advertising to cloud, subscriptions and devices without stalling the engine that funds it",
+        "owner": "Group Exec",
+        "unitId": "group-exec",
+        "metric": "share of group operating income from non-advertising lines",
+        "target": "18% \u2192 30% by end of FY26",
+        "contributes": 1
+      },
+      {
+        "id": "obj-search",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Keep Search the first stop even as the answer arrives without a link to click",
+        "owner": "Search",
+        "unitId": "search",
+        "metric": "daily active searchers",
+        "target": "1.92B \u2192 2.05B",
+        "contributes": 0.55
+      },
+      {
+        "id": "kr-search-1",
+        "level": "kr",
+        "parent": "obj-search",
+        "label": "Answer more questions on the page without losing the click-out publishers live on",
+        "owner": "Search Quality",
+        "unitId": "search-quality",
+        "metric": "% of sessions ending in a satisfied answer with no follow-up search",
+        "target": "61% \u2192 70% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-search-2",
+        "level": "kr",
+        "parent": "obj-search",
+        "label": "Cut the rate of confidently wrong generated answers",
+        "owner": "Search Quality",
+        "unitId": "search-quality",
+        "metric": "verified error rate in generated answers, weekly rater sample",
+        "target": "2.4% \u2192 0.6% by Q3",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-search-3",
+        "level": "kr",
+        "parent": "obj-search",
+        "label": "Bring the next-day return rate back to where it was two years ago",
+        "owner": "Search",
+        "unitId": "search",
+        "metric": "% of searchers who return the next day",
+        "target": "78% \u2192 82% by Q4",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-search-4",
+        "level": "kr",
+        "parent": "obj-search",
+        "label": "Hold p95 result latency under 300ms as generated answers reach every locale",
+        "owner": "Search",
+        "unitId": "search",
+        "metric": "p95 end-to-end result latency",
+        "target": "410ms \u2192 300ms by Q3",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-search-5",
+        "level": "kr",
+        "parent": "obj-search",
+        "label": "Win product queries back from the marketplaces",
+        "owner": "Commerce",
+        "unitId": "commerce",
+        "metric": "share of product-intent queries that start on Search",
+        "target": "34% \u2192 40% by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-search-6",
+        "level": "kr",
+        "parent": "obj-search",
+        "label": "Redesign the search settings page",
+        "owner": "Search",
+        "unitId": "search",
+        "metric": "",
+        "target": "",
+        "contributes": 0.15
+      },
+      {
+        "id": "obj-ads",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Grow revenue per query while carrying fewer ads, not more",
+        "owner": "Ads",
+        "unitId": "ads",
+        "metric": "revenue per thousand queries",
+        "target": "$34 \u2192 $40",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-ads-1",
+        "level": "kr",
+        "parent": "obj-ads",
+        "label": "Move half of advertiser spend onto outcome-based bidding",
+        "owner": "Advertiser Platform",
+        "unitId": "ads-demand",
+        "metric": "% of spend on outcome-based bidding",
+        "target": "31% \u2192 50% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-ads-2",
+        "level": "kr",
+        "parent": "obj-ads",
+        "label": "Give advertisers conversion measurement that survives the end of third-party cookies",
+        "owner": "Measurement",
+        "unitId": "ads-measurement",
+        "metric": "% of conversions attributable without third-party cookies",
+        "target": "48% \u2192 85% by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-ads-3",
+        "level": "kr",
+        "parent": "obj-ads",
+        "label": "Raise the publisher revenue share enough to stop the drift to walled gardens",
+        "owner": "Publisher Platform",
+        "unitId": "ads-supply",
+        "metric": "publisher revenue share",
+        "target": "68% \u2192 72% by Q2",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-ads-4",
+        "level": "kr",
+        "parent": "obj-ads",
+        "label": "Cut ad load on the results page by a fifth without losing revenue",
+        "owner": "Ads",
+        "unitId": "ads",
+        "metric": "average ads per result page",
+        "target": "3.4 \u2192 2.7 by Q4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-ads-5",
+        "level": "kr",
+        "parent": "obj-ads",
+        "label": "Open self-serve to advertisers under $10k of annual spend in twelve more markets",
+        "owner": "Advertiser Platform",
+        "unitId": "ads-demand",
+        "metric": "markets with self-serve advertising",
+        "target": "18 \u2192 30 by Q3",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-ads-6",
+        "level": "kr",
+        "parent": "obj-ads",
+        "label": "Retire the legacy campaign console",
+        "owner": "Ads",
+        "unitId": "ads",
+        "metric": "% of advertisers migrated off the legacy console",
+        "target": "0% \u2192 100% by Q4",
+        "contributes": 0.4
+      },
+      {
+        "id": "obj-video",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Make Streamside a living for creators rather than a side income",
+        "owner": "Streamside",
+        "unitId": "video",
+        "metric": "creators earning a full-time income from the platform",
+        "target": "182k \u2192 260k",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-video-1",
+        "level": "kr",
+        "parent": "obj-video",
+        "label": "Grow the number of creators earning a full-time income",
+        "owner": "Creator Partnerships",
+        "unitId": "creators",
+        "metric": "creators earning over $50k a year",
+        "target": "182k \u2192 260k by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-video-2",
+        "level": "kr",
+        "parent": "obj-video",
+        "label": "Push subscriptions past a quarter of Streamside revenue",
+        "owner": "Subscriptions",
+        "unitId": "video-subs",
+        "metric": "subscription share of Streamside revenue",
+        "target": "19% \u2192 26% by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-video-3",
+        "level": "kr",
+        "parent": "obj-video",
+        "label": "Lift ad revenue per thousand views on connected TV",
+        "owner": "Streamside Ads",
+        "unitId": "video-ads",
+        "metric": "connected-TV revenue per thousand views",
+        "target": "$21 \u2192 $28 by Q4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-video-4",
+        "level": "kr",
+        "parent": "obj-video",
+        "label": "Stop payout disputes taking longer than the payout cycle itself",
+        "owner": "Creator Partnerships",
+        "unitId": "creators",
+        "metric": "median days to resolve a payout dispute",
+        "target": "11 \u2192 3 by Q3",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-video-5",
+        "level": "kr",
+        "parent": "obj-video",
+        "label": "Ship a shorts-to-long-form path that actually converts",
+        "owner": "Streamside",
+        "unitId": "video",
+        "metric": "% of shorts viewers who watch a long-form video the same week",
+        "target": "12% \u2192 22% by Q4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-video-6",
+        "level": "kr",
+        "parent": "obj-video",
+        "label": "Refresh the player logo animation",
+        "owner": "Streamside",
+        "unitId": "video",
+        "metric": "",
+        "target": "",
+        "contributes": 0.1
+      },
+      {
+        "id": "obj-cloud",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Get Cloud onto the shortlist instead of onto the price-comparison slide",
+        "owner": "Beacon Cloud",
+        "unitId": "cloud",
+        "metric": "share of new enterprise cloud commitments",
+        "target": "11% \u2192 16%",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-cloud-1",
+        "level": "kr",
+        "parent": "obj-cloud",
+        "label": "Sign forty new eight-figure multi-year commitments",
+        "owner": "Cloud Sales",
+        "unitId": "cloud-sales",
+        "metric": "new commitments worth $10M+ in total contract value",
+        "target": "23 \u2192 40 by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-cloud-2",
+        "level": "kr",
+        "parent": "obj-cloud",
+        "label": "Make model serving the reason customers arrive rather than an upsell",
+        "owner": "Cloud AI",
+        "unitId": "cloud-ai",
+        "metric": "% of new logos whose first workload is inference",
+        "target": "29% \u2192 55% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-cloud-3",
+        "level": "kr",
+        "parent": "obj-cloud",
+        "label": "Close the analytics gap that loses us bake-offs",
+        "owner": "Data & Analytics",
+        "unitId": "cloud-data",
+        "metric": "% of lost bake-offs attributed to analytics features",
+        "target": "44% \u2192 15% by Q3",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-cloud-4",
+        "level": "kr",
+        "parent": "obj-cloud",
+        "label": "Reach four nines in every region we sell as generally available",
+        "owner": "Cloud Infrastructure",
+        "unitId": "cloud-infra",
+        "metric": "regions at 99.99% monthly availability",
+        "target": "9 of 24 \u2192 24 of 24 by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-cloud-5",
+        "level": "kr",
+        "parent": "obj-cloud",
+        "label": "Halve the time from first meeting to signed pilot",
+        "owner": "Cloud Sales",
+        "unitId": "cloud-sales",
+        "metric": "median days from first meeting to signed pilot",
+        "target": "94 \u2192 45 by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-cloud-6",
+        "level": "kr",
+        "parent": "obj-cloud",
+        "label": "Publish a price-performance benchmark we are willing to be held to",
+        "owner": "Beacon Cloud",
+        "unitId": "cloud",
+        "metric": "benchmarks published and independently reproduced",
+        "target": "0 \u2192 3 by Q2",
+        "contributes": 0.5
+      },
+      {
+        "id": "obj-ai",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Put frontier models where people already are, not only in a paper",
+        "owner": "Halo Labs",
+        "unitId": "halo",
+        "metric": "monthly users of a surface powered by a Halo model",
+        "target": "610M \u2192 1.2B",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-ai-1",
+        "level": "kr",
+        "parent": "obj-ai",
+        "label": "Get every major first-party surface onto one shared serving stack",
+        "owner": "Applied AI",
+        "unitId": "halo-applied",
+        "metric": "first-party surfaces on the shared serving stack",
+        "target": "2 \u2192 9 by Q3",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-ai-2",
+        "level": "kr",
+        "parent": "obj-ai",
+        "label": "Hold the lead on the reasoning benchmarks enterprise buyers actually cite",
+        "owner": "Frontier Research",
+        "unitId": "halo-research",
+        "metric": "top-two placement on the six benchmarks named in enterprise RFPs",
+        "target": "3 of 6 \u2192 6 of 6 by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-ai-3",
+        "level": "kr",
+        "parent": "obj-ai",
+        "label": "Put an external red team through the gate before every frontier launch",
+        "owner": "Model Safety",
+        "unitId": "halo-safety",
+        "metric": "frontier launches with completed external red-team sign-off",
+        "target": "40% \u2192 100% by Q2",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-ai-4",
+        "level": "kr",
+        "parent": "obj-ai",
+        "label": "Cut the cost of serving a million tokens by seventy percent",
+        "owner": "Applied AI",
+        "unitId": "halo-applied",
+        "metric": "cost per million tokens served",
+        "target": "$1.80 \u2192 $0.54 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-ai-5",
+        "level": "kr",
+        "parent": "obj-ai",
+        "label": "Publish enough to keep hiring, without publishing the thing that is the moat",
+        "owner": "Frontier Research",
+        "unitId": "halo-research",
+        "metric": "papers accepted at the four venues candidates name in interviews",
+        "target": "18 \u2192 30 by Q4",
+        "contributes": 0.4
+      },
+      {
+        "id": "kr-ai-6",
+        "level": "kr",
+        "parent": "obj-ai",
+        "label": "Stand up a model incident process with a named on-call",
+        "owner": "Model Safety",
+        "unitId": "halo-safety",
+        "metric": "median hours from a reported model harm to a shipped mitigation",
+        "target": "72 \u2192 8 by Q3",
+        "contributes": 0.5
+      },
+      {
+        "id": "obj-platforms",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Hold the platform position as the device stops being a phone",
+        "owner": "Platforms",
+        "unitId": "platforms",
+        "metric": "monthly active devices on the platform",
+        "target": "3.1B \u2192 3.4B",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-platforms-1",
+        "level": "kr",
+        "parent": "obj-platforms",
+        "label": "Get the current OS release onto two thirds of active devices within the year",
+        "owner": "Mobile OS",
+        "unitId": "mobile-os",
+        "metric": "% of active devices on the current major release",
+        "target": "41% \u2192 66% by Q4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-platforms-2",
+        "level": "kr",
+        "parent": "obj-platforms",
+        "label": "Keep the browser's default-search economics intact through the remedies process",
+        "owner": "Browser",
+        "unitId": "browser",
+        "metric": "% of browser sessions using the default search provider",
+        "target": "87% \u2192 82% floor by Q4",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-platforms-3",
+        "level": "kr",
+        "parent": "obj-platforms",
+        "label": "Get the headset platform to a thousand applications people actually open",
+        "owner": "XR",
+        "unitId": "xr",
+        "metric": "third-party apps with more than 10k monthly users",
+        "target": "140 \u2192 1,000 by Q4",
+        "contributes": 0.55
+      },
+      {
+        "id": "kr-platforms-4",
+        "level": "kr",
+        "parent": "obj-platforms",
+        "label": "Make on-device inference the default for the five most common assistant tasks",
+        "owner": "Mobile OS",
+        "unitId": "mobile-os",
+        "metric": "assistant tasks served on-device",
+        "target": "1 of 5 \u2192 5 of 5 by Q3",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-platforms-5",
+        "level": "kr",
+        "parent": "obj-platforms",
+        "label": "Raise SDK satisfaction enough that partners stop shipping web wrappers",
+        "owner": "Platforms",
+        "unitId": "platforms",
+        "metric": "developer net promoter score for the platform SDK",
+        "target": "-4 \u2192 +20 by Q4",
+        "contributes": 0.45
+      },
+      {
+        "id": "kr-platforms-6",
+        "level": "kr",
+        "parent": "obj-platforms",
+        "label": "Consolidate four notification APIs into one",
+        "owner": "Platforms",
+        "unitId": "platforms",
+        "metric": "notification APIs in the platform surface",
+        "target": "4 \u2192 1 by Q4",
+        "contributes": 0.3
+      },
+      {
+        "id": "obj-hardware",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Make first-party hardware pay for itself instead of paying for the demo",
+        "owner": "Hardware",
+        "unitId": "hardware",
+        "metric": "hardware gross margin",
+        "target": "-6% \u2192 +8%",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-hardware-1",
+        "level": "kr",
+        "parent": "obj-hardware",
+        "label": "Turn hardware gross margin positive",
+        "owner": "Devices",
+        "unitId": "devices",
+        "metric": "hardware gross margin",
+        "target": "-6% \u2192 +8% by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-hardware-2",
+        "level": "kr",
+        "parent": "obj-hardware",
+        "label": "Move the flagship device onto in-house silicon",
+        "owner": "Silicon",
+        "unitId": "silicon",
+        "metric": "% of flagship bill-of-materials cost on in-house silicon",
+        "target": "38% \u2192 70% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-hardware-3",
+        "level": "kr",
+        "parent": "obj-hardware",
+        "label": "Cut the returns that battery life is driving",
+        "owner": "Devices",
+        "unitId": "devices",
+        "metric": "30-day return rate attributed to battery life",
+        "target": "4.1% \u2192 1.5% by Q3",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-hardware-4",
+        "level": "kr",
+        "parent": "obj-hardware",
+        "label": "Get device buyers onto a subscription within their first three months",
+        "owner": "Devices",
+        "unitId": "devices",
+        "metric": "% of device buyers on a paid subscription at 90 days",
+        "target": "22% \u2192 45% by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-hardware-5",
+        "level": "kr",
+        "parent": "obj-hardware",
+        "label": "Shorten the hardware program from twenty-six months to eighteen",
+        "owner": "Hardware",
+        "unitId": "hardware",
+        "metric": "months from architecture lock to mass production",
+        "target": "26 \u2192 18 by Q4",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-hardware-6",
+        "level": "kr",
+        "parent": "obj-hardware",
+        "label": "Refresh the retail packaging",
+        "owner": "Hardware",
+        "unitId": "hardware",
+        "metric": "",
+        "target": "",
+        "contributes": 0.15
+      },
+      {
+        "id": "obj-geo",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Make the map the layer local commerce runs on, not just the layer it appears on",
+        "owner": "Maps & Geo",
+        "unitId": "geo",
+        "metric": "businesses transacting through the map each month",
+        "target": "3.4M \u2192 6M",
+        "contributes": 0.55
+      },
+      {
+        "id": "kr-geo-1",
+        "level": "kr",
+        "parent": "obj-geo",
+        "label": "Get local businesses transacting rather than merely listed",
+        "owner": "Maps & Geo",
+        "unitId": "geo",
+        "metric": "businesses completing a booking or order in-map monthly",
+        "target": "3.4M \u2192 6M by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-geo-2",
+        "level": "kr",
+        "parent": "obj-geo",
+        "label": "Close the freshness gap on hours and closures",
+        "owner": "Maps & Geo",
+        "unitId": "geo",
+        "metric": "% of business listings verified in the last 30 days",
+        "target": "52% \u2192 80% by Q3",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-geo-3",
+        "level": "kr",
+        "parent": "obj-geo",
+        "label": "Ship indoor navigation for the five hundred busiest transit hubs",
+        "owner": "Maps & Geo",
+        "unitId": "geo",
+        "metric": "transit hubs with indoor navigation",
+        "target": "61 \u2192 500 by Q4",
+        "contributes": 0.4
+      },
+      {
+        "id": "kr-geo-4",
+        "level": "kr",
+        "parent": "obj-geo",
+        "label": "Cut map data licensing cost per country",
+        "owner": "Maps & Geo",
+        "unitId": "geo",
+        "metric": "average annual licensing cost per country",
+        "target": "$4.1M \u2192 $2.6M by Q4",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-geo-5",
+        "level": "kr",
+        "parent": "obj-geo",
+        "label": "Make the map usable offline in the low-connectivity markets we are growing in",
+        "owner": "Maps & Geo",
+        "unitId": "geo",
+        "metric": "% of sessions in target markets served fully offline",
+        "target": "8% \u2192 35% by Q4",
+        "contributes": 0.5
+      },
+      {
+        "id": "obj-commerce",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Take back the product search that leaked to the marketplaces",
+        "owner": "Commerce",
+        "unitId": "commerce",
+        "metric": "gross merchandise value transacted through group surfaces",
+        "target": "$61B \u2192 $95B",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-commerce-1",
+        "level": "kr",
+        "parent": "obj-commerce",
+        "label": "Grow merchandise value transacted through group surfaces",
+        "owner": "Commerce",
+        "unitId": "commerce",
+        "metric": "gross merchandise value",
+        "target": "$61B \u2192 $95B by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-commerce-2",
+        "level": "kr",
+        "parent": "obj-commerce",
+        "label": "Get checkout to complete without leaving the surface",
+        "owner": "Commerce",
+        "unitId": "commerce",
+        "metric": "% of orders completed in-surface",
+        "target": "17% \u2192 45% by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-commerce-3",
+        "level": "kr",
+        "parent": "obj-commerce",
+        "label": "Sign the top two hundred retailers to real-time inventory feeds",
+        "owner": "Commerce",
+        "unitId": "commerce",
+        "metric": "top-200 retailers with a live inventory feed",
+        "target": "74 \u2192 180 by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-commerce-4",
+        "level": "kr",
+        "parent": "obj-commerce",
+        "label": "Cut merchant onboarding from six weeks to five days",
+        "owner": "Commerce",
+        "unitId": "commerce",
+        "metric": "median days from signup to first live listing",
+        "target": "42 \u2192 5 by Q3",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-commerce-5",
+        "level": "kr",
+        "parent": "obj-commerce",
+        "label": "Hold fraud losses flat while merchandise value grows by half",
+        "owner": "Commerce",
+        "unitId": "commerce",
+        "metric": "fraud loss as a share of merchandise value",
+        "target": "0.31% \u2192 0.31% at 55% growth",
+        "contributes": 0.7
+      },
+      {
+        "id": "obj-wayfarer",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Prove driverless transport is a business rather than a renewable demo",
+        "owner": "Wayfarer",
+        "unitId": "wayfarer",
+        "metric": "paid driverless rides per week",
+        "target": "410k \u2192 1.5M",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-wayfarer-1",
+        "level": "kr",
+        "parent": "obj-wayfarer",
+        "label": "Grow paid rides per week",
+        "owner": "Rider Operations",
+        "unitId": "wayfarer-ops",
+        "metric": "paid driverless rides per week",
+        "target": "410k \u2192 1.5M by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-wayfarer-2",
+        "level": "kr",
+        "parent": "obj-wayfarer",
+        "label": "Open eight new cities with the playbook rather than with a launch team",
+        "owner": "Rider Operations",
+        "unitId": "wayfarer-ops",
+        "metric": "cities live",
+        "target": "6 \u2192 14 by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-wayfarer-3",
+        "level": "kr",
+        "parent": "obj-wayfarer",
+        "label": "Cut remote assistance events per thousand miles",
+        "owner": "Driver Engineering",
+        "unitId": "wayfarer-eng",
+        "metric": "remote assistance events per 1,000 driverless miles",
+        "target": "4.2 \u2192 1.0 by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-wayfarer-4",
+        "level": "kr",
+        "parent": "obj-wayfarer",
+        "label": "Get cost per mile below the human-driven benchmark",
+        "owner": "Driver Engineering",
+        "unitId": "wayfarer-eng",
+        "metric": "fully loaded cost per paid mile",
+        "target": "$3.40 \u2192 $1.90 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-wayfarer-5",
+        "level": "kr",
+        "parent": "obj-wayfarer",
+        "label": "Publish a safety record a regulator can audit without asking for it",
+        "owner": "Wayfarer",
+        "unitId": "wayfarer",
+        "metric": "quarterly safety reports published with raw incident records",
+        "target": "0 \u2192 4 by Q4",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-wayfarer-6",
+        "level": "kr",
+        "parent": "obj-wayfarer",
+        "label": "Sign one licensing deal with an existing fleet operator",
+        "owner": "Wayfarer",
+        "unitId": "wayfarer",
+        "metric": "signed fleet licensing agreements",
+        "target": "0 \u2192 1 by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "obj-vitals",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Get one regulated health product to market instead of six promising pilots",
+        "owner": "Vitals",
+        "unitId": "vitals",
+        "metric": "products with regulatory clearance",
+        "target": "0 \u2192 1",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-vitals-1",
+        "level": "kr",
+        "parent": "obj-vitals",
+        "label": "Clear the first product through the regulator",
+        "owner": "Vitals",
+        "unitId": "vitals",
+        "metric": "products with market clearance",
+        "target": "0 \u2192 1 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-vitals-2",
+        "level": "kr",
+        "parent": "obj-vitals",
+        "label": "Stop the four programs that cannot name a buyer",
+        "owner": "Vitals",
+        "unitId": "vitals",
+        "metric": "active programs",
+        "target": "9 \u2192 5 by Q2",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-vitals-3",
+        "level": "kr",
+        "parent": "obj-vitals",
+        "label": "Sign three health systems to paid deployments",
+        "owner": "Vitals",
+        "unitId": "vitals",
+        "metric": "paid health-system deployments",
+        "target": "0 \u2192 3 by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-vitals-4",
+        "level": "kr",
+        "parent": "obj-vitals",
+        "label": "Cut the cash burn by a third",
+        "owner": "Vitals",
+        "unitId": "vitals",
+        "metric": "quarterly operating burn",
+        "target": "$180M \u2192 $120M by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-vitals-5",
+        "level": "kr",
+        "parent": "obj-vitals",
+        "label": "Publish the trial results, including the arm that did not work",
+        "owner": "Vitals",
+        "unitId": "vitals",
+        "metric": "trials with full published results",
+        "target": "2 of 7 \u2192 7 of 7 by Q3",
+        "contributes": 0.4
+      },
+      {
+        "id": "obj-kite",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Connect the next hundred million people at a cost per user a carrier can pay",
+        "owner": "Kite",
+        "unitId": "kite",
+        "metric": "people under active Kite coverage",
+        "target": "11M \u2192 40M",
+        "contributes": 0.35
+      },
+      {
+        "id": "kr-kite-1",
+        "level": "kr",
+        "parent": "obj-kite",
+        "label": "Grow the population under active coverage",
+        "owner": "Kite",
+        "unitId": "kite",
+        "metric": "people under active coverage",
+        "target": "11M \u2192 40M by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-kite-2",
+        "level": "kr",
+        "parent": "obj-kite",
+        "label": "Get the annual cost per covered user under four dollars",
+        "owner": "Kite",
+        "unitId": "kite",
+        "metric": "annual cost per covered user",
+        "target": "$11 \u2192 $4 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-kite-3",
+        "level": "kr",
+        "parent": "obj-kite",
+        "label": "Sign two national carriers as wholesale customers",
+        "owner": "Kite",
+        "unitId": "kite",
+        "metric": "wholesale carrier contracts signed",
+        "target": "0 \u2192 2 by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-kite-4",
+        "level": "kr",
+        "parent": "obj-kite",
+        "label": "Keep the fleet flying ninety days between services",
+        "owner": "Kite",
+        "unitId": "kite",
+        "metric": "median days between ground servicing",
+        "target": "34 \u2192 90 by Q3",
+        "contributes": 0.5
+      },
+      {
+        "id": "obj-aster",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Show the energy bet can reach a grid-scale customer this decade",
+        "owner": "Aster",
+        "unitId": "aster",
+        "metric": "contracted pilot capacity",
+        "target": "0 MW \u2192 50 MW",
+        "contributes": 0.3
+      },
+      {
+        "id": "kr-aster-1",
+        "level": "kr",
+        "parent": "obj-aster",
+        "label": "Contract the first grid-scale pilot",
+        "owner": "Aster",
+        "unitId": "aster",
+        "metric": "contracted pilot capacity",
+        "target": "0 MW \u2192 50 MW by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-aster-2",
+        "level": "kr",
+        "parent": "obj-aster",
+        "label": "Hit the efficiency number the 2032 cost model assumes",
+        "owner": "Aster",
+        "unitId": "aster",
+        "metric": "round-trip efficiency",
+        "target": "61% \u2192 74% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-aster-3",
+        "level": "kr",
+        "parent": "obj-aster",
+        "label": "Raise half of the next phase from outside the group",
+        "owner": "Aster",
+        "unitId": "aster",
+        "metric": "external share of phase-three funding",
+        "target": "0% \u2192 50% by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-aster-4",
+        "level": "kr",
+        "parent": "obj-aster",
+        "label": "Publish a cost curve the group's own finance team will sign",
+        "owner": "Aster",
+        "unitId": "aster",
+        "metric": "",
+        "target": "",
+        "contributes": 0.4
+      },
+      {
+        "id": "obj-capital",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Stop funding bets that cannot name their buyer",
+        "owner": "Group Capital",
+        "unitId": "group-capital",
+        "metric": "bets with a named buyer and a signed pilot",
+        "target": "4 of 11 \u2192 9 of 11",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-capital-1",
+        "level": "kr",
+        "parent": "obj-capital",
+        "label": "Put every bet through the buyer-and-pilot gate",
+        "owner": "Group Capital",
+        "unitId": "group-capital",
+        "metric": "bets with a named buyer and a signed pilot",
+        "target": "4 of 11 \u2192 9 of 11 by Q3",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-capital-2",
+        "level": "kr",
+        "parent": "obj-capital",
+        "label": "Wind down or sell the three bets that fail the gate twice",
+        "owner": "Group Capital",
+        "unitId": "group-capital",
+        "metric": "bets wound down or sold",
+        "target": "0 \u2192 3 by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-capital-3",
+        "level": "kr",
+        "parent": "obj-capital",
+        "label": "Cut the quarterly operating loss across Other Bets",
+        "owner": "Group Capital",
+        "unitId": "group-capital",
+        "metric": "quarterly operating loss, Other Bets",
+        "target": "$1.4B \u2192 $0.9B by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-capital-4",
+        "level": "kr",
+        "parent": "obj-capital",
+        "label": "Bring outside capital into two bets so the group is not the only investor",
+        "owner": "Group Capital",
+        "unitId": "group-capital",
+        "metric": "bets with an external lead investor",
+        "target": "1 \u2192 3 by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-capital-5",
+        "level": "kr",
+        "parent": "obj-capital",
+        "label": "Put every bet on one board cadence with one pack",
+        "owner": "Group Capital",
+        "unitId": "group-capital",
+        "metric": "bets on the standard board cadence",
+        "target": "3 of 11 \u2192 11 of 11 by Q2",
+        "contributes": 0.5
+      },
+      {
+        "id": "obj-infra",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Serve more compute per dollar and per watt than we did last year",
+        "owner": "Infrastructure",
+        "unitId": "infra",
+        "metric": "cost per unit of served compute, indexed",
+        "target": "100 \u2192 62",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-infra-1",
+        "level": "kr",
+        "parent": "obj-infra",
+        "label": "Move two thirds of training and inference onto in-house accelerators",
+        "owner": "Accelerators",
+        "unitId": "accelerators",
+        "metric": "% of accelerator-hours on in-house silicon",
+        "target": "38% \u2192 66% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-infra-2",
+        "level": "kr",
+        "parent": "obj-infra",
+        "label": "Bring 2.4 gigawatts of new capacity online against the AI plan",
+        "owner": "Data Centers",
+        "unitId": "datacenters",
+        "metric": "new capacity energized this year",
+        "target": "0.6GW \u2192 2.4GW by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-infra-3",
+        "level": "kr",
+        "parent": "obj-infra",
+        "label": "Hold power usage effectiveness under 1.10 in every site we open",
+        "owner": "Data Centers",
+        "unitId": "datacenters",
+        "metric": "fleet-average PUE for sites opened this year",
+        "target": "1.16 \u2192 1.09 by Q4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-infra-4",
+        "level": "kr",
+        "parent": "obj-infra",
+        "label": "Cut the cost of moving a terabyte between regions",
+        "owner": "Networks",
+        "unitId": "networks",
+        "metric": "cost per terabyte of inter-region egress",
+        "target": "$8.40 \u2192 $5.20 by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-infra-5",
+        "level": "kr",
+        "parent": "obj-infra",
+        "label": "Retire the last of the pre-2019 storage fleet",
+        "owner": "Storage & Serving",
+        "unitId": "storage",
+        "metric": "% of served bytes on the current storage generation",
+        "target": "71% \u2192 100% by Q4",
+        "contributes": 0.55
+      },
+      {
+        "id": "kr-infra-6",
+        "level": "kr",
+        "parent": "obj-infra",
+        "label": "Match new capacity with carbon-free energy hour by hour, not year by year",
+        "owner": "Infrastructure",
+        "unitId": "infra",
+        "metric": "% of hourly load matched with carbon-free energy",
+        "target": "66% \u2192 80% by Q4",
+        "contributes": 0.5
+      },
+      {
+        "id": "obj-trust",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Keep the platforms safe enough that no regulator has to do it for us",
+        "owner": "Trust & Safety",
+        "unitId": "trust",
+        "metric": "violative view rate across group surfaces",
+        "target": "0.14% \u2192 0.06%",
+        "contributes": 0.45
+      },
+      {
+        "id": "kr-trust-1",
+        "level": "kr",
+        "parent": "obj-trust",
+        "label": "Halve the violative view rate",
+        "owner": "Enforcement Operations",
+        "unitId": "enforcement",
+        "metric": "violative views per 10,000 views",
+        "target": "14 \u2192 6 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-trust-2",
+        "level": "kr",
+        "parent": "obj-trust",
+        "label": "Get median time to action on the severity-one queue under an hour",
+        "owner": "Enforcement Operations",
+        "unitId": "enforcement",
+        "metric": "median hours to action, severity-one reports",
+        "target": "6.5 \u2192 0.9 by Q3",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-trust-3",
+        "level": "kr",
+        "parent": "obj-trust",
+        "label": "Publish each policy in the same language the reviewers are given",
+        "owner": "Content Policy",
+        "unitId": "content-policy",
+        "metric": "policies published with reviewer guidance attached",
+        "target": "0 of 22 \u2192 22 of 22 by Q3",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-trust-4",
+        "level": "kr",
+        "parent": "obj-trust",
+        "label": "Cut the takedowns that get overturned on appeal",
+        "owner": "Enforcement Operations",
+        "unitId": "enforcement",
+        "metric": "% of appeals overturned",
+        "target": "19% \u2192 7% by Q4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-trust-5",
+        "level": "kr",
+        "parent": "obj-trust",
+        "label": "Label synthetic media at upload across every surface",
+        "owner": "Trust & Safety",
+        "unitId": "trust",
+        "metric": "surfaces with provenance labelling at upload",
+        "target": "2 of 9 \u2192 9 of 9 by Q4",
+        "contributes": 0.65
+      },
+      {
+        "id": "obj-security",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Make a breach of one product stop being a breach of the account",
+        "owner": "Security & Privacy",
+        "unitId": "security",
+        "metric": "accounts on phishing-resistant authentication",
+        "target": "31% \u2192 75%",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-security-1",
+        "level": "kr",
+        "parent": "obj-security",
+        "label": "Move accounts onto phishing-resistant authentication",
+        "owner": "Security & Privacy",
+        "unitId": "security",
+        "metric": "% of active accounts on passkeys or hardware keys",
+        "target": "31% \u2192 75% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-security-2",
+        "level": "kr",
+        "parent": "obj-security",
+        "label": "Cut the time to revoke a compromised credential group-wide",
+        "owner": "Security & Privacy",
+        "unitId": "security",
+        "metric": "median minutes to full revocation",
+        "target": "47 \u2192 5 by Q3",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-security-3",
+        "level": "kr",
+        "parent": "obj-security",
+        "label": "Get every production service behind the zero-trust proxy",
+        "owner": "Security & Privacy",
+        "unitId": "security",
+        "metric": "% of production services behind the proxy",
+        "target": "82% \u2192 100% by Q4",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-security-4",
+        "level": "kr",
+        "parent": "obj-security",
+        "label": "Close critical findings inside the SLA rather than inside the quarter",
+        "owner": "Security & Privacy",
+        "unitId": "security",
+        "metric": "% of critical findings closed within seven days",
+        "target": "58% \u2192 95% by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-security-5",
+        "level": "kr",
+        "parent": "obj-security",
+        "label": "Run two unannounced red-team exercises against production",
+        "owner": "Security & Privacy",
+        "unitId": "security",
+        "metric": "unannounced production exercises completed",
+        "target": "0 \u2192 2 by Q4",
+        "contributes": 0.5
+      },
+      {
+        "id": "obj-legal",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Settle the competition overhang on terms the product teams can build against",
+        "owner": "Legal & Public Policy",
+        "unitId": "legal",
+        "metric": "open competition matters with an agreed remedy",
+        "target": "2 of 9 \u2192 7 of 9",
+        "contributes": 0.55
+      },
+      {
+        "id": "kr-legal-1",
+        "level": "kr",
+        "parent": "obj-legal",
+        "label": "Reach agreed remedies in the major competition matters",
+        "owner": "Competition",
+        "unitId": "antitrust",
+        "metric": "matters with an agreed remedy",
+        "target": "2 of 9 \u2192 7 of 9 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-legal-2",
+        "level": "kr",
+        "parent": "obj-legal",
+        "label": "Hand product teams a written remedy spec within a month of each agreement",
+        "owner": "Competition",
+        "unitId": "antitrust",
+        "metric": "% of remedy specs delivered within 30 days of agreement",
+        "target": "0% \u2192 100% by Q3",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-legal-3",
+        "level": "kr",
+        "parent": "obj-legal",
+        "label": "File the group's position in every market writing AI rules this year",
+        "owner": "Public Policy",
+        "unitId": "policy",
+        "metric": "markets with a filed position",
+        "target": "9 \u2192 22 by Q3",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-legal-4",
+        "level": "kr",
+        "parent": "obj-legal",
+        "label": "Cut outside counsel spend by bringing the repeat work in-house",
+        "owner": "Legal & Public Policy",
+        "unitId": "legal",
+        "metric": "annual outside counsel spend",
+        "target": "$740M \u2192 $590M by Q4",
+        "contributes": 0.4
+      },
+      {
+        "id": "kr-legal-5",
+        "level": "kr",
+        "parent": "obj-legal",
+        "label": "Publish a transparency report regulators accept without a follow-up request",
+        "owner": "Public Policy",
+        "unitId": "policy",
+        "metric": "markets accepting the report as filed",
+        "target": "12 of 30 \u2192 26 of 30 by Q4",
+        "contributes": 0.45
+      },
+      {
+        "id": "obj-people",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Keep the people the operating plan quietly assumes we already have",
+        "owner": "People",
+        "unitId": "people",
+        "metric": "regretted attrition among senior individual contributors",
+        "target": "11.4% \u2192 7%",
+        "contributes": 0.5
+      },
+      {
+        "id": "kr-people-1",
+        "level": "kr",
+        "parent": "obj-people",
+        "label": "Bring regretted attrition among senior engineers back under seven percent",
+        "owner": "People",
+        "unitId": "people",
+        "metric": "annualised regretted attrition, senior individual contributors",
+        "target": "11.4% \u2192 7% by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-people-2",
+        "level": "kr",
+        "parent": "obj-people",
+        "label": "Fill the AI and silicon roles the plan depends on",
+        "owner": "Talent",
+        "unitId": "talent",
+        "metric": "priority-role offers accepted",
+        "target": "210 of 600 \u2192 540 of 600 by Q4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-people-3",
+        "level": "kr",
+        "parent": "obj-people",
+        "label": "Cut time to offer for senior roles",
+        "owner": "Talent",
+        "unitId": "talent",
+        "metric": "median days from first screen to offer",
+        "target": "58 \u2192 25 by Q3",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-people-4",
+        "level": "kr",
+        "parent": "obj-people",
+        "label": "Retrain five thousand people into the roles the plan actually needs",
+        "owner": "Learning & Development",
+        "unitId": "learning",
+        "metric": "internal transfers completed into priority roles",
+        "target": "600 \u2192 5,000 by Q4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-people-5",
+        "level": "kr",
+        "parent": "obj-people",
+        "label": "Close the gap between stated and actual promotion rates by level",
+        "owner": "People",
+        "unitId": "people",
+        "metric": "levels where stated and actual promotion rates differ by more than 3 points",
+        "target": "7 of 9 \u2192 1 of 9 by Q4",
+        "contributes": 0.4
+      },
+      {
+        "id": "kr-people-6",
+        "level": "kr",
+        "parent": "obj-people",
+        "label": "Rebuild the internal jobs site",
+        "owner": "People",
+        "unitId": "people",
+        "metric": "",
+        "target": "",
+        "contributes": 0.1
+      },
+      {
+        "id": "obj-finance",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Fund the second engine out of the first engine's efficiency, not out of new money",
+        "owner": "Finance",
+        "unitId": "finance",
+        "metric": "operating expense as a share of revenue",
+        "target": "34% \u2192 29%",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-finance-1",
+        "level": "kr",
+        "parent": "obj-finance",
+        "label": "Take five points out of operating expense as a share of revenue",
+        "owner": "FP&A",
+        "unitId": "fp-a",
+        "metric": "operating expense as a share of revenue",
+        "target": "34% \u2192 29% by Q4",
+        "contributes": 0.95
+      },
+      {
+        "id": "kr-finance-2",
+        "level": "kr",
+        "parent": "obj-finance",
+        "label": "Give every division a unit-economics view it agrees with",
+        "owner": "FP&A",
+        "unitId": "fp-a",
+        "metric": "divisions on the shared unit-economics model",
+        "target": "3 of 11 \u2192 11 of 11 by Q3",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-finance-3",
+        "level": "kr",
+        "parent": "obj-finance",
+        "label": "Fund the capex plan without touching the buyback",
+        "owner": "Treasury",
+        "unitId": "treasury",
+        "metric": "% of capital expenditure funded from operating cash flow",
+        "target": "71% \u2192 100% by Q4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-finance-4",
+        "level": "kr",
+        "parent": "obj-finance",
+        "label": "Close the books in five days instead of twelve",
+        "owner": "FP&A",
+        "unitId": "fp-a",
+        "metric": "business days to close",
+        "target": "12 \u2192 5 by Q3",
+        "contributes": 0.4
+      },
+      {
+        "id": "kr-finance-5",
+        "level": "kr",
+        "parent": "obj-finance",
+        "label": "Report cloud, subscriptions and devices as segments of their own",
+        "owner": "Finance",
+        "unitId": "finance",
+        "metric": "separately reported segments",
+        "target": "2 \u2192 5 by Q2",
+        "contributes": 0.6
+      },
+      {
+        "id": "obj-marketing",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Make the group's second engine legible to the people who buy it",
+        "owner": "Marketing",
+        "unitId": "marketing",
+        "metric": "unaided awareness of the cloud brand among enterprise buyers",
+        "target": "22% \u2192 40%",
+        "contributes": 0.4
+      },
+      {
+        "id": "kr-marketing-1",
+        "level": "kr",
+        "parent": "obj-marketing",
+        "label": "Raise unaided cloud brand awareness among enterprise buyers",
+        "owner": "Product Marketing",
+        "unitId": "product-marketing",
+        "metric": "unaided awareness among enterprise IT buyers",
+        "target": "22% \u2192 40% by Q4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-marketing-2",
+        "level": "kr",
+        "parent": "obj-marketing",
+        "label": "Put the group's own name on the products people already use",
+        "owner": "Brand",
+        "unitId": "brand",
+        "metric": "products carrying the group brand",
+        "target": "4 of 19 \u2192 14 of 19 by Q4",
+        "contributes": 0.3
+      },
+      {
+        "id": "kr-marketing-3",
+        "level": "kr",
+        "parent": "obj-marketing",
+        "label": "Ship launch kits sales actually uses",
+        "owner": "Product Marketing",
+        "unitId": "product-marketing",
+        "metric": "% of launches with a kit used by more than 60% of reps",
+        "target": "30% \u2192 80% by Q4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-marketing-4",
+        "level": "kr",
+        "parent": "obj-marketing",
+        "label": "Bring the group's biggest campaigns in-house",
+        "owner": "Brand",
+        "unitId": "brand",
+        "metric": "% of campaign production produced in-house",
+        "target": "20% \u2192 60% by Q4",
+        "contributes": 0.35
+      },
+      {
+        "id": "kr-marketing-5",
+        "level": "kr",
+        "parent": "obj-marketing",
+        "label": "Run the annual developer conference",
+        "owner": "Marketing",
+        "unitId": "marketing",
+        "metric": "",
+        "target": "",
+        "contributes": 0.2
+      }
+    ]
+  }
+}
