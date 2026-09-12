@@ -175,7 +175,8 @@ works:
 [OKR_NODE_EDITOR](Plans/completed/OKR_NODE_EDITOR.md) ·
 [TEAM_MODEL_AND_EDITOR](Plans/completed/TEAM_MODEL_AND_EDITOR.md) ·
 [CHAT_CONTEXT](Plans/completed/CHAT_CONTEXT.md) ·
-[CHAT_TABS_AND_INTERVIEWS](Plans/completed/CHAT_TABS_AND_INTERVIEWS.md).
+[CHAT_TABS_AND_INTERVIEWS](Plans/completed/CHAT_TABS_AND_INTERVIEWS.md) ·
+[NODE_HOVER_CARD](Plans/completed/NODE_HOVER_CARD.md).
 
 ## What comes next (no plans yet)
 
@@ -192,3 +193,7 @@ the plan is the first step.
   (Horizon 2 of the vision doc).
 - **A shared, realtime document** so a team edits and chats against one `OkrDocument` at once
   (Horizon 3). Nothing persists today, tabs included.
+- **Deeper hierarchies** (sub-objectives, individual KRs, org-shaped trees) once a focus budget
+  and live alignment audit exist. Why the three-level ladder is a default, not doctrine, and why
+  human focus is the constraint that replaces it:
+  [Concepts/Depth and Focus - Design.md](Concepts/Depth%20and%20Focus%20-%20Design.md).

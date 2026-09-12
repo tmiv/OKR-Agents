@@ -17,7 +17,10 @@ this doc says *why* and how the pieces fit. Plans that cite this doc:
 [TEAM_MODEL_AND_EDITOR](../Plans/completed/TEAM_MODEL_AND_EDITOR.md),
 [CHAT_CONTEXT](../Plans/completed/CHAT_CONTEXT.md),
 [CHAT_TABS_AND_INTERVIEWS](../Plans/completed/CHAT_TABS_AND_INTERVIEWS.md).
-Companion: [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md).
+Companions: [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md), and
+[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md) (why the three-level ladder is a
+default, not a doctrine, and why focus is the constraint that replaces it).
 
 ## The thesis, restated
 
@@ -152,6 +155,9 @@ Seams to keep open now, because they are cheap today and expensive later:
 - **Team charters are self-contained prose plus lists.** An executor agent's system prompt is
   the charter plus the OKR plus its tool descriptions. A future `connections` field on the unit
   (which repos, which trackers) is additive.
+- **The level ladder is a warning in the schema, a rule only in the editor and prompt.** Keep it
+  that way so depth can be opened later without a migration; see
+  [Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).
 - **The service is stateless** (invariant 1) until Horizon 3 deliberately changes it. An agent
   that runs for hours cannot live inside a request; that is a new process, not a change to
   `/api/chat`.

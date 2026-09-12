@@ -4,6 +4,7 @@
   import * as THREE from 'three';
   import SpriteText from 'three-spritetext';
   import { unitName } from './lib/company.js';
+  import NodeCard from './NodeCard.svelte';
 
   let {
     tree,
@@ -25,6 +26,13 @@
   // moves the camera: the mouse is already where the user is looking.
   let previewSet = new Set();
   let raf;
+  // Which node the pointer is over — the only part of the hover card that is
+  // Svelte state. $state.raw because the force layout mutates these node objects
+  // every tick and we only ever swap which one is held, never write through it.
+  let hovered = $state.raw(null);
+  let hoverTimer;
+  let anchorEl = $state(null);
+  const HOVER_DELAY = 150; // long enough that sweeping across the tree does not flash cards
   const WORLD_UP = new THREE.Vector3(0, 1, 0);
   // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
   let upTween = null;
@@ -43,8 +51,6 @@
     return `hsl(${Math.round(120 * t)}, 75%, ${52 - 10 * t}%)`;
   }
 
-  const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]);
-
   function makeNodeObject(node) {
     const cfg = LEVEL[node.level] ?? LEVEL.kr;
     const mesh = new THREE.Mesh(
@@ -60,9 +66,11 @@
     // (It is seeded here as well, because 3d-force-graph may build the object
     // after the effect has already walked the meshes it knew about.)
     const text = unitName(company, node.unitId) ?? node.owner ?? '';
-    const label = new SpriteText(text, 3, '#8b96ad');
+    const label = new SpriteText(text, 6, '#e6ebf5');
     label.material.depthWrite = false;
-    label.position.y = -(cfg.size + 4);
+    // Anchor the sprite's left edge just right of the sphere, vertically centred.
+    label.center.set(0, 0.5);
+    label.position.x = cfg.size + 3;
     label.visible = showTeamLabels && !!text;
     mesh.add(label);
     mesh.userData.label = label;
@@ -110,6 +118,8 @@
 
   export function flyTo(ids, ms = 1200) {
     if (!graph || !ids?.length) return;
+    clearTimeout(hoverTimer);
+    hovered = null;
     const want = new Set(ids);
     const nodes = graph.graphData().nodes.filter((n) => want.has(n.id) && Number.isFinite(n.x));
     if (!nodes.length) return;
@@ -145,6 +155,19 @@
           cam.up.copy(upTween.from).lerp(upTween.to, e).normalize();
         }
       }
+    }
+    // The card rides with its node: one style write a frame beats pushing 60
+    // state updates a second through Svelte.
+    if (hovered && anchorEl && Number.isFinite(hovered.x)) {
+      const { x, y } = graph.graph2ScreenCoords(hovered.x, hovered.y, hovered.z);
+      const w = anchorEl.offsetWidth;
+      const h = anchorEl.offsetHeight;
+      // Beside the sphere, flipped to its left when that would run off the stage.
+      let left = x + 14;
+      if (left + w > el.clientWidth - 8) left = x - 14 - w;
+      left = Math.max(8, Math.min(left, el.clientWidth - w - 8));
+      const top = Math.max(8, Math.min(y - 10, el.clientHeight - h - 8));
+      anchorEl.style.transform = `translate(${left}px, ${top}px)`;
     }
     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
     for (const [id, mesh] of meshes) {
@@ -182,12 +205,9 @@
       .dagLevelDistance(90)
       .onDagError((loopIds) => console.warn('DAG cycle, falling back to free layout', loopIds))
       .nodeId('id')
-      // The team's name beats the owner text: they agree whenever unitId is
-      // set, and when it is not there is only the text.
-      .nodeLabel((n) => {
-        const who = unitName(company, n.unitId) ?? n.owner;
-        return `<div class="tip"><b>${esc(n.label)}</b><span>${esc(who)}${n.target ? ' · ' + esc(n.target) : ''}</span></div>`;
-      })
+      // No library tooltip: the hover card below says the same things the Detail
+      // panel says, as the same component.
+      .nodeLabel(() => null)
       .nodeThreeObject(makeNodeObject)
       .linkWidth((l) => 0.5 + 2.8 * (l.contributes ?? 0.5))
       .linkColor((l) => linkColor(l.contributes))
@@ -198,6 +218,13 @@
       .d3VelocityDecay(0.3)
       .warmupTicks(80)
       .onNodeClick((n) => { onSelect?.(n.id); flyTo([n.id], 800); })
+      // Fires with null on every frame the pointer is over empty space, so it
+      // stays cheap: clear a timer, and touch state only on the way in or out.
+      .onNodeHover((n) => {
+        clearTimeout(hoverTimer);
+        if (n) hoverTimer = setTimeout(() => (hovered = n), HOVER_DELAY);
+        else if (hovered) hovered = null;
+      })
       .onBackgroundClick(() => onSelect?.(null));
     graph.d3Force('charge').strength(-160);
     // Inertia would keep rotating camera.up while we tween it; the tradeoff is
@@ -213,6 +240,7 @@
 
     return () => {
       cancelAnimationFrame(raf);
+      clearTimeout(hoverTimer);
       ro.disconnect();
       graph._destructor?.();
     };
@@ -224,6 +252,9 @@
     graph.graphData(toGraphData(t, graph.graphData()));
     const alive = new Set(t.nodes.map((n) => n.id));
     for (const id of [...meshes.keys()]) if (!alive.has(id)) meshes.delete(id);
+    // A hovered node may have been edited away or edited in place; re-point at
+    // whatever the new data holds for it, which also refreshes the card.
+    if (hovered) hovered = graph.graphData().nodes.find((n) => n.id === hovered.id) ?? null;
   });
 
   // Node objects survive data updates (see toGraphData), so makeNodeObject does
@@ -253,3 +284,11 @@
 </script>
 
 <div class="graph" bind:this={el}></div>
+
+<!-- Never for the node whose Detail panel is already open: it would repeat what
+     is on screen. -->
+{#if hovered && hovered.id !== selectedId}
+  <div class="hover-card" bind:this={anchorEl}>
+    <NodeCard node={hovered} {company} />
+  </div>
+{/if}

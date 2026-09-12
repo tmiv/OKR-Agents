@@ -1,7 +1,7 @@
 <script>
   import { tick } from 'svelte';
   import { descendants } from './lib/apply.js';
-  import { unitName } from './lib/company.js';
+  import NodeCard from './NodeCard.svelte';
 
   let {
     node,
@@ -23,15 +23,10 @@
   // be editable. `owner` itself is never typed while a team is chosen: the
   // apply layer derives it from the team's name.
   const units = $derived(company?.units ?? []);
-  const ownerTeam = $derived(unitName(company, node.unitId));
 
   const LEVEL_NAME = { company: 'Company objective', objective: 'Team objective', kr: 'Key result' };
   const parent = $derived(node.parent ? tree.nodes.find((n) => n.id === node.parent) ?? null : null);
   const children = $derived(tree.nodes.filter((n) => n.parent === node.id));
-  // Nodes the owning team holds, for the hover preview on the owner link.
-  const teamNodes = $derived(
-    node.unitId ? tree.nodes.filter((n) => n.unitId === node.unitId).map((n) => n.id) : []
-  );
 
   // Hovering or tabbing to a link points the 3D view at what it refers to.
   const hover = (ids) => ({
@@ -244,45 +239,43 @@
       aria-label="Label"
     ></textarea>
   {:else}
-    <h2>{node.label}</h2>
+    <!-- Read view: the same card the 3D view shows on hover. Edit mode keeps
+         its inputs in the <dl> below. -->
+    <NodeCard {node} {company} {tree} {onOpenTeam} {onPreview} />
   {/if}
 
   <dl>
-    <dt>Owner</dt>
-    <dd>
-      {#if editing && units.length}
-        <select
-          value={node.unitId ?? ''}
-          onchange={commitTeam}
-          onfocus={() => onFocusField('owner')}
-          onblur={() => onFocusField(null)}
-          aria-label="Owner"
-        >
-          <option value="">— none —</option>
-          {#each units as u (u.id)}
-            <option value={u.id}>{u.name}</option>
-          {/each}
-        </select>
-      {:else if editing}
-        <input
-          bind:value={draft.owner}
-          onfocus={() => onFocusField('owner')}
-          onblur={() => {
-            commitText('owner');
-            onFocusField(null);
-          }}
-          onkeydown={(e) => onFieldKey(e, 'owner')}
-          aria-label="Owner"
-        />
-      {:else if ownerTeam}
-        <button class="link" {...hover(teamNodes)} onclick={() => onOpenTeam?.(node.unitId)}>{ownerTeam}</button>
-      {:else}
-        {node.owner || '—'}
-      {/if}
-    </dd>
-    <dt>Metric</dt>
-    <dd class:empty={!editing && !node.metric}>
-      {#if editing}
+    {#if editing}
+      <dt>Owner</dt>
+      <dd>
+        {#if units.length}
+          <select
+            value={node.unitId ?? ''}
+            onchange={commitTeam}
+            onfocus={() => onFocusField('owner')}
+            onblur={() => onFocusField(null)}
+            aria-label="Owner"
+          >
+            <option value="">— none —</option>
+            {#each units as u (u.id)}
+              <option value={u.id}>{u.name}</option>
+            {/each}
+          </select>
+        {:else}
+          <input
+            bind:value={draft.owner}
+            onfocus={() => onFocusField('owner')}
+            onblur={() => {
+              commitText('owner');
+              onFocusField(null);
+            }}
+            onkeydown={(e) => onFieldKey(e, 'owner')}
+            aria-label="Owner"
+          />
+        {/if}
+      </dd>
+      <dt>Metric</dt>
+      <dd>
         <input
           bind:value={draft.metric}
           onfocus={() => onFocusField('metric')}
@@ -293,13 +286,9 @@
           onkeydown={(e) => onFieldKey(e, 'metric')}
           aria-label="Metric"
         />
-      {:else}
-        {node.metric || 'none — not measurable'}
-      {/if}
-    </dd>
-    <dt>Target</dt>
-    <dd class:empty={!editing && !node.target}>
-      {#if editing}
+      </dd>
+      <dt>Target</dt>
+      <dd>
         <input
           bind:value={draft.target}
           onfocus={() => onFocusField('target')}
@@ -310,10 +299,8 @@
           onkeydown={(e) => onFieldKey(e, 'target')}
           aria-label="Target"
         />
-      {:else}
-        {node.target || 'none'}
-      {/if}
-    </dd>
+      </dd>
+    {/if}
     {#if parent}
       <dt>Supports</dt>
       <dd>

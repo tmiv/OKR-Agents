@@ -90,9 +90,19 @@ main { flex: 1; display: flex; min-height: 0; }
 .legend .sw.kr { background: var(--kr); }
 .legend .sw.line { width: 22px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--bad), var(--good)); }
 
-/* 3d-force-graph tooltip */
-.scene-tooltip .tip { background: rgba(18, 24, 38, 0.95); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; max-width: 280px; font-size: 13px; }
-.scene-tooltip .tip span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+/* the node summary card, anchored to the hovered node in the 3D view */
+.hover-card {
+  position: absolute; top: 0; left: 0;
+  pointer-events: none;
+  width: 300px;
+  background: rgba(18, 24, 38, 0.95);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+  backdrop-filter: blur(6px);
+  will-change: transform;
+}
+.hover-card .card-label { margin-top: 0; }
 
 /* ── detail panel ───────────────────────────────────────────────────── */
 .detail {
@@ -110,12 +120,19 @@ main { flex: 1; display: flex; min-height: 0; }
 .detail .level.objective { color: var(--objective); }
 .detail .level.kr { color: var(--kr); }
 .detail .close { background: none; border: 0; font-size: 20px; line-height: 1; padding: 0 4px; color: var(--muted); }
-.detail h2 { font-size: 16px; margin: 8px 0 12px; line-height: 1.3; }
+.detail h2,
+.card-label { font-size: 16px; margin: 8px 0 12px; line-height: 1.3; }
 .detail h3 { font-size: 12px; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.06em; }
-.detail dl { display: grid; grid-template-columns: 64px 1fr; gap: 6px 10px; margin: 0; }
-.detail dt { color: var(--muted); }
-.detail dd { margin: 0; }
-.detail dd.empty { color: var(--bad); font-style: italic; }
+.detail dl,
+.card-fields { display: grid; grid-template-columns: 64px 1fr; gap: 6px 10px; margin: 0; }
+.detail dt,
+.card-fields dt { color: var(--muted); }
+.detail dd,
+.card-fields dd { margin: 0; }
+.detail dd.empty,
+.card-fields dd.empty { color: var(--bad); font-style: italic; }
+/* NodeCard's <dl> and Detail's own (Supports, Fit) are two grids; keep the row gap across the seam */
+.detail .card-fields { margin-bottom: 6px; }
 .detail .fit { display: flex; align-items: center; gap: 8px; }
 .detail .bar { flex: 1; height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
 .detail .bar span { display: block; height: 100%; }
