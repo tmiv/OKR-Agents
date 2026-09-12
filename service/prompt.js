@@ -12,11 +12,25 @@ export const MODEL = 'claude-sonnet-5';
 // flattened (Claude cannot follow external refs). That means the field
 // descriptions the model reads and the rules the service enforces are the
 // same text, generated from one source in schema/src/.
-export const RESPOND_TOOL = {
+//
+// `findings` is in that schema, and it is handed to an audit and to nothing
+// else. Not only because every other mode is told not to send it: carrying it
+// in the schema measurably breaks ordinary replies. With `findings` present,
+// some conversational messages come back as a `respond` call with no `reply`
+// at all — reproducibly, three times in three, on the same input that answers
+// fine without it. Nothing about the audit path is harmed by the narrower
+// schema, and every other path is a tool description shorter.
+const WITHOUT_FINDINGS = (() => {
+  const { findings, ...properties } = RESPOND_INPUT_SCHEMA.properties;
+  return { ...RESPOND_INPUT_SCHEMA, properties };
+})();
+
+/** The `respond` tool as this mode needs it. Only an audit may report findings. */
+export const respondTool = (mode) => ({
   name: 'respond',
   description: 'Reply to the user about their OKR tree. Always call this exactly once.',
-  input_schema: RESPOND_INPUT_SCHEMA
-};
+  input_schema: mode === 'audit' ? RESPOND_INPUT_SCHEMA : WITHOUT_FINDINGS
+});
 
 // The teams block, or '' when the document has no org. Only the fields that
 // say something are sent: an empty charter in every unit is a lot of tokens
@@ -97,6 +111,13 @@ function viewBlock(tree, company, selectedNodeId, context) {
     );
   } else if (panel?.kind === 'teams') {
     lines.push(`The list of all ${units.size} teams is open. No single team or node is in focus.`);
+  } else if (panel?.kind === 'briefing') {
+    // The briefing is the one panel whose contents you wrote: it lists the
+    // findings from the last audit, in the order you ranked them. Saying so is
+    // what lets a conversation started from a card say "fix the second one".
+    lines.push(
+      'The briefing panel is open, listing what you found wrong with the tree on the last audit, ranked as you ranked them. "The first one", "the second one" and "that finding" mean entries in that list.'
+    );
   }
 
   if (panel?.field) {
@@ -215,6 +236,72 @@ ${INTERVIEW_RULES}
 `;
   }
 
+  // The one mode where you are not the coach. The charter goes in as prose
+  // rather than as a summary, because prose is what it was written as and what
+  // a team's own voice comes out of.
+  if (mode === 'persona' && subject?.kind === 'team') {
+    const unit = units.get(subject.id);
+    const charter = unit.charter ?? {};
+    const owned = tree.nodes.filter((n) => n.unitId === unit.id);
+    const parent = unit.parent ? units.get(unit.parent)?.name : null;
+    const deps = (charter.dependsOn ?? []).map((d) => units.get(d)?.name ?? d);
+    return `
+## Your role in this conversation
+You are not the coach here. You are the ${unit.name} team${parent ? `, which sits under ${parent}` : ''}, answering for yourselves. Speak as "we".
+
+<charter>
+${charter.mission ? `Why we exist: ${charter.mission}` : 'We have not written down why we exist.'}
+${charter.process ? `How we work: ${charter.process}` : 'We have not written down how we work.'}
+${charter.owns?.length ? `What we own: ${charter.owns.join('; ')}` : 'We have not written down what we own.'}
+${deps.length ? `Whose output we need: ${deps.join(', ')}` : 'We have not written down who we depend on.'}
+</charter>
+
+${
+  owned.length
+    ? `Ours in the tree: ${owned.map((n) => `"${n.label}"${n.target ? ` (${n.target})` : ''}`).join(', ')}.`
+    : 'Nothing in the tree is assigned to us, which is itself worth saying if the user asks what we are working on.'
+}
+
+Answer from that charter and those nodes — our priorities, our constraints, what we are already committed to — not from what a coach would say is correct. If the user's question rests on something the charter does not cover, say so in our voice rather than inventing a position. Where we genuinely disagree with how the tree describes our work, say that too; the point of asking us is to hear it.
+
+Answering still means calling \`respond\` once, with every field it requires:
+- \`reply\` is us talking, and it is never empty: two to four sentences in our own voice.
+- \`highlight\` is our nodes, plus whatever else we are talking about.
+- \`actions\` is empty unless the user asks us to change something, and then only our own nodes and our own charter. Someone else's objective is not ours to rewrite: say what we would need from them instead.
+`;
+  }
+
+  if (mode === 'audit') {
+    const root = tree.nodes.find((n) => n.parent == null);
+    const teams = units.size;
+    return `
+## Your role in this conversation
+You are not answering a question. Nobody typed anything: the app opened this document and asked you to read it. Read the whole tree${teams ? ' and every team charter' : ''} and report what most needs a person's attention.
+
+Return 3–6 \`findings\`, ranked by impact on ${root ? `"${root.label}"` : 'the company objective'}, highest first. This tree has ${tree.nodes.length} nodes${teams ? ` and ${teams} teams` : ''} — far more than anyone will read — so the ranking is the whole product. A finding nobody would act on is worse than a shorter list.
+
+What to look for, roughly in the order it costs the company:
+- A key result with no metric, or a target with no baseline: nothing can be said to have moved.
+- An activity written as a key result ("run an offsite", "attend three events") rather than the outcome it is supposed to produce.
+- \`contributes\` below 0.4, or a score the labels plainly contradict in either direction.
+- An objective with no key results under it, so nothing measures it.
+- A node with no team, so nobody is accountable for it.
+- A team owning more than five key results: past that, nothing is a priority. Say so and ask which three matter.
+- A key result that needs another team's work when that team has no key result of its own to match — read each team's \`dependsOn\` and what it \`owns\`.
+
+How to write them:
+- Group by problem, not by node. One finding may name several nodes; \`nodeIds\` is every node it covers.
+- \`title\` is the problem in one line, as you would say it to the person who owns the tree, and it must fit in 80 characters — count them, because it is cut off at 80. \`why\` is one or two sentences on what it costs them, at most 300 characters. Labels, never ids, in both.
+- Most findings carry a \`fix\`: an \`edit\` per node that resolves it, applied by one click. Measurability always has one — rewrite the \`label\` so it states the outcome and set a \`metric\` that names the quantity being moved. So does a wrong \`contributes\`, a node under the wrong parent (\`relink\`), and a node with no team (\`unitId\`).
+- Never invent a number the tree does not contain. A missing baseline does not mean no fix: fix the label and the metric, and write the \`target\` as the measurement that has to be taken ("baseline to be measured in Q1, then halved"), never as a number you made up.
+- Leave \`fix\` empty only when the resolution is a decision the user has to make — which of these nine matter, whether this bet belongs in the tree at all. Then ask that question in \`why\`.
+- A fix is applied on its own, in whatever order the user clicks. It may not depend on another finding's fix having landed first, and it never deletes anything.
+- \`reply\` is one sentence on the state of the tree as a whole, not a list of the findings — the user reads those on cards.
+- \`actions\` is empty. Nothing is applied until the user clicks Fix on a card.
+- \`highlight\` is the \`nodeIds\` of your first finding.
+`;
+  }
+
   return '';
 }
 
@@ -240,6 +327,7 @@ ${teamsBlock(company)}
 - \`reply\`: 1–3 conversational sentences. Refer to nodes by their label, never by id. No JSON, no bullet lists.
 - \`highlight\`: the ids of every node your reply talks about. Be generous — the camera flies to these and they pulse, which is how the user follows along. Include the parent when the relationship matters. Only use ids that exist in the tree, or that you are adding in this same response.
 - \`actions\`: only when the user asks for a change (rewrite, fix, move, add, remove, make measurable, tighten, etc.). Send an empty array for questions.
+- \`findings\`: only in an audit, where the section below says so. Leave it out of every ordinary reply.
 
 ## Actions
 - { "op": "edit", "id", "fields": { label?, owner?, unitId?, metric?, target?, contributes? } } — rewriting a KR to be measurable means a label that states the outcome, a concrete \`metric\`, and a \`target\` with a baseline and a goal (e.g. "31% → 50% by Q4"). Raise \`contributes\` when the fix actually makes it support its parent. To change who owns a node, set \`unitId\` to a team id from \`<teams>\` (or null for none) and do not set \`owner\`.

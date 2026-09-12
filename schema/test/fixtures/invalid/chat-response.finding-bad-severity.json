@@ -1,0 +1,17 @@
+{
+  "schema": "chat-response",
+  "at": "/findings/0/severity",
+  "data": {
+    "reply": "ok",
+    "actions": [],
+    "highlight": [],
+    "findings": [
+      {
+        "title": "Two key results have no baseline",
+        "why": "Both name the goal but not where they are today.",
+        "severity": "critical",
+        "nodeIds": ["kr-1"]
+      }
+    ]
+  }
+}

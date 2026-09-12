@@ -1,11 +1,14 @@
 <script>
+  import { untrack } from 'svelte';
   import Graph from './Graph.svelte';
   import Chat from './Chat.svelte';
   import Detail from './Detail.svelte';
   import TeamList from './TeamList.svelte';
   import TeamEditor from './TeamEditor.svelte';
+  import Briefing from './Briefing.svelte';
   import { DATASETS, DEFAULT_DATASET_ID, getDataset } from './lib/datasets.js';
   import { applyDocumentActions } from './lib/apply.js';
+  import { keyOf } from './lib/briefing.js';
   import { unitName } from './lib/company.js';
   import { step } from './lib/navigate.js';
   import {
@@ -86,8 +89,9 @@
   const note = (content, extra = {}) => activeChat.messages.push({ role: 'assistant', content, ...extra });
 
   // One panel slot over the stage, so the app never shows a node and a team at
-  // once: null | { kind: 'node' } | { kind: 'teams' } | { kind: 'team', id }.
-  // Which node is a separate question — `selectedId` also drives the graph.
+  // once: null | { kind: 'node' } | { kind: 'teams' } | { kind: 'team', id }
+  // | { kind: 'briefing' }. Which node is a separate question — `selectedId`
+  // also drives the graph.
   let panel = $state(null);
 
   // A hover preview belongs to the panel that raised it: swapping or closing
@@ -153,6 +157,116 @@
     if (panel?.kind === 'team' && !selectedUnit) panel = { kind: 'teams' };
   });
   const weakLinks = $derived(tree.nodes.filter((n) => n.parent && (n.contributes ?? 1) < 0.4).length);
+
+  // ── the briefing ──────────────────────────────────────────────────────────
+  //
+  // The assistant reads the tree without being asked. `weakLinks` above is the
+  // rule this replaces: it counts one kind of problem and cannot see an
+  // activity dressed as a key result, a target with no baseline, or a team
+  // carrying nine of them. The rule stays as the fallback for when the service
+  // is unreachable — it is what the app can say when the model cannot.
+  //
+  // Nothing here goes near `commit()`: an audit is a reading, not a reply, and
+  // nothing enters the document until the user clicks Fix on a card.
+  let briefing = $state.raw({ status: 'idle', findings: [], error: null }); // idle | running | ready | error
+  let dismissed = $state.raw(new Set());
+
+  // Deliberately not $state: an audit reads these from timers and from an
+  // $effect, and a sequence number that re-triggered the effect that set it
+  // would audit forever.
+  let auditSeq = 0;
+  let auditTimer = null;
+  let auditAbort = null;
+  let briefingShown = false;
+
+  async function audit() {
+    const seq = ++auditSeq;
+    auditAbort = new AbortController();
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        signal: auditAbort.signal,
+        // The same body `send()` builds, minus everything a conversation has:
+        // no question was typed, there is no history, and no one node is the
+        // subject. `context` still rides along, so a briefing that is already
+        // open is something the model knows about.
+        body: JSON.stringify({
+          tree,
+          company,
+          message: 'Audit the tree.',
+          selectedNodeId: null,
+          history: [],
+          context: viewContext,
+          mode: 'audit',
+          subject: null
+        })
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? `${res.status} ${res.statusText}`);
+      }
+      const checked = validateChatResponse(await res.json());
+      if (!checked.ok) throw new Error("the service sent a response this app can't read");
+      // A response that lands after a newer audit was scheduled describes a
+      // tree that is no longer on the stage.
+      if (seq !== auditSeq) return;
+      const findings = checked.value.findings ?? [];
+      briefing = { status: 'ready', findings, error: null };
+      // It shows itself once per document, and never over something the user
+      // opened: a node they clicked is not pushed aside by a background read.
+      if (findings.length && !briefingShown && !panel) {
+        briefingShown = true;
+        panel = { kind: 'briefing' };
+      }
+    } catch (err) {
+      if (err.name === 'AbortError' || seq !== auditSeq) return;
+      // Keep the findings we have: a failed re-audit should not empty a panel
+      // the user is reading.
+      briefing = { status: 'error', findings: briefing.findings, error: err.message };
+    }
+  }
+
+  // Debounced because one gesture is several commits: an interview's closing
+  // batch, or a field-by-field edit in the Detail panel, would otherwise be an
+  // audit each. The abort drops whatever is still out.
+  function scheduleAudit() {
+    clearTimeout(auditTimer);
+    auditAbort?.abort();
+    auditSeq++; // anything still in flight is now stale, aborted or not
+    briefing = { status: 'running', findings: briefing.findings, error: null };
+    auditTimer = setTimeout(audit, 1500);
+  }
+
+  // The one trigger: the document changed. Both halves are $state.raw, so their
+  // identity changes on every commit, undo, reset, switch and import — and the
+  // effect runs on mount, which is the first audit. No call site has to
+  // remember to re-audit. `untrack` keeps the writes inside scheduleAudit()
+  // from making this effect depend on its own output.
+  $effect(() => {
+    tree;
+    company;
+    untrack(scheduleAudit);
+    return () => {
+      clearTimeout(auditTimer);
+      auditAbort?.abort();
+    };
+  });
+
+  const openFindings = $derived(briefing.findings.filter((f) => !dismissed.has(keyOf(f))));
+
+  // The topbar stat, which is also the button that opens the panel. Until an
+  // audit has come back it is the rule-based count it replaces, so the number
+  // never goes blank.
+  const briefingStat = $derived(
+    briefing.status === 'running'
+      ? 'Reviewing…'
+      : briefing.status === 'ready'
+        ? openFindings.length
+          ? `${openFindings.length} to review`
+          : 'Nothing to review'
+        : `${weakLinks} weak link${weakLinks === 1 ? '' : 's'}`
+  );
 
   // What the user is looking at, in the shape the chat schema calls
   // ViewContext. One builder, because every chat request wants the same
@@ -325,19 +439,25 @@
     if (mode === 'interview-node') return `Interview: ${tree.nodes.find((n) => n.id === subject?.id)?.label ?? subject?.id}`;
     if (mode === 'interview-team') return `Team: ${unitName(company, subject?.id) ?? subject?.id}`;
     if (mode === 'interview-new') return 'Interview: new OKR';
+    if (mode === 'persona') return `As ${unitName(company, subject?.id) ?? subject?.id}`;
     return 'Chat';
   };
 
   // Opening an interview tab sends its own first turn, because an interview
   // that opens with an empty transcript would sit there waiting for the user to
   // start a conversation the assistant is supposed to be leading.
-  function newChat({ mode = 'free', subject, title } = {}) {
+  //
+  // `opening` is the other way round: a tab opened from a briefing card starts
+  // with a real question the user is asking the team, so it is sent as a turn
+  // they can see, not as the hidden kick-off an interview needs.
+  function newChat({ mode = 'free', subject, title, opening } = {}) {
     const resolved =
       subject === undefined && mode === 'interview-new' ? { kind: 'new', parentId: newNodeParent() } : subject ?? null;
     const chat = freshChat({ mode, subject: resolved, title: title ?? defaultTitle(mode, resolved) });
     chats = [...chats, chat];
     activeChatId = chat.id;
-    if (mode !== 'free') send(chat.id, 'Begin the interview.', { hidden: true });
+    if (opening) send(chat.id, opening);
+    else if (mode !== 'free') send(chat.id, 'Begin the interview.', { hidden: true });
     return chat.id;
   }
 
@@ -379,6 +499,13 @@
     panel = null;
     chats = [freshChat()];
     activeChatId = chats[0].id;
+    // Findings are about the tree that just left the stage, and so are the
+    // dismissals: "I know about that one" does not carry to another document.
+    // The $effect on `tree` re-audits the new one, and the panel is allowed to
+    // show itself again when it comes back.
+    briefing = { status: 'idle', findings: [], error: null };
+    dismissed = new Set();
+    briefingShown = false;
     // The new layout has no positions yet; Graph waits for the simulation.
     graph?.frameWhenSettled();
   }
@@ -541,7 +668,21 @@
   <header class="topbar">
     <div class="brand"><span class="dot"></span> OKR Viewer</div>
     <div class="stats">
-      {tree.nodes.length} nodes · <span class:warn={weakLinks}>{weakLinks} weak link{weakLinks === 1 ? '' : 's'}</span>
+      {tree.nodes.length} nodes ·
+      <!-- The stat is the way in: the assistant reads the tree on its own, so
+           the count of what it found is also the button that shows it. -->
+      <button
+        class="stat"
+        class:on={panel?.kind === 'briefing'}
+        class:busy={briefing.status === 'running'}
+        class:warn={briefing.status === 'ready' ? openFindings.length : weakLinks}
+        onclick={() => (panel = panel?.kind === 'briefing' ? null : { kind: 'briefing' })}
+        title={briefing.status === 'error'
+          ? "The assistant couldn't be reached; showing the weak-link count instead."
+          : 'What the assistant found when it last read the tree'}
+      >
+        {briefingStat}
+      </button>
     </div>
     <div class="buttons">
       <!-- onchange, not bind:value, so switchDataset() snapshots the old id before it changes -->
@@ -610,6 +751,23 @@
           onBack={showTeams}
           onClose={() => (panel = null)}
           onEdit={(action) => commit([action], { actor: 'user', reason: describe(action) })}
+        />
+      {:else if panel?.kind === 'briefing'}
+        <Briefing
+          {briefing}
+          {dismissed}
+          {tree}
+          {company}
+          onPreview={(ids) => (preview = ids)}
+          onShow={(ids) => {
+            recall(ids);
+            graph?.flyTo(ids);
+          }}
+          onFix={(finding) => commit(finding.fix, { actor: 'assistant', reason: `${finding.title}. ${finding.why}` })}
+          onDismiss={(finding) => (dismissed = new Set([...dismissed, keyOf(finding)]))}
+          onNewChat={newChat}
+          onRetry={scheduleAudit}
+          onClose={() => (panel = null)}
         />
       {/if}
       <div class="legend">

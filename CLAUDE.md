@@ -158,8 +158,8 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-The September 2026 round shipped in full, and `development/` is empty. New work starts with a
-new plan in `development/`, not by reopening a completed one.
+The September 2026 round shipped in full, TREE_BRIEFING included, and `development/` is empty.
+New work starts with a new plan in `development/`, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
 [Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
@@ -177,18 +177,26 @@ works:
 [CHAT_TABS_AND_INTERVIEWS](Plans/completed/CHAT_TABS_AND_INTERVIEWS.md) ·
 [NODE_HOVER_CARD](Plans/completed/NODE_HOVER_CARD.md) ·
 [GRAPH_KEYBOARD_SHORTCUTS](Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md) ·
-[FRAME_NODE_NEIGHBORHOOD](Plans/completed/FRAME_NODE_NEIGHBORHOOD.md).
+[FRAME_NODE_NEIGHBORHOOD](Plans/completed/FRAME_NODE_NEIGHBORHOOD.md) ·
+[TREE_BRIEFING](Plans/completed/TREE_BRIEFING.md).
+
+TREE_BRIEFING also landed mode 1 of the four discussion modes (`persona`), so the next plan in
+that area starts from modes 2–4, not from scratch. Read its completion notes before touching the
+`respond` tool: `findings` is handed to an audit and to nothing else, and naming a field a mode's
+tool schema does not have makes the model emit an empty tool call.
 
 ## What comes next (no plans yet)
 
 The forward-looking half of this workspace. Each of these has a concept doc and no plan; writing
 the plan is the first step.
 
-- **Team agent discussions** — personas built from a team's charter, agents reviewing each
-  other's OKRs, a debate the user moderates, and a closing turn that proposes edits. The four
-  modes are chosen and written up in the "four discussion modes" section of
+- **Team agent discussions** — agents reviewing each other's OKRs, a debate the user moderates,
+  and a closing turn that proposes edits. The four modes are chosen and written up in the "four
+  discussion modes" section of
   [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md); chat tabs
-  left `mode` an enum so they are additive. Nearest to hand.
+  left `mode` an enum so they are additive, and TREE_BRIEFING has since shipped mode 1 as the
+  `persona` mode, launched from a briefing card. Modes 2–4 are what is left, and nearest to
+  hand.
 - **Agents that execute and measure OKRs**, and a progress dashboard reading what they record —
   [Concepts/Agents as Executors - Design.md](Concepts/Agents%20as%20Executors%20-%20Design.md)
   (Horizon 2 of the vision doc).
@@ -198,3 +206,11 @@ the plan is the first step.
   and live alignment audit exist. Why the three-level ladder is a default, not doctrine, and why
   human focus is the constraint that replaces it:
   [Concepts/Depth and Focus - Design.md](Concepts/Depth%20and%20Focus%20-%20Design.md).
+- **Matrix views** — OKR-against-OKR fitness, team-against-team reliance, and team-against-team
+  communication tables, as the place off-tree relations live without turning the 3D scene into a
+  hairball. Reliance is what teams say and comms is what they do; the gap between the two
+  overlaid is the payoff, so the grid takes two layers from the first plan. Four plans when they
+  get written, in dependency order: `TEAM_RELIANCE_MATRIX.md` (its source data already exists),
+  `OKR_FITNESS_MATRIX.md`, `TEAM_MESSAGE_BOARD.md` (pair boards that modes 2–4 and Horizon 2
+  executors want anyway), `TEAM_COMMS_CONNECTORS.md`.
+  [Concepts/Matrix Views - Design.md](Concepts/Matrix%20Views%20-%20Design.md).

@@ -29,8 +29,65 @@
         "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
       },
       "maxItems": 500
+    },
+    "findings": {
+      "type": "array",
+      "description": "What most needs a person's attention in this tree, ranked by impact, highest first. Only ever sent in an audit — leave it out of an ordinary reply. Group by problem, not by node: one finding may name several nodes.",
+      "items": {
+        "$ref": "#/definitions/finding",
+        "description": "One problem with the tree, written for someone who will read it on a card and decide what to do about it."
+      },
+      "maxItems": 8
     }
   },
   "required": ["reply", "actions", "highlight"],
-  "additionalProperties": false
+  "additionalProperties": false,
+  "definitions": {
+    "finding": {
+      "title": "Finding",
+      "description": "One problem worth a person's attention, named in plain language and paired with the nodes it is about and, where the resolution is mechanical, the actions that resolve it.",
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "The problem in one line, as a person would say it out loud: \"Three Marketing key results describe activities, not outcomes\". No ids, no JSON.",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "why": {
+          "type": "string",
+          "description": "What the user reads on the card under the title: one or two sentences on why this matters and what it costs them. Refer to nodes by their label, never by id.",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "severity": {
+          "type": "string",
+          "description": "How much this costs the company objective: \"high\" when it breaks the line from work to outcome, \"medium\" when it blurs it, \"low\" when it is untidy.",
+          "enum": ["high", "medium", "low"]
+        },
+        "nodeIds": {
+          "type": "array",
+          "description": "Ids of the nodes this finding is about. The user hovers the card to see them, and clicks to fly the camera to them, so name every node the finding covers and nothing else.",
+          "items": {
+            "type": "string",
+            "description": "Id of a node that exists in the tree.",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "minItems": 1,
+          "maxItems": 20
+        },
+        "fix": {
+          "type": "array",
+          "description": "The actions that resolve this finding on their own, applied as one click. Leave it empty when the resolution is a judgement the user must make — \"which three of these nine matter?\" is a question, not an edit. A fix never deletes anything.",
+          "items": {
+            "$ref": "action.schema.json",
+            "description": "One edit that resolves part of this finding."
+          },
+          "maxItems": 20
+        }
+      },
+      "required": ["title", "why", "severity", "nodeIds"],
+      "additionalProperties": false
+    }
+  }
 }

@@ -46,7 +46,16 @@ test('the tool schema is fully flattened', () => {
 test('the tool schema is a usable Claude input_schema', () => {
   assert.equal(RESPOND_INPUT_SCHEMA.type, 'object');
   assert.deepEqual(RESPOND_INPUT_SCHEMA.required, ['reply', 'actions', 'highlight']);
-  assert.deepEqual(Object.keys(RESPOND_INPUT_SCHEMA.properties).sort(), ['actions', 'highlight', 'reply']);
+  // `findings` is optional: it is only ever sent in an audit, so it stays out
+  // of `required` and every existing client keeps validating.
+  assert.deepEqual(Object.keys(RESPOND_INPUT_SCHEMA.properties).sort(), ['actions', 'findings', 'highlight', 'reply']);
+});
+
+test('a finding carries its own actions, flattened like the top-level ones', () => {
+  const finding = RESPOND_INPUT_SCHEMA.properties.findings.items;
+  assert.deepEqual(finding.required, ['title', 'why', 'severity', 'nodeIds']);
+  assert.deepEqual(finding.properties.severity.enum, ['high', 'medium', 'low']);
+  assert.ok(Array.isArray(finding.properties.fix.items.oneOf), 'a fix should be a list of Actions');
 });
 
 test('every field the model can send carries a description written for it', () => {

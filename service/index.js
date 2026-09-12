@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
-import { MODEL, RESPOND_TOOL, systemPrompt } from './prompt.js';
+import { MODEL, respondTool, systemPrompt } from './prompt.js';
 import { sanitizeContext, sanitizeHistory, mergeTurns, resolveTab, validateResponse } from './validate.js';
 import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
 
@@ -80,9 +80,11 @@ app.post('/api/chat', async (req, res) => {
   try {
     const response = await getClient().messages.create({
       model: MODEL,
-      max_tokens: 4096,
+      // Six findings, each with a fix, is a lot more output than a reply.
+      max_tokens: tab.mode === 'audit' ? 8192 : 4096,
       system: systemPrompt(tree, company, selected, view.context, tab),
-      tools: [RESPOND_TOOL],
+      // Only an audit gets a tool it can report findings with.
+      tools: [respondTool(tab.mode)],
       tool_choice: { type: 'tool', name: 'respond' },
       messages
     });
@@ -92,7 +94,7 @@ app.post('/api/chat', async (req, res) => {
       const text = response.content.filter((b) => b.type === 'text').map((b) => b.text).join('\n').trim();
       const why = response.stop_reason === 'refusal' ? 'declined to answer' : `stopped early (${response.stop_reason})`;
       console.warn(`[chat] no respond call: ${why}`);
-      return res.json({ reply: text || `The model ${why}. Try rephrasing.`, actions: [], highlight: [] });
+      return res.json({ reply: text || `The model ${why}. Try rephrasing.`, actions: [], highlight: [], findings: [] });
     }
 
     const out = validateResponse(tree, company, call.input);
@@ -102,9 +104,9 @@ app.post('/api/chat', async (req, res) => {
     const p = view.context?.panel;
     const ctx = p ? `${p.kind}${p.id ? `:${p.id}` : ''}${p.field ? `/${p.field}` : ''}` : 'none';
     console.log(
-      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights · ctx=${ctx} · mode=${tab.mode}`
+      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights · ${out.findings.length} findings · ctx=${ctx} · mode=${tab.mode}`
     );
-    res.json({ reply: out.reply, actions: out.actions, highlight: out.highlight });
+    res.json({ reply: out.reply, actions: out.actions, highlight: out.highlight, findings: out.findings });
   } catch (err) {
     // The SDK throws a plain Error (not AuthenticationError) when it finds no
     // credentials at all, so match that case explicitly.

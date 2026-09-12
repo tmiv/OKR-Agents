@@ -1,0 +1,16 @@
+{
+  "schema": "chat-response",
+  "at": "/findings/0",
+  "data": {
+    "reply": "ok",
+    "actions": [],
+    "highlight": [],
+    "findings": [
+      {
+        "why": "Both name the goal but not where they are today.",
+        "severity": "high",
+        "nodeIds": ["kr-1"]
+      }
+    ]
+  }
+}

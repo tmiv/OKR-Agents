@@ -97,7 +97,10 @@ export function resolveTab(tree, company, mode, subject) {
     return { mode, subject: { kind: 'node', id: subject.id }, dropped: null };
   }
 
-  if (mode === 'interview-team') {
+  // Both team modes resolve identically: one names the team being interviewed,
+  // the other the team being spoken as, and either way the id has to be a team
+  // this org still has.
+  if (mode === 'interview-team' || mode === 'persona') {
     if (subject?.kind !== 'team') return free('no team subject — falling back to free');
     if (!knownUnits.has(subject.id)) return free(`team ${subject.id} is not in this org — falling back to free`);
     return { mode, subject: { kind: 'team', id: subject.id }, dropped: null };
@@ -116,10 +119,26 @@ export function resolveTab(tree, company, mode, subject) {
     return { mode, subject: { kind: 'new', parentId }, dropped: null };
   }
 
+  // An audit is the one mode with nothing to resolve: nobody typed it, and it
+  // is about the whole document rather than one node or team. There is no
+  // subject to lose, so there is no way for it to fall back.
+  if (mode === 'audit') return { mode, subject: null, dropped: null };
+
   return free(`unknown mode ${mode} — falling back to free`);
 }
 
-export function validateResponse(tree, company, input) {
+// The reference filter over one batch of actions, run against a private copy of
+// the tree's id sets. `validateResponse` runs it once over the reply's actions;
+// an audit runs it once per finding, because the user applies findings one at a
+// time and in any order — a fix must stand on its own, not on another finding's
+// fix having landed first.
+//
+// `allowDelete: false` is for those per-finding runs: the audit prompt forbids
+// a fix that deletes, and a prompt is not an enforcement mechanism.
+//
+// `known` comes back with the batch's own adds and deletes folded in, because
+// the caller filters `highlight` against the tree the actions leave behind.
+export function validateActions(tree, company, input, { allowDelete = true } = {}) {
   const known = new Set(tree.nodes.map((n) => n.id));
   const parentOf = new Map(tree.nodes.map((n) => [n.id, n.parent]));
   // Teams are filtered exactly like nodes, and against the same moving target:
@@ -149,8 +168,13 @@ export function validateResponse(tree, company, input) {
 
   const validParent = (id, parent) => parent != null && known.has(parent) && !isAncestorOrSelf(parent, id);
 
-  for (const a of Array.isArray(input?.actions) ? input.actions : []) {
+  for (const a of Array.isArray(input) ? input : []) {
     const reject = (reason) => dropped.push({ action: a, reason });
+
+    if (!allowDelete && (a?.op === 'delete' || a?.op === 'deleteUnit')) {
+      reject('a fix may not delete');
+      continue;
+    }
 
     // Shape first: op, id and the per-op field whitelist all come from the
     // shared schema, so anything past here has the keys it claims to have.
@@ -247,6 +271,85 @@ export function validateResponse(tree, company, input) {
     }
   }
 
+  return { actions, dropped, known };
+}
+
+// Schema lengths, clamped here rather than rejected: a title two characters
+// over is a card with a long title, not a finding worth throwing away.
+const MAX_TITLE = 80;
+const MAX_WHY = 300;
+const MAX_FINDINGS = 8;
+const MAX_NODE_IDS = 20;
+const SEVERITIES = new Set(['high', 'medium', 'low']);
+
+// Clamped rather than rejected: a title a few characters over is a card with a
+// long title, not a finding worth throwing away. Cut back to a word boundary
+// when there is one nearby — "…the whole b" reads like a bug, "…the whole…"
+// reads like a sentence that was too long, which is what happened.
+function clamp(text, max) {
+  const trimmed = text.trim();
+  if (trimmed.length <= max) return trimmed;
+  const cut = trimmed.slice(0, max - 1);
+  const space = cut.lastIndexOf(' ');
+  return `${(space > max * 0.6 ? cut.slice(0, space) : cut).trimEnd()}…`;
+}
+
+// An audit's findings, filtered against the tree the browser sent.
+//
+// A finding is only worth showing if the user can look at what it is about, so
+// one whose `nodeIds` all name nothing is dropped outright. A finding whose
+// `fix` does not survive keeps its card and loses its Fix button: "these three
+// key results are activities" is worth reading even when the model's proposed
+// rewrite named an id that is gone.
+function validateFindings(tree, company, input) {
+  const inTree = new Set(tree.nodes.map((n) => n.id));
+  const dropped = [];
+  const findings = [];
+
+  for (const f of (Array.isArray(input) ? input : []).slice(0, MAX_FINDINGS)) {
+    if (!f || typeof f !== 'object' || Array.isArray(f)) {
+      dropped.push({ finding: f, reason: 'not an object' });
+      continue;
+    }
+    const title = typeof f.title === 'string' ? clamp(f.title, MAX_TITLE) : '';
+    const why = typeof f.why === 'string' ? clamp(f.why, MAX_WHY) : '';
+    if (!title || !why) {
+      dropped.push({ finding: f.title ?? f, reason: 'no title or no why' });
+      continue;
+    }
+
+    const wanted = (Array.isArray(f.nodeIds) ? f.nodeIds : []).filter((id) => typeof id === 'string');
+    const nodeIds = [...new Set(wanted.filter((id) => inTree.has(id)))].slice(0, MAX_NODE_IDS);
+    if (!nodeIds.length) {
+      dropped.push({ finding: title, reason: `names no node in this tree (${wanted.join(', ') || 'none'})` });
+      continue;
+    }
+    if (nodeIds.length !== wanted.length) {
+      dropped.push({ finding: title, reason: `unknown nodeIds ${wanted.filter((id) => !inTree.has(id)).join(', ')}` });
+    }
+
+    // Fresh id sets per finding: the user applies these one at a time and in
+    // whatever order they like, so nothing here may lean on another finding.
+    const fix = validateActions(tree, company, f.fix, { allowDelete: false });
+    for (const d of fix.dropped) dropped.push({ finding: title, ...d });
+
+    findings.push({
+      title,
+      why,
+      severity: SEVERITIES.has(f.severity) ? f.severity : 'medium',
+      nodeIds,
+      fix: fix.actions
+    });
+  }
+
+  return { findings, dropped };
+}
+
+export function validateResponse(tree, company, input) {
+  const { actions, dropped, known } = validateActions(tree, company, input?.actions);
+  const audit = validateFindings(tree, company, input?.findings);
+  dropped.push(...audit.dropped);
+
   const highlight = [
     ...new Set((Array.isArray(input?.highlight) ? input.highlight : []).filter((id) => typeof id === 'string' && known.has(id)))
   ];
@@ -258,5 +361,5 @@ export function validateResponse(tree, company, input) {
         ? 'Done.'
         : "I couldn't come up with an answer for that — try rephrasing.";
 
-  return { reply, actions, highlight, dropped };
+  return { reply, actions, highlight, findings: audit.findings, dropped };
 }

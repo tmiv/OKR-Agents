@@ -55,8 +55,17 @@ button.link:hover { text-decoration: underline; }
 }
 .topbar .brand { font-weight: 600; display: flex; align-items: center; gap: 8px; }
 .topbar .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--company); box-shadow: 0 0 10px var(--company); }
-.topbar .stats { color: var(--muted); }
+.topbar .stats { color: var(--muted); display: flex; align-items: baseline; gap: 6px; }
 .topbar .stats .warn { color: var(--bad); }
+/* the briefing stat: a number that is also the way into the panel, so it is a
+   button dressed as the text it replaced */
+.topbar .stats .stat {
+  background: none; border: 1px solid transparent; border-radius: 8px;
+  padding: 2px 8px; color: inherit; font: inherit;
+}
+.topbar .stats .stat:hover:not(:disabled) { border-color: var(--border); color: var(--text); }
+.topbar .stats .stat.on { border-color: var(--accent); color: var(--accent); }
+.topbar .stats .stat.busy::after { content: ' ·'; animation: blink 1.2s infinite; }
 .topbar .buttons { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 /* the dataset picker, dressed as button.ghost so the topbar stays one row of controls */
 .topbar select {
@@ -189,6 +198,37 @@ main { flex: 1; display: flex; min-height: 0; }
   color: var(--muted); border: 1px solid var(--border); border-radius: 999px; padding: 0 7px;
 }
 .detail .count.none { opacity: 0.4; }
+/* ── briefing panel ─────────────────────────────────────────────────── */
+/* Same surface as .detail again; a finding is a card in the same list. */
+.detail .level.briefing { color: var(--meh); }
+.detail ul.findings { gap: 14px; margin-top: 12px; }
+.detail .finding {
+  display: block;
+  border-left: 3px solid var(--muted);
+  padding-left: 10px;
+}
+.detail .finding.high { border-left-color: var(--bad); }
+.detail .finding.medium { border-left-color: var(--meh); }
+/* .low keeps the muted default */
+.detail .finding .what {
+  /* a title, not one of .detail's uppercase section labels */
+  display: flex; align-items: baseline; gap: 7px;
+  font-size: 13px; color: var(--text); text-transform: none; letter-spacing: 0;
+  margin: 0; line-height: 1.35;
+}
+.detail .finding .sev { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.detail .finding.high .sev { background: var(--bad); }
+.detail .finding.medium .sev { background: var(--meh); }
+.detail .finding .why { color: var(--muted); font-size: 12px; margin: 5px 0 0; }
+.detail .finding .who {
+  display: flex; align-items: center; gap: 7px;
+  color: var(--muted); font-size: 11px; margin: 6px 0 0;
+}
+.detail .finding .actions { margin-top: 8px; }
+.detail .hint.bad { color: var(--bad); }
+/* the same blinking dot a busy chat tab wears */
+.detail .hint.reviewing::after { content: ' ·'; animation: blink 1.2s infinite; }
+
 .detail ul.checks { gap: 2px; margin-top: 2px; }
 .detail ul.checks li { display: block; }
 .detail ul.checks label { display: flex; align-items: center; gap: 7px; cursor: pointer; }

@@ -1,0 +1,34 @@
+{
+  "schema": "chat-response",
+  "data": {
+    "reply": "The tree holds together, but three key results still describe activity rather than an outcome.",
+    "actions": [],
+    "highlight": ["kr-1", "kr-2"],
+    "findings": [
+      {
+        "title": "Two key results have no baseline in their target",
+        "why": "Without a starting number nobody can tell at the end of the quarter whether these moved. Both name the goal but not where they are today.",
+        "severity": "high",
+        "nodeIds": ["kr-1", "kr-2"],
+        "fix": [
+          {
+            "op": "edit",
+            "id": "kr-1",
+            "fields": { "target": "14 -> 5 by Q4" }
+          },
+          {
+            "op": "edit",
+            "id": "kr-2",
+            "fields": { "target": "31% -> 50% by Q4" }
+          }
+        ]
+      },
+      {
+        "title": "Marketing owns nine key results this quarter",
+        "why": "That is more than one team can hold in its head, and the tree gives no signal about which of them the company objective actually needs. Which three matter?",
+        "severity": "medium",
+        "nodeIds": ["obj-1"]
+      }
+    ]
+  }
+}

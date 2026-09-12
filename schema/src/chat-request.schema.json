@@ -51,13 +51,13 @@
   "definitions": {
     "chatMode": {
       "title": "ChatMode",
-      "description": "How this conversation is being held. \"free\" is the default coach conversation: the user asks, you answer. The three interview modes invert that — you ask, one question per turn, and end by proposing actions.",
+      "description": "How this conversation is being held. \"free\" is the default coach conversation: the user asks, you answer. The three interview modes invert that — you ask, one question per turn, and end by proposing actions. \"audit\": no user question and no conversation at all; read the whole tree and return `findings`. \"persona\": you are not the coach at all — you speak as one team, out of its charter, and say \"we\".",
       "type": "string",
-      "enum": ["free", "interview-node", "interview-team", "interview-new"]
+      "enum": ["free", "interview-node", "interview-team", "interview-new", "audit", "persona"]
     },
     "chatSubject": {
       "title": "ChatSubject",
-      "description": "The one thing this conversation is about: an existing node, a team, or the parent a new node will hang under. Null in a free conversation, which is about the whole tree.",
+      "description": "The one thing this conversation is about: an existing node, a team (the subject of an interview, or the team a persona conversation speaks as), or the parent a new node will hang under. Null in a free conversation, which is about the whole tree, and in an audit.",
       "oneOf": [
         {
           "$ref": "#/definitions/nodeSubject",
@@ -98,7 +98,7 @@
     },
     "teamSubject": {
       "title": "TeamSubject",
-      "description": "An interview about one team's charter.",
+      "description": "One team: the subject of a charter interview, or the team a persona conversation speaks as.",
       "type": "object",
       "properties": {
         "kind": {
@@ -172,13 +172,13 @@
     },
     "openPanel": {
       "title": "OpenPanel",
-      "description": "The panel open over the 3D scene: one node's detail, one team's charter, or the list of teams.",
+      "description": "The panel open over the 3D scene: one node's detail, one team's charter, the list of teams, or the briefing of what the last audit found.",
       "type": "object",
       "properties": {
         "kind": {
           "type": "string",
-          "description": "What the panel is showing: \"node\" one OKR node, \"team\" one team's charter, \"teams\" the list of all teams.",
-          "enum": ["node", "team", "teams"]
+          "description": "What the panel is showing: \"node\" one OKR node, \"team\" one team's charter, \"teams\" the list of all teams, \"briefing\" the findings from the last audit.",
+          "enum": ["node", "team", "teams", "briefing"]
         },
         "id": {
           "type": "string",
