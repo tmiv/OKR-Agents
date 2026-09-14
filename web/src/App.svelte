@@ -9,6 +9,7 @@
   import { DATASETS, DEFAULT_DATASET_ID, getDataset } from './lib/datasets.js';
   import { applyDocumentActions } from './lib/apply.js';
   import { keyOf } from './lib/briefing.js';
+  import { auditKey, readAudit, writeAudit } from './lib/auditCache.js';
   import { unitName } from './lib/company.js';
   import { step } from './lib/navigate.js';
   import {
@@ -168,7 +169,9 @@
   //
   // Nothing here goes near `commit()`: an audit is a reading, not a reply, and
   // nothing enters the document until the user clicks Fix on a card.
-  let briefing = $state.raw({ status: 'idle', findings: [], error: null }); // idle | running | ready | error
+  // `cached` says where `findings` came from: true only on a set of findings
+  // that was read back out of the browser's store rather than the service.
+  let briefing = $state.raw({ status: 'idle', findings: [], error: null, cached: false }); // idle | running | ready | error
   let dismissed = $state.raw(new Set());
 
   // Deliberately not $state: an audit reads these from timers and from an
@@ -178,11 +181,44 @@
   let auditTimer = null;
   let auditAbort = null;
   let briefingShown = false;
+  // One-shot: set by a Re-run, read and cleared by the next audit().
+  let auditFresh = false;
+
+  // What a set of findings does to the app, whether the service just returned
+  // them or the store had them all along: replace the briefing, and show the
+  // panel once per document — never over something the user opened, because a
+  // node they clicked is not pushed aside by a background read.
+  function settle(findings, { cached }) {
+    briefing = { status: 'ready', findings, error: null, cached };
+    if (findings.length && !briefingShown && !panel) {
+      briefingShown = true;
+      panel = { kind: 'briefing' };
+    }
+  }
 
   async function audit() {
     const seq = ++auditSeq;
     auditAbort = new AbortController();
+    // The document as it is now, captured before any await: the key a response
+    // is stored under has to describe the tree that was sent, not whatever is
+    // on the stage by the time it lands.
+    const auditedTree = tree;
+    const auditedCompany = company;
+    const auditedTitle = getDataset(datasetId).title;
+    // A Re-run skips the store for this audit only; anything after it reads
+    // the store again.
+    const fresh = auditFresh;
+    auditFresh = false;
     try {
+      const key = auditKey(auditedTree, auditedCompany);
+      const hit = fresh ? null : await readAudit(key);
+      // A hit goes through the same sequence check a response does, so findings
+      // for a document that has since been edited cannot land on the new one.
+      if (seq !== auditSeq) return;
+      if (hit) {
+        settle(hit.findings, { cached: true });
+        return;
+      }
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
@@ -190,10 +226,12 @@
         // The same body `send()` builds, minus everything a conversation has:
         // no question was typed, there is no history, and no one node is the
         // subject. `context` still rides along, so a briefing that is already
-        // open is something the model knows about.
+        // open is something the model knows about. It is deliberately not part
+        // of the cache key: what the user was looking at must not change which
+        // findings a document gets.
         body: JSON.stringify({
-          tree,
-          company,
+          tree: auditedTree,
+          company: auditedCompany,
           message: 'Audit the tree.',
           selectedNodeId: null,
           history: [],
@@ -212,29 +250,30 @@
       // tree that is no longer on the stage.
       if (seq !== auditSeq) return;
       const findings = checked.value.findings ?? [];
-      briefing = { status: 'ready', findings, error: null };
-      // It shows itself once per document, and never over something the user
-      // opened: a node they clicked is not pushed aside by a background read.
-      if (findings.length && !briefingShown && !panel) {
-        briefingShown = true;
-        panel = { kind: 'briefing' };
-      }
+      settle(findings, { cached: false });
+      // Not awaited: the panel does not wait on the disk, and a write that
+      // fails is a miss next time rather than an error now.
+      writeAudit(key, { findings, nodes: auditedTree.nodes.length, title: auditedTitle });
     } catch (err) {
       if (err.name === 'AbortError' || seq !== auditSeq) return;
       // Keep the findings we have: a failed re-audit should not empty a panel
       // the user is reading.
-      briefing = { status: 'error', findings: briefing.findings, error: err.message };
+      briefing = { status: 'error', findings: briefing.findings, error: err.message, cached: briefing.cached };
     }
   }
 
   // Debounced because one gesture is several commits: an interview's closing
   // batch, or a field-by-field edit in the Detail panel, would otherwise be an
   // audit each. The abort drops whatever is still out.
-  function scheduleAudit() {
+  // `fresh` is the Re-run door: it makes the next audit ignore a stored
+  // result. Retry does not need it — errors are never stored. The debounce
+  // stays either way; it collapses a burst of commits, which a cache does not.
+  function scheduleAudit({ fresh = false } = {}) {
     clearTimeout(auditTimer);
     auditAbort?.abort();
     auditSeq++; // anything still in flight is now stale, aborted or not
-    briefing = { status: 'running', findings: briefing.findings, error: null };
+    auditFresh = fresh;
+    briefing = { status: 'running', findings: briefing.findings, error: null, cached: briefing.cached };
     auditTimer = setTimeout(audit, 1500);
   }
 
@@ -503,7 +542,7 @@
     // dismissals: "I know about that one" does not carry to another document.
     // The $effect on `tree` re-audits the new one, and the panel is allowed to
     // show itself again when it comes back.
-    briefing = { status: 'idle', findings: [], error: null };
+    briefing = { status: 'idle', findings: [], error: null, cached: false };
     dismissed = new Set();
     briefingShown = false;
     // The new layout has no positions yet; Graph waits for the simulation.
@@ -679,7 +718,9 @@
         onclick={() => (panel = panel?.kind === 'briefing' ? null : { kind: 'briefing' })}
         title={briefing.status === 'error'
           ? "The assistant couldn't be reached; showing the weak-link count instead."
-          : 'What the assistant found when it last read the tree'}
+          : briefing.status === 'ready' && briefing.cached
+            ? 'What the assistant found when it last read the tree (from cache)'
+            : 'What the assistant found when it last read the tree'}
       >
         {briefingStat}
       </button>
@@ -767,6 +808,7 @@
           onDismiss={(finding) => (dismissed = new Set([...dismissed, keyOf(finding)]))}
           onNewChat={newChat}
           onRetry={scheduleAudit}
+          onRerun={() => scheduleAudit({ fresh: true })}
           onClose={() => (panel = null)}
         />
       {/if}

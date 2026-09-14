@@ -228,6 +228,7 @@ main { flex: 1; display: flex; min-height: 0; }
 .detail .hint.bad { color: var(--bad); }
 /* the same blinking dot a busy chat tab wears */
 .detail .hint.reviewing::after { content: ' ·'; animation: blink 1.2s infinite; }
+.detail .hint.cached button { margin-left: 6px; }
 
 .detail ul.checks { gap: 2px; margin-top: 2px; }
 .detail ul.checks li { display: block; }

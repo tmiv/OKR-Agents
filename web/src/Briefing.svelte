@@ -11,6 +11,7 @@
     onFix,
     onDismiss,
     onRetry,
+    onRerun = null,
     onClose,
     onPreview = () => {},
     onNewChat = null
@@ -122,6 +123,15 @@
     </ul>
   {:else if briefing.status === 'ready'}
     <p class="hint">Nothing needs attention.</p>
+  {/if}
+
+  <!-- These cards came out of the browser's store, not the service: the same
+       document was read before and the answer was kept. Re-run asks again. -->
+  {#if briefing.status === 'ready' && briefing.cached}
+    <p class="hint cached">
+      From an earlier review of this tree.
+      {#if onRerun}<button class="ghost" onclick={onRerun}>Re-run</button>{/if}
+    </p>
   {/if}
 
   {#if briefing.findings.length > open.length}

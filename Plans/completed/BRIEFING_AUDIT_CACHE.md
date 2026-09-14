@@ -5,8 +5,9 @@ tags:
   - chat
   - agents
   - cost
-status: development
+status: completed
 created: 2026-09-14
+completed_on: 2026-09-14
 predecessors:
   - completed/TREE_BRIEFING.md
 ---
@@ -225,3 +226,33 @@ browser has not seen before costs an API call.
 - **Rollback.** Delete the two `lib/` files, revert the `App.svelte` and `Briefing.svelte`
   edits. The IndexedDB database is left behind in users' browsers and is harmless; a later
   version can delete it with `indexedDB.deleteDatabase('okr-viewer')`.
+
+## Completion notes
+
+- **Planned vs. actual.** The four phases landed as written. `canonical.js` and its nine tests,
+  `auditCache.js`, the lookup inside `audit()` under the existing sequence check, and the one
+  muted line in the panel are all where the plan put them. The `file:line` citations held except
+  for a uniform +1 shift in `App.svelte` after the new import. Every verification step passed:
+  first load writes one entry, a reload costs no request, Fix audits and undo does not, Re-run
+  audits and advances `savedAt`, a dataset round trip costs one audit rather than two, and a
+  fifteen-day-old entry is a miss that gets replaced. Five API calls in total, four of them
+  demanded by the script.
+- **Mid-flight adjustments.** Three. (a) `audit()` captures `tree`, `company` *and* the dataset
+  title into locals at the top and sends those locals in the request body, rather than reading
+  the module state again below the awaits — the plan only asked for the key to be captured, but
+  sending the same captured values is what makes "the response describes what we hashed" true by
+  construction. (b) `dropAudit(key)` is exported rather than inlined into `readAudit`, because
+  the expiry path and a future manual invalidation want the same three lines. (c) `openDb()` sets
+  `db.onversionchange` to close the connection and drop the memo. This was not in the plan and
+  was found the hard way: a tab holding the database open blocks `indexedDB.deleteDatabase` from
+  anywhere else — including DevTools "Clear site data" — forever, which is exactly what happened
+  during verification and cost a wedged origin. One line, and the next read reopens.
+- **Surprises / residual risks.** The plan's step 6 ("stop the service, reload") turned out to
+  be unobservable rather than passing: on a hit `audit()` returns before the `fetch`, so a
+  reachable service and a stopped one produce byte-identical behaviour — the zero-request reload
+  in step 2 already proves it. The no-IndexedDB path (step 7, a private window) was verified by
+  importing `auditCache.js` under `node --test`'s runtime, which genuinely has no `indexedDB`:
+  `readAudit` returns `null`, the writes return `undefined`, nothing throws. Still open: the
+  hand-bumped `AUDIT_CACHE_VERSION` is now load-bearing in two places it is easy to forget, and
+  the comments in `service/prompt.js` (at `MODEL` and at the `mode === 'audit'` block) are the
+  only thing guarding it. The health-fingerprint follow-up is the real fix.

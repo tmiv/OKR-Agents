@@ -3,6 +3,9 @@ import { RESPOND_INPUT_SCHEMA } from '@okr-viewer/schema';
 // The model ID lives here and only here.
 // Check https://docs.claude.com/en/docs/about-claude/models for the current
 // Sonnet-class ID before trusting this string.
+// Changing it changes what an audit says about an unchanged tree, and browsers
+// cache findings by a hash of the document: bump AUDIT_CACHE_VERSION in
+// web/src/lib/auditCache.js in the same commit.
 export const MODEL = 'claude-sonnet-5';
 
 // One tool, forced. Claude must call it exactly once, so we get structured
@@ -271,6 +274,11 @@ Answering still means calling \`respond\` once, with every field it requires:
 `;
   }
 
+  // Browsers cache an audit's findings by a hash of the document
+  // (web/src/lib/auditCache.js), so an edit below changes what a cached tree
+  // would be told without changing the tree. Bump AUDIT_CACHE_VERSION there in
+  // the same commit; a reader on an unchanged tree sees the old reading for up
+  // to fourteen days otherwise.
   if (mode === 'audit') {
     const root = tree.nodes.find((n) => n.parent == null);
     const teams = units.size;

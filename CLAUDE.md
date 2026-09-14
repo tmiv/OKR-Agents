@@ -158,10 +158,8 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-The September 2026 round shipped in full, TREE_BRIEFING included. One plan is open in
-`development/`: [BRIEFING_AUDIT_CACHE](Plans/development/BRIEFING_AUDIT_CACHE.md), which caches
-audit findings in IndexedDB keyed by a hash of the document so a reload does not re-audit.
-Other new work starts with a new plan in `development/`, not by reopening a completed one.
+The September 2026 round shipped in full, TREE_BRIEFING and BRIEFING_AUDIT_CACHE included.
+`development/` is empty: new work starts with a new plan there, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
 [Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
@@ -182,7 +180,8 @@ works:
 [FRAME_NODE_NEIGHBORHOOD](Plans/completed/FRAME_NODE_NEIGHBORHOOD.md) ·
 [TREE_BRIEFING](Plans/completed/TREE_BRIEFING.md) ·
 [DOCKER_IMAGES_AND_CI](Plans/completed/DOCKER_IMAGES_AND_CI.md) ·
-[SERVICE_CORS](Plans/completed/SERVICE_CORS.md).
+[SERVICE_CORS](Plans/completed/SERVICE_CORS.md) ·
+[BRIEFING_AUDIT_CACHE](Plans/completed/BRIEFING_AUDIT_CACHE.md).
 
 TREE_BRIEFING also landed mode 1 of the four discussion modes (`persona`), so the next plan in
 that area starts from modes 2–4, not from scratch. Read its completion notes before touching the
