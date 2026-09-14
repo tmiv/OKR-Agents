@@ -178,7 +178,8 @@ works:
 [NODE_HOVER_CARD](Plans/completed/NODE_HOVER_CARD.md) ·
 [GRAPH_KEYBOARD_SHORTCUTS](Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md) ·
 [FRAME_NODE_NEIGHBORHOOD](Plans/completed/FRAME_NODE_NEIGHBORHOOD.md) ·
-[TREE_BRIEFING](Plans/completed/TREE_BRIEFING.md).
+[TREE_BRIEFING](Plans/completed/TREE_BRIEFING.md) ·
+[DOCKER_IMAGES_AND_CI](Plans/completed/DOCKER_IMAGES_AND_CI.md).
 
 TREE_BRIEFING also landed mode 1 of the four discussion modes (`persona`), so the next plan in
 that area starts from modes 2–4, not from scratch. Read its completion notes before touching the

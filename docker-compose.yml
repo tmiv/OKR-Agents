@@ -1,0 +1,44 @@
+# Runs the pair the way the images expect to be run: the browser only ever
+# talks to `web`, which forwards /api/ to `service`. The API key stays on the
+# service container and never reaches a bundle.
+#
+#   cp service/.env.example service/.env   # add ANTHROPIC_API_KEY
+#   docker compose up --build              # → http://localhost:8080
+#
+# Both images build from the repo root; the Dockerfiles live in their packages.
+
+services:
+  service:
+    build:
+      context: .
+      dockerfile: service/Dockerfile
+    image: okr-viewer-service
+    environment:
+      - PORT=8787
+      # Valueless on purpose: it passes the shell's key through when there is
+      # one and stays unset otherwise, so it never clobbers what env_file read.
+      # Never a build arg — a build arg is readable in the image history.
+      - ANTHROPIC_API_KEY
+    env_file:
+      - path: service/.env
+        required: false
+    # Not published by default: reaching it through the web container's proxy is
+    # the supported path. Uncomment to curl /api/health directly.
+    # ports:
+    #   - "8787:8787"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: okr-viewer-web
+    environment:
+      # No trailing slash — nginx forwards the /api/ path through unchanged.
+      - SERVICE_URL=http://service:8787
+    ports:
+      - "8080:8080"
+    depends_on:
+      service:
+        condition: service_healthy
+    restart: unless-stopped

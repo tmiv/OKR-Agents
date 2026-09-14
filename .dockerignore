@@ -1,0 +1,20 @@
+# Build context is the repo root for both images. Keep it small, and keep the
+# key out: service/.env is gitignored and must never reach an image layer.
+**/node_modules
+**/dist
+**/.env
+.git
+.gitignore
+.github
+.claude
+.DS_Store
+**/*.log
+
+# Docs and design artifacts never affect a build.
+Plans
+Concepts
+transcripts
+README.md
+CLAUDE.md
+Dockerfile
+docker-compose.yml

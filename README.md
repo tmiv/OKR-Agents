@@ -159,11 +159,68 @@ Model ID goes in one place (`service/prompt.js`). Check <https://docs.claude.com
 
 ---
 
+## Containers
+
+`web/` and `service/` each ship a Dockerfile, plus a `docker-compose.yml` that
+wires them together:
+
+```bash
+cp service/.env.example service/.env          # add ANTHROPIC_API_KEY
+docker compose up --build                     # → http://localhost:8080
+```
+
+**Both images build from the repo root**, even though the Dockerfiles live in
+their packages — there is one lockfile for all three workspaces, and both
+packages import `@okr-viewer/schema`, so a package-scoped context cannot see
+what it needs:
+
+```bash
+docker build -f service/Dockerfile -t okr-viewer-service .
+docker build -f web/Dockerfile     -t okr-viewer-web     .
+```
+
+| | Base | Port | Env |
+|---|---|---|---|
+| `service` | `node:24-alpine`, non-root, `/api/health` healthcheck | 8787 | `ANTHROPIC_API_KEY`, `PORT` |
+| `web` | `nginx:1.29-alpine` over a `vite build` | 8080 | `SERVICE_URL`, `NGINX_PORT` |
+
+The web image is what replaces the dev proxy. `vite build` emits static files
+with no dev server behind them, so nginx does both jobs: serve the bundle, and
+forward `/api/` to `$SERVICE_URL` (no trailing slash — `web/nginx.conf.template`
+passes the path through unchanged). The browser still only ever talks to one
+origin, so there is no CORS to configure and the key never reaches a bundle.
+
+Two build constraints worth knowing before you change a base image:
+
+- **The images target `linux/amd64`.** `package-lock.json` was resolved on
+  linux/x64/glibc, so `@rolldown/binding-linux-x64-gnu` is the only Vite 8
+  native binding in it. That is why `web/Dockerfile` builds on Debian rather
+  than Alpine, and why widening `platforms:` in CI means regenerating the
+  lockfile first.
+- **Both build stages install `git` and rewrite `git+ssh://` to HTTPS.** The
+  lockfile pins `json-schema-to-typescript` to a public GitHub fork but records
+  an SSH URL, and a container has no key.
+
+`ANTHROPIC_API_KEY` is a runtime variable on the service container only, never a
+build arg — a build arg stays readable in the image history. `.dockerignore`
+keeps `service/.env` out of the build context entirely.
+
+[.github/workflows/docker.yml](.github/workflows/docker.yml) builds both images
+on every push and PR, publishes them to GHCR from `main` and `v*` tags, and
+smoke-tests the pair with `docker compose` — `GET /` and `GET /api/health`
+through the proxy.
+
+
+
+---
+
 ## Layout
 
 ```
 okr-viewer/
 ├── package.json                npm workspace root; one lockfile for all three
+├── docker-compose.yml          web → service, the pair in one command
+├── .dockerignore               build context for both images (keeps .env out)
 ├── schema/                     @okr-viewer/schema — the shape, owned in one place
 │   ├── src/*.schema.json       draft-07 schemas: node, tree, company, history,
 │   │                           action, chat request/response, document envelope
@@ -173,6 +230,8 @@ okr-viewer/
 │   ├── migrations/             one function per major step (empty at v1)
 │   └── test/                   fixtures + round-trip tests
 ├── web/
+│   ├── Dockerfile              vite build → nginx (serves the bundle, proxies /api/)
+│   ├── nginx.conf.template     SPA fallback + ${SERVICE_URL}, rendered at start
 │   ├── src/
 │   │   ├── App.svelte          layout, owns tree state + undo stack, export/import
 │   │   ├── Graph.svelte        3d-force-graph, bind:this + onMount
@@ -183,6 +242,7 @@ okr-viewer/
 │   │   └── lib/apply.js        applyAction(tree, action) → new tree
 │   └── vite.config.js
 └── service/
+    ├── Dockerfile              workspace install → schema build → prod-only runtime
     ├── index.js                POST /api/chat
     ├── prompt.js               system prompt + RESPOND_TOOL
     └── validate.js             drop actions/highlights with unknown IDs
