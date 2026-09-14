@@ -42,6 +42,16 @@
   const WORLD_UP = new THREE.Vector3(0, 1, 0);
   // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
   let upTween = null;
+  // The camera flies under our own tween rather than force-graph's, because
+  // force-graph's does not redirect when it is retargeted mid-flight: its
+  // cameraPosition setter calls end() on the tween in flight, and end()
+  // fast-forwards, so the camera teleports to the target it was still 70% of
+  // the way from before the new move starts. One move never shows it; the
+  // settle sequence below retargets six times a second, and the teleports are
+  // the jitter on first load. Ours always starts from where the camera is now,
+  // so a retarget bends the path instead of jumping it.
+  // { from, to, aimFrom, aimTo, start, ms }
+  let camTween = null;
 
   const LEVEL = {
     company: { color: '#f5c542', size: 10 },
@@ -172,7 +182,25 @@
     // after it and the view never recovers. Skip the move instead; the caller
     // that is following a settling layout will come round again.
     if (!Number.isFinite(to.x) || !Number.isFinite(to.y) || !Number.isFinite(to.z)) return;
-    graph.cameraPosition(to, aim, ms);
+    const controls = graph.controls();
+    const camera = graph.camera();
+    if (!controls || !camera) return;
+    const dest = new THREE.Vector3(to.x, to.y, to.z);
+    const aimTo = new THREE.Vector3(aim.x, aim.y, aim.z);
+    if (!(ms > 0)) {
+      camTween = null;
+      camera.position.copy(dest);
+      controls.target.copy(aimTo);
+      return;
+    }
+    camTween = {
+      from: camera.position.clone(),
+      to: dest,
+      aimFrom: controls.target.clone(),
+      aimTo,
+      start: performance.now(),
+      ms
+    };
   }
 
   // A node counts as positioned only when all three coordinates are: one NaN
@@ -249,6 +277,24 @@
       settleLeft--;
       settleNext = performance.now() + SETTLE_STEP;
       frameAll(settleMs);
+    }
+    if (camTween) {
+      const cam = graph?.camera();
+      const controls = graph?.controls();
+      if (!cam || !controls) {
+        camTween = null;
+      } else {
+        const t = Math.min(1, (performance.now() - camTween.start) / camTween.ms);
+        // Quadratic.Out, matching the tween the library used to run for us.
+        const e = 1 - (1 - t) ** 2;
+        cam.position.copy(camTween.from).lerp(camTween.to, e);
+        // The aim swings over in a third of the flight, as force-graph's did:
+        // turning to face the destination early is what makes the move read as
+        // travelling towards something rather than drifting.
+        const ta = Math.min(1, (performance.now() - camTween.start) / (camTween.ms / 3));
+        controls.target.copy(camTween.aimFrom).lerp(camTween.aimTo, 1 - (1 - ta) ** 2);
+        if (t >= 1) camTween = null;
+      }
     }
     if (upTween) {
       const cam = graph?.camera();
