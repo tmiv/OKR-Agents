@@ -182,5 +182,5 @@ app.post('/api/chat', async (req, res) => {
 // The allowlist goes in the boot line because the failure it causes is quiet:
 // /api/health sends no Origin and stays green while every chat turn 403s.
 app.listen(PORT, () =>
-  console.log(`okr-viewer service on http://localhost:${PORT} (model: ${MODEL}, APP_ORIGIN: ${APP_ORIGIN.join(', ')})`)
+  console.log(`okr-agents service on http://localhost:${PORT} (model: ${MODEL}, APP_ORIGIN: ${APP_ORIGIN.join(', ')})`)
 );

@@ -24,7 +24,7 @@ All four bundled datasets are companies: a workflow platform, a holding group, a
 a starter. They make the OKR half of the mission legible and say nothing about the agent half.
 The vision doc's own example of an executor agent is "triage 90% of incoming issues on a GitHub
 repo and rank them by priority"
-([OKR Viewer - Product Vision, Horizons](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)),
+([OKR Agents - Product Vision, Horizons](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)),
 and no dataset has a team that job could be given to.
 
 An open-source monorepo is the natural shape for that. Babylon.js is a real one whose layout is

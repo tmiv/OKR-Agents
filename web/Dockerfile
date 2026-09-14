@@ -2,7 +2,7 @@
 #
 # The build context is the REPO ROOT, not this directory:
 #
-#   docker build -f web/Dockerfile -t okr-viewer-web .
+#   docker build -f web/Dockerfile -t okr-agents-web .
 #
 # There is one lockfile for all three workspace packages, and web/ imports
 # @okr-viewer/schema, so neither is visible from a web/-scoped context.
@@ -39,7 +39,7 @@ RUN if [ ! -f /ctx/package-lock.json ] || [ ! -d /ctx/schema ]; then \
       echo "  three workspaces, and web/ imports @okr-viewer/schema, so"; \
       echo "  neither is reachable from a web/-scoped context."; \
       echo; \
-      echo "      docker build -f web/Dockerfile -t okr-viewer-web ."; \
+      echo "      docker build -f web/Dockerfile -t okr-agents-web ."; \
       echo; \
       exit 1; \
     fi

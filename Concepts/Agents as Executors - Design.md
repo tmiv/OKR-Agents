@@ -8,7 +8,7 @@ created: 2026-09-11
 ---
 # Agents as Executors - Design
 
-Horizon 2 of [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md): a team's
+Horizon 2 of [OKR Agents - Product Vision](OKR%20Agents%20-%20Product%20Vision.md): a team's
 agent does not only *talk* about the team's OKRs (see
 [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md)), it *works* on them through
 connected tools and *measures* them, and a dashboard shows progress. No plan exists yet; this

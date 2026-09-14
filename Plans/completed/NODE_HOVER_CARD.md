@@ -13,7 +13,7 @@ predecessors:
 ---
 # Plan: Extract the node summary into a NodeCard component and show it on 3D hover
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (one state, several surfaces; the panel and the scene should describe a node the same way).
 
 ## Context

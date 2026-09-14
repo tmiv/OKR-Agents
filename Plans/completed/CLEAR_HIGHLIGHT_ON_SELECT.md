@@ -9,7 +9,7 @@ completed_on: 2026-09-11
 ---
 # Plan: Clear chat highlights on any user selection in the 3D view
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (invariant 5: user gestures take precedence over assistant pointers). Spike plan.
 
 ## Context

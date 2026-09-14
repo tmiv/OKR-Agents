@@ -1,5 +1,5 @@
 <script>
-  import { unitDescendants } from './lib/company.js';
+  import { hasCharter, unitDescendants } from './lib/company.js';
 
   let {
     unit,
@@ -122,6 +122,10 @@
     edit({ parent });
   }
 
+  // Enough written down for the team to answer as itself. Tracks the committed
+  // `unit`, not `draft`, so the button turns on when the mission commits.
+  const chartered = $derived(hasCharter(unit));
+
   const dependsOn = $derived(unit.charter?.dependsOn ?? []);
 
   function toggleDependency(id, on) {
@@ -160,9 +164,20 @@
   </header>
 
   {#if onNewChat}
-    <!-- A charter is the hardest thing in the app to write from a blank page,
-         so the interview that writes it starts here. -->
+    <!-- Two doors, and the order is the point: a chartered team is something
+         you can talk to, and the interview is how you get one that isn't there
+         yet. Same charter rule as the briefing card's "Ask <team>", shared as
+         hasCharter() so the two front doors cannot disagree. -->
     <div class="launch">
+      <button
+        class="ghost"
+        disabled={!chartered}
+        title={chartered ? '' : 'Write a mission first; the charter is what it speaks from.'}
+        onclick={() =>
+          onNewChat({ mode: 'persona', subject: { kind: 'team', id: unit.id }, title: `As ${unit.name}` })}
+      >
+        Talk to this team
+      </button>
       <button
         class="ghost"
         onclick={() =>

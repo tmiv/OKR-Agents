@@ -16,7 +16,7 @@ successors:
 ---
 # Plan: Send the user's view context with every message so the assistant resolves references
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 ("pointing plus seeing").
 
 ## Context

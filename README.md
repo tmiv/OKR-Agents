@@ -1,21 +1,20 @@
-# OKR Viewer
+# OKR Agents
 
-A 3D OKR tree you can interrogate and edit by talking to it.
+**OKR Agents uses the OKR vocabulary people already know to make traditional OKRs lighter to run, and to manage teams of agents through the same lens.**
 
-Load an org's objectives and key results as a navigable 3D graph, then ask questions in plain language — "which KRs don't ladder up to anything?", "make the marketing KRs measurable" — and watch Claude answer *by moving the visualization*: flying the camera to the nodes it's talking about, and rewriting them in place when you ask it to.
+Today that is a 3D OKR tree with the teams that own it standing behind it. A coach answers questions about the whole document by *moving the view* — flying the camera to the nodes it means and rewriting them in place when you ask it to. A briefing reads the document unprompted, ranks what actually needs a person, and hands each finding to the team that owns it. Teams carry charters written as job descriptions — a mission, a process, the key results it owns — so a team is something that can answer for itself: open one, hit **Talk to this team**, and it replies from its charter rather than as a generic assistant.
 
-The pitch in one line: **the model's output is the interface, not a chat log next to one.**
+The pitch in one line: **the model's output is the interface, not a chat log next to one.** That is why the tree is a 3D scene and not a table.
 
----
+The bundled datasets include one that is not a company: `babylonjs-9x-cycle` models a monorepo's sub-libraries as teams, with the interdependencies they really have, plus an issue-triage team whose charter is written as the job you would hand an executor agent. Its OKRs are illustrative, not the Babylon.js project's actual plan.
 
-## Demo script
+## Where this is going
 
-This is the thing to build toward. Everything below serves these 90 seconds.
+- **Agents that review each other's OKRs.** Teams reviewing, debating and negotiating alignment with the user moderating — modes 2 to 4 of [Teams as Agents](Concepts/Teams%20as%20Agents%20-%20Design.md). Mode 1, a team answering as itself, already ships.
+- **Agents that execute and measure.** A team that does the work its key results describe and records what it did, with a progress dashboard reading that record — [Agents as Executors](Concepts/Agents%20as%20Executors%20-%20Design.md).
+- **One shared, live document.** People and agents editing and discussing the same `OkrDocument` at once, instead of a tree that resets on reload.
 
-1. **Open on the full tree.** One company objective at the top, team objectives beneath it, KRs at the leaves. Rotate it. It's obviously a hierarchy and you can see all of it at once.
-2. **Ask a question.** "Which key results don't clearly support a company objective?" → Claude answers in the panel *and* three nodes pulse red while the camera flies to them.
-3. **Ask for a fix.** "Rewrite those so they're measurable and tie them to the right objective." → the nodes' text changes, edges re-link, the graph settles into a new shape.
-4. **Undo it.** One click, tree snaps back. (This also saves you if the model does something dumb on stage.)
+The tree, the charters, the action contract and the history are already shaped for that; the vision doc's "seams to keep open" section says how — [OKR Agents - Product Vision](Concepts/OKR%20Agents%20-%20Product%20Vision.md).
 
 ---
 
@@ -146,7 +145,7 @@ at the root and a single lockfile. Installing also builds `schema/` (its
 `prepare` script), which both other packages import.
 
 ```bash
-git clone <repo> && cd okr-viewer
+git clone <repo> && cd okr-agents
 npm install                                   # installs all three, builds schema/
 cp service/.env.example service/.env          # add ANTHROPIC_API_KEY
 
@@ -185,8 +184,8 @@ packages import `@okr-viewer/schema`, so a package-scoped context cannot see
 what it needs:
 
 ```bash
-docker build -f service/Dockerfile -t okr-viewer-service .
-docker build -f web/Dockerfile     -t okr-viewer-web     .
+docker build -f service/Dockerfile -t okr-agents-service .
+docker build -f web/Dockerfile     -t okr-agents-web     .
 ```
 
 | | Base | Port | Env |
@@ -285,7 +284,7 @@ through the proxy.
 ## Layout
 
 ```
-okr-viewer/
+okr-agents/
 ├── package.json                npm workspace root; one lockfile for all three
 ├── docker-compose.yml          web → service, the pair in one command
 ├── .dockerignore               build context for both images (keeps .env out)
@@ -322,7 +321,25 @@ okr-viewer/
 
 ---
 
-## Build order
+## Notes from the first cut
+
+These are the notes the first version was built from, kept unedited. The build order is history
+now, but the advice in it still holds.
+
+---
+
+### Demo script
+
+This is the thing to build toward. Everything below serves these 90 seconds.
+
+1. **Open on the full tree.** One company objective at the top, team objectives beneath it, KRs at the leaves. Rotate it. It's obviously a hierarchy and you can see all of it at once.
+2. **Ask a question.** "Which key results don't clearly support a company objective?" → Claude answers in the panel *and* three nodes pulse red while the camera flies to them.
+3. **Ask for a fix.** "Rewrite those so they're measurable and tie them to the right objective." → the nodes' text changes, edges re-link, the graph settles into a new shape.
+4. **Undo it.** One click, tree snaps back. (This also saves you if the model does something dumb on stage.)
+
+---
+
+### Build order
 
 Each step is shippable on its own. If the clock runs out, you stop at a checkpoint with something that demos — not a half-wired step 4.
 
@@ -339,7 +356,7 @@ Stretch, only if you're ahead: highlight-by-hover on chat text, a `contributes` 
 
 ---
 
-## Things that will bite you
+### Things that will bite you
 
 **Claude will invent node IDs.** Not often, but it will, and an unknown ID either throws in your renderer or silently no-ops in the middle of a demo. You have the tree right there in the request — filter `actions` and `highlight` against it server-side and drop what doesn't resolve. Ten minutes of work on the single most likely live failure.
 
@@ -357,7 +374,7 @@ $effect(() => { graph?.graphData(toGraphData(tree)); });
 
 ---
 
-## Scope boundary
+### Scope boundary
 
 Explicitly out for v1, listed here so it stays out:
 

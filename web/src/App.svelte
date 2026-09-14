@@ -489,6 +489,10 @@
   // `opening` is the other way round: a tab opened from a briefing card starts
   // with a real question the user is asking the team, so it is sent as a turn
   // they can see, not as the hidden kick-off an interview needs.
+  //
+  // `persona` takes neither by default: a team waits to be spoken to, it does
+  // not interview. Opened from a team panel with no `opening`, the tab sits
+  // there until the user types — no hidden turn, no request.
   function newChat({ mode = 'free', subject, title, opening } = {}) {
     const resolved =
       subject === undefined && mode === 'interview-new' ? { kind: 'new', parentId: newNodeParent() } : subject ?? null;
@@ -496,7 +500,7 @@
     chats = [...chats, chat];
     activeChatId = chat.id;
     if (opening) send(chat.id, opening);
-    else if (mode !== 'free') send(chat.id, 'Begin the interview.', { hidden: true });
+    else if (mode !== 'free' && mode !== 'persona') send(chat.id, 'Begin the interview.', { hidden: true });
     return chat.id;
   }
 
@@ -705,7 +709,7 @@
 
 <div class="app">
   <header class="topbar">
-    <div class="brand"><span class="dot"></span> OKR Viewer</div>
+    <div class="brand"><span class="dot"></span> OKR Agents</div>
     <div class="stats">
       {tree.nodes.length} nodes ·
       <!-- The stat is the way in: the assistant reads the tree on its own, so
@@ -732,7 +736,7 @@
           <option value={dataset.id}>{dataset.title}</option>
         {/each}
       </select>
-      <button onclick={showTeams} class="ghost" class:on={panel?.kind === 'teams' || panel?.kind === 'team'} title="The teams the tree hangs off, and what each one is for">
+      <button onclick={showTeams} class="ghost" class:on={panel?.kind === 'teams' || panel?.kind === 'team'} title="The teams the tree hangs off, what each is for, and the agent that answers for each">
         Teams{company.units.length ? ` (${company.units.length})` : ''}
       </button>
       <button onclick={undo} disabled={!undoStack.length} title="⌘Z">
@@ -825,6 +829,7 @@
     </section>
     <Chat
       {chats}
+      {company}
       {activeChatId}
       onSelectChat={(id) => (activeChatId = id)}
       onCloseChat={closeChat}

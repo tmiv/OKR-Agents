@@ -12,7 +12,7 @@ services:
     build:
       context: .
       dockerfile: service/Dockerfile
-    image: okr-viewer-service
+    image: okr-agents-service
     environment:
       - PORT=8787
       # The origin the browser is on, which with this file is the web
@@ -36,7 +36,7 @@ services:
     build:
       context: .
       dockerfile: web/Dockerfile
-    image: okr-viewer-web
+    image: okr-agents-web
     environment:
       # Where the service lives, for the /api/ proxy. No trailing slash — nginx
       # forwards the path through unchanged. The mirror of APP_ORIGIN above:

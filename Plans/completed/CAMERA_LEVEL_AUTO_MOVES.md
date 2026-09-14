@@ -9,7 +9,7 @@ completed_on: 2026-09-11
 ---
 # Plan: Level the camera to world up during programmatic moves
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (invariant 5: "the scene never disorients the user on its own"). Spike plan, one file.
 
 ## Context

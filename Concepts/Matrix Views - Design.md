@@ -11,7 +11,7 @@ created: 2026-09-12
 Three tables that show what the tree cannot: OKR-against-OKR fitness, team-against-team
 reliance, and team-against-team communication. No plan exists yet; the plans this would spawn
 are named at the bottom. Parent:
-[OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[OKR Agents - Product Vision](OKR%20Agents%20-%20Product%20Vision.md). Related:
 [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),
 [Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md) and
 [Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).

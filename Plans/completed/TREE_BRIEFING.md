@@ -27,7 +27,7 @@ a persona chat with the owning team.
 
 Concept: [Depth and Focus - Design](../../Concepts/Depth%20and%20Focus%20-%20Design.md) (the
 product's job is keeping the tree honest and small; audit on change, not on schedule; AI drafts,
-humans decide) and [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+humans decide) and [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (the model's output is the interface). The stretch phase is mode 1 of
 [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md).
 

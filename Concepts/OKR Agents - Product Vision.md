@@ -6,7 +6,7 @@ tags:
   - service
 created: 2026-09-11
 ---
-# OKR Viewer - Product Vision
+# OKR Agents - Product Vision
 
 The design rationale behind the September 2026 round of plans. The plans say *what* and *where*;
 this doc says *why* and how the pieces fit. Plans that cite this doc:
@@ -22,9 +22,23 @@ Companions: [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),
 [Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md) (why the three-level ladder is a
 default, not a doctrine, and why focus is the constraint that replaces it).
 
-## The thesis, restated
+## Mission
 
-The README's one-liner still holds: **the model's output is the interface, not a chat log next to
+**OKR Agents uses the OKR vocabulary people already know to make traditional OKRs lighter to run,
+and to manage teams of agents through the same lens.**
+
+### As first written, 2026-09-14
+
+> To leverage people's understanding of and familiarity with OKRs and their existing mental
+> models and tools for OKRs by providing a means that reduces cognitive load for traditional OKRs
+> but also allows the management of teams of agents through this OKR lens.
+
+The one-liner above is the tightened form. The README carries it and nothing else does, so there
+is one place to edit it.
+
+## The interaction thesis
+
+The README's interaction pitch still holds: **the model's output is the interface, not a chat log next to
 one.** The 3D tree is the shared workspace; the assistant acts on it by moving the camera,
 pulsing nodes, and rewriting them. Everything below extends that thesis in one direction: the
 user gets more ways to *point at* things (select, edit, open a team), and the assistant gets to

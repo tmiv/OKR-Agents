@@ -1,5 +1,5 @@
 <script>
-  import { unitName } from './lib/company.js';
+  import { hasCharter, unitName } from './lib/company.js';
   import { keyOf } from './lib/briefing.js';
 
   let {
@@ -48,8 +48,7 @@
     const owners = new Set(ids.map((id) => byNode.get(id)?.unitId).filter(Boolean));
     if (owners.size !== 1) return null;
     const unit = (company?.units ?? []).find((u) => u.id === [...owners][0]);
-    const charter = unit?.charter;
-    return charter && (charter.mission || charter.process || charter.owns?.length) ? unit : null;
+    return hasCharter(unit) ? unit : null;
   }
 
   const ask = (finding, unit) =>

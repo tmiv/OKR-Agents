@@ -158,13 +158,14 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
+The product is **OKR Agents** (formerly OKR Viewer); the rename and the mission that goes with it
+are [OKR_AGENTS_RENAME_AND_POSITIONING](Plans/development/OKR_AGENTS_RENAME_AND_POSITIONING.md).
 The September 2026 round shipped in full, TREE_BRIEFING and BRIEFING_AUDIT_CACHE included, and
-BABYLONJS_PROJECT_DATASET landed on top of it. `development/` holds one open plan,
-[OKR_AGENTS_RENAME_AND_POSITIONING](Plans/development/OKR_AGENTS_RENAME_AND_POSITIONING.md);
-anything else starts with a new plan there, not by reopening a completed one.
+BABYLONJS_PROJECT_DATASET landed on top of it. Anything new starts with a new plan in
+`development/`, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
-[Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
+[Concepts/OKR Agents - Product Vision.md](Concepts/OKR%20Agents%20-%20Product%20Vision.md).
 Teams-as-agents rationale: [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md).
 
 Shipped, in the order they landed — read the completion notes before assuming how something

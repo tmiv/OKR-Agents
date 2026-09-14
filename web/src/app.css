@@ -181,7 +181,7 @@ main { flex: 1; display: flex; min-height: 0; }
 /* the interview launchers, directly under the panel header */
 .detail .launch { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 2px; }
 .detail .launch button { font-size: 11px; padding: 4px 10px; color: var(--muted); }
-.detail .launch button:hover { border-color: var(--accent); color: var(--accent); }
+.detail .launch button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .detail .actions .danger:hover { border-color: var(--bad); }
 /* ── teams panel ────────────────────────────────────────────────────── */
 /* Same surface as .detail; only what teams add is listed here. */
@@ -306,6 +306,13 @@ main { flex: 1; display: flex; min-height: 0; }
 .msg.user .bubble { background: var(--accent); border-color: var(--accent); color: #fff; }
 .msg.error .bubble { border-color: var(--bad); color: var(--bad); }
 .msg.note .bubble { color: var(--muted); font-style: italic; background: transparent; }
+/* who is answering, in a persona tab: the reply is the team's, and the coach's
+   bubbles look exactly the same without this */
+.msg .speaker {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  color: var(--company);
+  margin-bottom: -2px;
+}
 .meta { display: flex; gap: 6px; }
 .pill { font-size: 11px; padding: 2px 8px; border-radius: 999px; background: transparent; border: 1px solid var(--border); color: var(--muted); }
 .pill.edit { border-color: var(--good); color: var(--good); }

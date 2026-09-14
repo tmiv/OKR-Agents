@@ -14,7 +14,7 @@ predecessors:
 ---
 # Plan: Multiple chat tabs with a mode and a subject, and buttons that open interviews
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (vocabulary: Tab, Interview) and [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md)
 (interviews are the on-ramp to personas).
 

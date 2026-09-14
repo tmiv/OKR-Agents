@@ -34,6 +34,20 @@ export function unitName(company, id) {
 }
 
 /**
+ * Whether a team has enough written down to speak as itself: a mission, a
+ * process, or at least one key result it owns. A persona with nothing written
+ * down is the assistant doing an impression, so both front doors onto the
+ * persona mode — the briefing card and the team panel — gate on this, and on
+ * this only, so they cannot disagree about which teams can talk.
+ * @param {CompanyUnit | null | undefined} unit
+ * @returns {boolean}
+ */
+export function hasCharter(unit) {
+  const charter = unit?.charter;
+  return Boolean(charter && (charter.mission || charter.process || charter.owns?.length));
+}
+
+/**
  * Every team below `id`, transitively.
  * @param {Company | null | undefined} company
  * @param {string} id

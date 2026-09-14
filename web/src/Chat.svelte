@@ -1,6 +1,9 @@
 <script>
+  import { unitName } from './lib/company.js';
+
   let {
     chats = [],
+    company = null,
     activeChatId = null,
     onSelectChat,
     onCloseChat,
@@ -14,7 +17,15 @@
   const active = $derived(chats.find((c) => c.id === activeChatId) ?? chats[0] ?? null);
   const messages = $derived(active?.messages ?? []);
   const loading = $derived(active?.loading ?? false);
-  const isInterview = $derived(!!active && active.mode !== 'free');
+  // A persona tab is not an interview even though it is not free chat either:
+  // the team is the one being asked, so none of the interview's framing (the
+  // assistant leads, "that's enough" wraps up, an edit gets an Undo pill next
+  // to it) applies to it.
+  const isPersona = $derived(active?.mode === 'persona');
+  const isInterview = $derived(!!active && active.mode !== 'free' && !isPersona);
+  // Who is answering, when a team is. Falls back to nothing if the team was
+  // deleted out from under an open tab.
+  const speaker = $derived(isPersona ? unitName(company, active.subject?.id) : null);
 
   // A tab the app has written a note into ("Loaded …", "Imported …") has not
   // been talked in yet, so it still deserves its opening prompt and chips.
@@ -34,7 +45,7 @@
   const suggestions = [
     'Which key results don’t clearly support a company objective?',
     'Rewrite those so they’re measurable and tie them to the right objective.',
-    'Which team is carrying the most risk?'
+    'Which team’s charter doesn’t match the key results it owns?'
   ];
 
   // A title long enough to need it is cut here rather than in CSS, so the tab
@@ -102,6 +113,11 @@
     {#each messages as m}
       {#if !m.hidden}
         <div class="msg {m.role}" class:error={m.error} class:note={m.note}>
+          <!-- In a persona tab the answer is the team's, not the coach's, and a
+               bubble that does not say so is indistinguishable from one. -->
+          {#if speaker && m.role === 'assistant' && !m.note && !m.error}
+            <div class="speaker">{speaker}</div>
+          {/if}
           <div class="bubble">{m.content}</div>
           {#if m.role === 'assistant' && (m.highlight?.length || m.actions)}
             <div class="meta">
@@ -127,8 +143,10 @@
       <div class="empty">
         {#if isInterview}
           <p>The assistant asks, you answer. Say “that’s enough” to wrap up.</p>
+        {:else if isPersona}
+          <p>You are talking to {speaker ?? 'this team'}, answering from its charter.</p>
         {:else}
-          <p>Ask the tree anything, or tell it what to change.</p>
+          <p>Ask the tree anything, tell it what to change, or open a team and talk to it as itself.</p>
           {#each suggestions as s}
             <button class="chip" onclick={() => onSend(active.id, s)} disabled={loading}>{s}</button>
           {/each}
@@ -145,7 +163,11 @@
       oninput={(e) => (drafts[activeChatId] = e.currentTarget.value)}
       onkeydown={onKey}
       rows="2"
-      placeholder={isInterview ? 'Answer, or say “that’s enough”…' : 'Ask about the tree, or tell me what to change…'}
+      placeholder={isInterview
+        ? 'Answer, or say “that’s enough”…'
+        : isPersona
+          ? `Ask ${speaker ?? 'this team'} anything…`
+          : 'Ask about the tree, or tell me what to change…'}
       disabled={loading}
     ></textarea>
     <button type="submit" disabled={loading || !draft.trim()}>Send</button>

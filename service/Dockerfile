@@ -2,7 +2,7 @@
 #
 # The build context is the REPO ROOT, not this directory:
 #
-#   docker build -f service/Dockerfile -t okr-viewer-service .
+#   docker build -f service/Dockerfile -t okr-agents-service .
 #
 # There is one lockfile for all three workspace packages, and service/ imports
 # @okr-viewer/schema, so neither is visible from a service/-scoped context.
@@ -34,7 +34,7 @@ RUN if [ ! -f /ctx/package-lock.json ] || [ ! -d /ctx/schema ]; then \
       echo "  three workspaces, and service/ imports @okr-viewer/schema, so"; \
       echo "  neither is reachable from a service/-scoped context."; \
       echo; \
-      echo "      docker build -f service/Dockerfile -t okr-viewer-service ."; \
+      echo "      docker build -f service/Dockerfile -t okr-agents-service ."; \
       echo; \
       exit 1; \
     fi
@@ -81,7 +81,7 @@ COPY --from=build /app/schema/package.json schema/
 # --ignore-scripts: schema/'s `prepare` would try to rebuild dist/ with devDeps
 # that this stage deliberately does not install. The built dist/ is copied in
 # from the build stage instead.
-RUN npm ci --omit=dev --ignore-scripts --workspace okr-viewer-service \
+RUN npm ci --omit=dev --ignore-scripts --workspace okr-agents-service \
  && npm cache clean --force
 
 COPY --from=build /app/schema/dist schema/dist

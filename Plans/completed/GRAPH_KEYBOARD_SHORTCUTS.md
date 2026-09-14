@@ -10,7 +10,7 @@ completed_on: 2026-09-12
 ---
 # Plan: Add a keyboard shortcut system to the 3D view
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (invariant 5: the user always feels in control of the view). Standard plan, one repo (`web/`).
 
 ## Context

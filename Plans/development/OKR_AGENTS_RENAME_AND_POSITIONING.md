@@ -14,7 +14,7 @@ predecessors:
 ---
 # Plan: Rename to OKR Agents and make the agent thesis visible
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (renamed by Phase 1 to `OKR Agents - Product Vision.md`) and
 [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md).
 Sibling: [BABYLONJS_PROJECT_DATASET](../completed/BABYLONJS_PROJECT_DATASET.md), the project-shaped dataset
@@ -125,10 +125,10 @@ Mechanical. One commit.
 7. [service/index.js:185](../../service/index.js): boot line `okr-agents service on …`.
 8. Rename the vision doc and sweep its links:
    ```bash
-   git mv "Concepts/OKR Viewer - Product Vision.md" "Concepts/OKR Agents - Product Vision.md"
-   grep -rl "OKR%20Viewer%20-%20Product%20Vision\|OKR Viewer - Product Vision" CLAUDE.md Concepts Plans \
-     | xargs sed -i '' -e 's/OKR%20Viewer%20-%20Product%20Vision/OKR%20Agents%20-%20Product%20Vision/g' \
-                       -e 's/OKR Viewer - Product Vision/OKR Agents - Product Vision/g'
+   git mv "Concepts/OKR Agents - Product Vision.md" "Concepts/OKR Agents - Product Vision.md"
+   grep -rl "OKR%20Agents%20-%20Product%20Vision\|OKR Agents - Product Vision" CLAUDE.md Concepts Plans \
+     | xargs sed -i '' -e 's/OKR%20Agents%20-%20Product%20Vision/OKR%20Agents%20-%20Product%20Vision/g' \
+                       -e 's/OKR Agents - Product Vision/OKR Agents - Product Vision/g'
    ```
    That touches [CLAUDE.md:165](../../CLAUDE.md), the four sibling concept docs, and the
    `Concept:` line of eleven completed plans (links only, per Decision 6). Then edit the H1 at

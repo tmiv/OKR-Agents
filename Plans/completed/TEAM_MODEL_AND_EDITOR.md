@@ -20,7 +20,7 @@ successors:
 
 Concept: [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md) (why the
 charter looks the way it does) and
-[OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
+[OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md).
 
 ## TL;DR
 

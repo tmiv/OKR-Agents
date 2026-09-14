@@ -15,7 +15,7 @@ successors:
 ---
 # Plan: Edit OKR node details in the Detail panel through one commit path that records history
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (invariant 3: "every mutation is an Action through one commit path").
 
 ## Context

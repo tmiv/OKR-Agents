@@ -10,7 +10,7 @@ created: 2026-09-11
 
 A point of view on why multi-level OKR hierarchies, long considered an anti-pattern, become
 viable when an AI carries the alignment work, and what that does to this product's job.
-Parent: [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+Parent: [OKR Agents - Product Vision](OKR%20Agents%20-%20Product%20Vision.md). Related:
 [Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md).
 
 ## The received wisdom, and what it was protecting

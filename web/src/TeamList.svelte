@@ -61,7 +61,7 @@
       {/each}
     </ul>
   {:else}
-    <p class="hint">No teams yet. Add one and give it a charter — the assistant reads it.</p>
+    <p class="hint">No teams yet. Add one and give it a charter: the charter is what its agent speaks from.</p>
   {/if}
 
   {#if unassigned}

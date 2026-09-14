@@ -10,7 +10,7 @@ completed_on: 2026-09-12
 ---
 # Plan: Frame the selected node with its parent and children
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (invariant 5: "the scene never disorients the user on its own").
 Predecessor: [CAMERA_LEVEL_AUTO_MOVES](../completed/CAMERA_LEVEL_AUTO_MOVES.md) —
 this plan reuses `levelCamera` untouched.

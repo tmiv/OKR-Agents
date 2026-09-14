@@ -11,7 +11,7 @@ predecessors:
 ---
 # Plan: Ship the default graph and alternates as bundled OkrDocument JSON datasets
 
-Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (invariant 4: "the document is the unit of truth").
 
 ## Context
