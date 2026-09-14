@@ -158,11 +158,12 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-The product is **OKR Agents** (formerly OKR Viewer); the rename and the mission that goes with it
-are [OKR_AGENTS_RENAME_AND_POSITIONING](Plans/development/OKR_AGENTS_RENAME_AND_POSITIONING.md).
+The product is **OKR Agents** (formerly OKR Viewer); the rename, the mission and the "Talk to
+this team" front door onto the `persona` mode are
+[OKR_AGENTS_RENAME_AND_POSITIONING](Plans/completed/OKR_AGENTS_RENAME_AND_POSITIONING.md).
 The September 2026 round shipped in full, TREE_BRIEFING and BRIEFING_AUDIT_CACHE included, and
-BABYLONJS_PROJECT_DATASET landed on top of it. Anything new starts with a new plan in
-`development/`, not by reopening a completed one.
+BABYLONJS_PROJECT_DATASET landed on top of it. `development/` is empty: anything new starts with
+a new plan there, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
 [Concepts/OKR Agents - Product Vision.md](Concepts/OKR%20Agents%20-%20Product%20Vision.md).
@@ -185,7 +186,8 @@ works:
 [DOCKER_IMAGES_AND_CI](Plans/completed/DOCKER_IMAGES_AND_CI.md) ·
 [SERVICE_CORS](Plans/completed/SERVICE_CORS.md) ·
 [BRIEFING_AUDIT_CACHE](Plans/completed/BRIEFING_AUDIT_CACHE.md) ·
-[BABYLONJS_PROJECT_DATASET](Plans/completed/BABYLONJS_PROJECT_DATASET.md).
+[BABYLONJS_PROJECT_DATASET](Plans/completed/BABYLONJS_PROJECT_DATASET.md) ·
+[OKR_AGENTS_RENAME_AND_POSITIONING](Plans/completed/OKR_AGENTS_RENAME_AND_POSITIONING.md).
 
 BABYLONJS_PROJECT_DATASET made `babylonjs-9x-cycle` the default dataset: a monorepo's
 sub-libraries as teams, with an issue-triage team written as a job an executor agent could take.
@@ -194,7 +196,10 @@ came off `charter.dependsOn` alone, which is the first evidence the reliance gra
 itself.
 
 TREE_BRIEFING also landed mode 1 of the four discussion modes (`persona`), so the next plan in
-that area starts from modes 2–4, not from scratch. Read its completion notes before touching the
+that area starts from modes 2–4, not from scratch. OKR_AGENTS_RENAME_AND_POSITIONING gave mode 1
+a front door on every chartered team panel and a speaker label on its replies, and split
+`isPersona` out of `isInterview` in `Chat.svelte` — a fourth mode added to that enum needs to
+pick a side of that split rather than inheriting the interview framing by default. Read its completion notes before touching the
 `respond` tool: `findings` is handed to an audit and to nothing else, and naming a field a mode's
 tool schema does not have makes the model emit an empty tool call.
 

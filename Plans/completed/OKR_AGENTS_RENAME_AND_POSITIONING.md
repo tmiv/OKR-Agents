@@ -6,8 +6,9 @@ tags:
   - service
   - schema
   - docs
-status: development
+status: completed
 created: 2026-09-14
+completed_on: 2026-09-14
 predecessors:
   - completed/TEAM_MODEL_AND_EDITOR.md
   - completed/TREE_BRIEFING.md
@@ -17,7 +18,7 @@ predecessors:
 Concept: [OKR Agents - Product Vision](../../Concepts/OKR%20Agents%20-%20Product%20Vision.md)
 (renamed by Phase 1 to `OKR Agents - Product Vision.md`) and
 [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md).
-Sibling: [BABYLONJS_PROJECT_DATASET](../completed/BABYLONJS_PROJECT_DATASET.md), the project-shaped dataset
+Sibling: [BABYLONJS_PROJECT_DATASET](BABYLONJS_PROJECT_DATASET.md), the project-shaped dataset
 with an issue-triage team that the README's first screen points at.
 
 ## TL;DR
@@ -295,3 +296,33 @@ The one phase with behaviour. Everything goes through `newChat()` at
 - **Rollback** is `git revert` of two commits (Phases 1+3+4, Phase 2); the vision doc rename
   reverts with them. The orphaned IndexedDB is the only thing a revert does not put back, and it
   is a cache.
+
+## Completion notes
+
+- **Planned vs. actual.** The four phases landed as written, in two commits, with no
+  re-sequencing. Every `file:line` citation in the plan resolved to within a handful of lines of
+  where it said (the README ones were ~10 off after earlier edits; the code ones were exact).
+  The deliberate loud failures the plan predicted never fired, because the sweeps were complete:
+  `npm run build:schema` resolved every `$ref` first try, and both `vite build` and the service's
+  imports came up clean. The kept fixture
+  (`schema/test/fixtures/valid/okr-document.json`, still `@okr-viewer/schema 0.1.0`) passes among
+  the valid fixtures with no test edit, which is Decision 8 proved rather than asserted.
+- **Mid-flight adjustments.** Three, all small. (1) `isInterview` in `Chat.svelte` was
+  `active.mode !== 'free'`, which swept persona in with the interviews — so a persona tab would
+  have shown "the assistant asks, you answer" and offered an Undo pill next to edits. Split into
+  `isPersona` and `isInterview`, with the latter now excluding persona; the plan assumed the two
+  were already distinct. (2) The plan's README paragraph wanted the persona sentence to link to
+  "Talk to this team"; there is nothing in the README to link *to*, so it names the button in
+  bold instead — a README anchor pointing at a UI control would have been a dead link, and
+  "every link in the re-topped section resolves" is a verification item. (3) The first-cut
+  sections were demoted `##` → `###` so they sit *under* `## Notes from the first cut` rather
+  than beside it; their prose is untouched, per Decision 7.
+- **Surprises / residual risks.** The dev environment had three stale `vite` processes from
+  earlier sessions holding 5173/5174/5175, all of which broke on the Phase 2 lockfile change
+  (vite caches the resolved module graph, so `@okr-agents/schema` came back "failed to resolve"
+  until a restart). They were killed and one was started on 5175, the origin the running service
+  accepts — worth knowing before blaming a rename for an import error. Nothing else surprised.
+  Residual: `Plans/completed/DOCKER_IMAGES_AND_CI.md` has six pre-existing broken relative links
+  (`README.md` where it means `../../README.md`), untouched here per Decision 6 and the
+  out-of-scope line. The GitHub repo rename and the GHCR package cleanup are still the two
+  manual steps above; nothing in the code waits on them.

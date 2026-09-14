@@ -15,7 +15,7 @@ predecessors:
 
 Concept: [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md) and
 [Agents as Executors - Design](../../Concepts/Agents%20as%20Executors%20-%20Design.md).
-Sibling: [OKR_AGENTS_RENAME_AND_POSITIONING](../development/OKR_AGENTS_RENAME_AND_POSITIONING.md), which
+Sibling: [OKR_AGENTS_RENAME_AND_POSITIONING](OKR_AGENTS_RENAME_AND_POSITIONING.md), which
 names this dataset in the README's first screen.
 
 ## Context
@@ -237,6 +237,6 @@ release numbers instead of quarters as the horizon.
   ("MCP servers depend on four teams, only two of which have a matching KR"), which is the first
   evidence the dependency web pays for itself and is the argument for
   `TEAM_RELIANCE_MATRIX.md` next. Residual: the README paragraph sits under `## Setup` as a
-  placeholder; [OKR_AGENTS_RENAME_AND_POSITIONING](../development/OKR_AGENTS_RENAME_AND_POSITIONING.md)
+  placeholder; [OKR_AGENTS_RENAME_AND_POSITIONING](OKR_AGENTS_RENAME_AND_POSITIONING.md)
   is supposed to move it to the first screen, and if that plan is abandoned the paragraph is in
   the wrong place.
