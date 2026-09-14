@@ -188,6 +188,25 @@ Each container names the other's host in its own environment: `SERVICE_URL` tell
 the web container where to proxy `/api/`, and `APP_ORIGIN` tells the service
 which browser origin is allowed to call it.
 
+### SERVICE_URL is an origin, not a URL with a path
+
+`scheme://host[:port]` and nothing more — no path, not even a trailing slash.
+`location /api/` passes the request URI through *only* when `proxy_pass` has no
+URI part of its own; give it one and nginx substitutes it for the matched
+`/api/` prefix instead:
+
+| `SERVICE_URL` | service receives | |
+|---|---|---|
+| `http://service:8787` | `/api/health` | correct |
+| `http://service:8787/` | `/health` | 404 |
+| `http://service:8787/api` | `/apihealth` | 404 |
+| `http://service:8787/api/` | `/api/health` | works, by coincidence |
+
+That mistake is invisible from outside — nginx still serves the app, and the web
+container's healthcheck only asks for `/`, so it stays green while every chat
+turn 404s. So `web/docker-entrypoint.d/10-check-service-url.sh` refuses to start
+nginx on anything but a bare origin, and prints why.
+
 The web image is what replaces the dev proxy. `vite build` emits static files
 with no dev server behind them, so nginx does both jobs: serve the bundle, and
 forward `/api/` to `$SERVICE_URL` (no trailing slash — `web/nginx.conf.template`
@@ -271,6 +290,7 @@ okr-viewer/
 ├── web/
 │   ├── Dockerfile              vite build → nginx (serves the bundle, proxies /api/)
 │   ├── nginx.conf.template     SPA fallback + ${SERVICE_URL}, rendered at start
+│   ├── docker-entrypoint.d/    rejects a SERVICE_URL with a path, before nginx starts
 │   ├── src/
 │   │   ├── App.svelte          layout, owns tree state + undo stack, export/import
 │   │   ├── Graph.svelte        3d-force-graph, bind:this + onMount

@@ -82,6 +82,11 @@ FROM nginx:${NGINX_VERSION} AS runtime
 ENV NGINX_PORT=8080
 ENV SERVICE_URL=http://service:8787
 
+# Checked before the template is rendered; see the script for why SERVICE_URL
+# with a path silently breaks /api/. --chmod because nginx's entrypoint only
+# runs docker-entrypoint.d/ scripts that are executable.
+COPY --from=build --chmod=755 /app/web/docker-entrypoint.d/ /docker-entrypoint.d/
+
 # default.conf.template renders over the image's own default.conf. Taken
 # --from=build, not from the context — see the header.
 COPY --from=build /app/web/nginx.conf.template /etc/nginx/templates/default.conf.template

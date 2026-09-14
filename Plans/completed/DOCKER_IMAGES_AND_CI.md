@@ -104,6 +104,13 @@ Publishing to any registry other than GHCR; deploy manifests (k8s/ECS); a dev co
   always wins. **This costs nothing in layer caching** — measured: after a real content change to
   `service/index.js`, both `npm ci` layers stayed `CACHED` and only the source COPY reran, because
   BuildKit keys a `COPY --from` on the content of the paths named, not on the source stage's layer.
+- **Follow-up: `SERVICE_URL` had a silent failure mode.** `location /api/` only passes the request
+  URI through when `proxy_pass` carries no URI of its own; any path — a bare trailing slash counts
+  — replaces the matched `/api/` prefix instead, so `http://service:8787/` sends `/health` to the
+  service and gets a 404. Measured all four forms. Nothing outside shows it: nginx keeps serving
+  the app and the healthcheck only asks for `/`, so the container stays green while chat is dead.
+  `web/docker-entrypoint.d/10-check-service-url.sh` now refuses to start nginx on anything but a
+  bare origin. `SERVICE_URL` in compose also became overridable (`${SERVICE_URL:-...}`).
 - **Surprises / residual risks.** Verified end to end against the running pair: `GET /` 200,
   SPA fallback 200 on an unknown path, `GET /api/health` → `{"ok":true,...}` and a `POST
   /api/chat` 400 (schema errors) both through the nginx proxy, gzip on, one `Cache-Control` per

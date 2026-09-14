@@ -41,7 +41,7 @@ services:
       # Where the service lives, for the /api/ proxy. No trailing slash — nginx
       # forwards the path through unchanged. The mirror of APP_ORIGIN above:
       # each container names the other's host in its own environment.
-      - SERVICE_URL=http://service:8787
+      - SERVICE_URL=${SERVICE_URL:-http://service:8787}
     ports:
       - "8080:8080"
     depends_on:
