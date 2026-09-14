@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/2</h1>
+        
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<span class="disabled">&larr; Prev</span>
+<span class="current">1</span>
+<a href="page-002.html">2</a>
+<a href="page-002.html">Next &rarr;</a>
+</div>
+
+        
+<div class="message user" id="msg-2026-09-11T19-13-47-395Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-11T19-13-47-395Z" class="timestamp-link"><time datetime="2026-09-11T19:13:47.395Z" data-timestamp="2026-09-11T19:13:47.395Z">2026-09-11T19:13:47.395Z</time></a></div><div class="message-content">
+<div class="user-content"><p>implement Plans/development/OKR_SCHEMA_PACKAGE.md</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T19-13-48-895Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T19-13-48-895Z" class="timestamp-link"><time datetime="2026-09-11T19:13:48.895Z" data-timestamp="2026-09-11T19:13:48.895Z">2026-09-11T19:13:48.895Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T19-13-49-400Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T19-13-49-400Z" class="timestamp-link"><time datetime="2026-09-11T19:13:49.400Z" data-timestamp="2026-09-11T19:13:49.400Z">2026-09-11T19:13:49.400Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll read the plan first, then the current state of the repo.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T19-13-51-407Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T19-13-51-407Z" class="timestamp-link"><time datetime="2026-09-11T19:13:51.407Z" data-timestamp="2026-09-11T19:13:51.407Z">2026-09-11T19:13:51.407Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Re5ScDew3B76D8WAmDPWKB">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read the plan and list repo root</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat /Users/tmiv74/OKR-Display/Plans/development/OKR_SCHEMA_PACKAGE.md; echo ---; ls -la /Users/tmiv74/OKR-Display; echo ---; cat /Users/tmiv74/.claude/projects/-Users-tmiv74-OKR-Display/memory/dev-container-for-node.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T19-13-51-588Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T19-13-51-588Z" class="timestamp-link"><time datetime="2026-09-11T19:13:51.588Z" data-timestamp="2026-09-11T19:13:51.588Z">2026-09-11T19:13:51.588Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---
+tags:
+  - plan
+  - schema
+  - tooling
+  - web
+  - service
+status: development
+created: 2026-09-11
+---
+# Plan: Add a versioned `@okr-viewer/schema` package shared by web and service
+
+## TL;DR
+
+Turn the repo into an npm workspace and add a `schema/` package that owns draft-07 JSON Schemas for the OKR node, tree, company structure, history (metric samples and tree changes), actions, the `/api/chat` request/response, and a versioned export document. Its build compiles TypeScript types with the `LudaThomas/json-schema-to-typescript#release` fork and precompiled Ajv validators; `service/` uses it to validate every request and to source the Claude tool schema, `web/` uses it to validate responses and to add Export/Import of the tree as a `schemaVersion`-stamped JSON file. History is schema-only for now; no TypeScript conversion of the consumers.
+
+## Context
+
+The OKR tree shape is defined four times by hand and nowhere formally:
+
+- the README &quot;Node shape&quot; prose,
+- `web/src/lib/tree.js:8` (the hand-written data) and `web/src/lib/apply.js:6` (`EDITABLE` field list, `clamp01` at `:8`, add-defaults at `:49-62`),
+- `service/validate.js:5-7` (`LEVELS`, `TEXT_FIELDS`, `MAX_TEXT`) and `validateTree` at `:9-19`, which only checks &quot;nodes is an array of unique string ids&quot;,
+- `service/prompt.js:8-39` (`RESPOND_TOOL.input_schema`, already a JSON Schema, with `fields: { type: &#x27;object&#x27; }` left untyped).
+
+The tree lives only in browser memory and resets on reload (README &quot;Scope boundary&quot;). The next things we want, save/load and import/export of the tree, company structure data, and later a history of key result metrics and tree changes, all need one authoritative, versioned description of the data that both sides validate against. Neither package is TypeScript, so the types must arrive as generated `.d.ts` that plain JS consumers can use through JSDoc.
+
+Tooling constraint: host Node is v12; every `npm`/`node` command runs inside the `dev` container (`docker exec -w /src dev …`, `/src` = repo root, Node 24.4 / npm 11.4). Verified 2026-09-11 that the container has git 2.39 and that `npm i github:LudaThomas/json-schema-to-typescript#release` installs 15.0.3 with a committed `dist/` (no build step) and `json2ts` runs.
+
+## Goal
+
+A `schema/` workspace package, `@okr-viewer/schema@0.1.0`, that owns the JSON Schemas for the OKR document, builds TypeScript types with the `LudaThomas/json-schema-to-typescript#release` fork and precompiled Ajv validators, and is imported by both `service/` and `web/` to validate every tree that crosses a boundary and to import/export the tree as a versioned JSON document.
+
+## Decisions (locked in)
+
+1. **npm workspaces at the repo root**, packages `schema`, `web`, `service`. One root lockfile replaces `web/package-lock.json` and `service/package-lock.json`. Consumers depend on `&quot;@okr-viewer/schema&quot;: &quot;^0.1.0&quot;`; npm symlinks the workspace, so the package is versioned by its own `package.json` and `npm pack -w schema` produces an installable tarball if a consumer ever needs to pin an older build. No private registry.
+2. **Compiler is the fork, pinned to the branch:** `&quot;json-schema-to-typescript&quot;: &quot;github:LudaThomas/json-schema-to-typescript#release&quot;`. It is upstream 15.0.3 plus a fix that keeps a `$ref` with `title`/`description` siblings as a *named* reference instead of inlining and suffixing duplicates (`OkrNode1`), including across externally loaded files. Our schemas are multi-file and annotate every `$ref`, so upstream would produce duplicate types. Commit the `package-lock.json` so the resolved commit is pinned; bump by re-running `npm update json-schema-to-typescript -w schema`.
+3. **JSON Schema draft-07**, `definitions` not `$defs`, one file per concept, every file has an `$id` under `https://okr-viewer.dev/schema/v1/`. Draft-07 is the draft both the fork and Ajv&#x27;s default class support without flags.
+4. **Ajv 8 validators are precompiled at build time** (`ajv/dist/standalone`, ESM output) into `schema/dist/validators.js`. Consumers never run Ajv&#x27;s compiler: no `new Function` in the browser, smaller bundle, identical behaviour on both sides. `ajv` and `ajv-formats` stay runtime deps because standalone code imports their small runtime helpers.
+5. **Document envelope with an integer `schemaVersion`.** Export/import moves an `OkrDocument` `{ schemaVersion: 1, meta, company?, tree, history? }`. The `/api/chat` contract keeps sending the bare `tree: { nodes }` (README: &quot;one shape, don&#x27;t add a second one&quot;). Breaking schema changes bump `schemaVersion` and the package major; additive changes bump the minor. A `migrations/` folder holds one function per major step (empty at v1).
+6. **Structural vs. semantic validation split.** JSON Schema covers shape only. Uniqueness of ids, parent existence, cycles, exactly one `company` root, are checked by a hand-written `checkTreeSemantics()` shipped in the same package and used by both sides. The level ladder (`kr → objective → company`) is reported as a *warning*, not an error, because `validateResponse` and `apply.js` allow free relinking today.
+7. **`schema/dist/` is not committed.** The root `.gitignore` already ignores `dist/`. A `prepare` script builds it on `npm install`; npm runs `prepare` for workspace packages.
+8. **History is schema-only in this plan.** `history.schema.json` is authored and referenced from the document so the envelope is stable, but nothing produces history yet.
+
+## Phase 1 — Workspace scaffolding
+
+1. Add root `package.json`: `{ &quot;name&quot;: &quot;okr-viewer&quot;, &quot;private&quot;: true, &quot;workspaces&quot;: [&quot;schema&quot;, &quot;web&quot;, &quot;service&quot;], &quot;scripts&quot;: { &quot;build:schema&quot;: &quot;npm run build -w schema&quot;, &quot;test:schema&quot;: &quot;npm test -w schema&quot;, &quot;dev:web&quot;: &quot;npm run dev -w web&quot;, &quot;dev:service&quot;: &quot;npm run dev -w service&quot; } }`.
+2. Delete `web/package-lock.json` and `service/package-lock.json`; run `docker exec -w /src dev npm install` to produce the root lockfile. Confirm `web/vite.config.js:8-11` needs no `server.fs.allow` change (Vite detects the workspace root from the root `package.json`).
+3. Add `schema/package.json`: name `@okr-viewer/schema`, version `0.1.0`, `&quot;type&quot;: &quot;module&quot;`, `&quot;exports&quot;: { &quot;.&quot;: { &quot;types&quot;: &quot;./index.d.ts&quot;, &quot;default&quot;: &quot;./index.js&quot; }, &quot;./json/*&quot;: &quot;./dist/json/*&quot; }`, `&quot;files&quot;: [&quot;index.js&quot;, &quot;index.d.ts&quot;, &quot;src&quot;, &quot;dist&quot;, &quot;migrations&quot;]`, scripts `build`, `prepare` (= build), `test` (`node --test test/`), `clean`. Deps: `ajv@^8.17`, `ajv-formats@^3`. DevDeps: the fork (Decision 2), `@apidevtools/json-schema-ref-parser@^11` (used for the tool schema in Phase 3), `typescript@^5` (only for `tsc --noEmit` over the generated types).
+4. Add `&quot;@okr-viewer/schema&quot;: &quot;^0.1.0&quot;` to `web/package.json` dependencies and `service/package.json` dependencies. Update the README &quot;Setup&quot; block: one `npm install` at the root, then the two `dev` scripts.
+
+## Phase 2 — Author the schemas (`schema/src/`)
+
+Every property carries a `description`; those descriptions are reused verbatim as the Claude tool&#x27;s field descriptions in Phase 3, so write them for the model as well as for humans.
+
+| File | Title / root type | Notes |
+|---|---|---|
+| `okr-node.schema.json` | `OkrNode` | `id` (string, `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`), `level` enum `company\|objective\|kr`, `parent` string or null, `label` (1–400 chars), `owner`, `metric`, `target` (0–400 chars, match `MAX_TEXT` at `service/validate.js:7`), `contributes` number 0–1. Required: `id, level, parent, label`. `additionalProperties: false` (tree nodes never carry graph `x/y/z`; `Graph.svelte:45-56` copies before mutating). |
+| `okr-tree.schema.json` | `OkrTree` | `{ nodes: OkrNode[] }`, `maxItems: 500` (matches `service/validate.js:11`). No other properties. |
+| `company.schema.json` | `Company` | `{ name, units: [{ id, name, parent: string\|null, lead? }], people?: [{ id, name, unitId }] }`. Node `owner` stays free text in v1; a `unitId` on nodes is a future additive change. |
+| `history.schema.json` | `History` | `{ metricSamples: [{ nodeId, at (date-time), value (number), note? }], changes: [{ at, actor: &#x27;user&#x27;\|&#x27;assistant&#x27;\|&#x27;import&#x27;, reason?, actions: Action[] }] }`. Schema only (Decision 8). |
+| `action.schema.json` | `Action` | `oneOf` by `op`: `edit`/`relink` (`fields` ⊆ `label, owner, metric, target, contributes, parent`), `add` (`fields` additionally `level`, `label` required), `delete` (no `fields`). Encodes the rules currently spread over `service/validate.js:42-55` and `web/src/lib/apply.js:6`. |
+| `chat-request.schema.json` | `ChatRequest` | `{ tree: OkrTree, message (1–4000), selectedNodeId: string\|null, history: [{ role, content }] (max 50) }`. |
+| `chat-response.schema.json` | `ChatResponse` | `{ reply, actions: Action[], highlight: string[] }`. Also the tool&#x27;s input shape. |
+| `okr-document.schema.json` | `OkrDocument` | Envelope from Decision 5. `meta`: `{ title?, period?, exportedAt (date-time), generator? }`. |
+| `index.schema.json` | `OkrSchemaIndex` | Synthetic root whose properties `$ref` every file above, so one `json2ts` run emits every named type exactly once. Never validated against. |
+
+Cross-file references use relative `$ref`s (`&quot;$ref&quot;: &quot;okr-node.schema.json&quot;`) with a `description` sibling; this is the exact case the fork fixes.
+
+## Phase 3 — Build pipeline (`schema/scripts/build.mjs`, plain Node ESM)
+
+Steps, each failing the build loudly:
+
+1. **Meta-validate**: load every `src/*.schema.json`, `ajv.validateSchema()` each against draft-07, register all by `$id`.
+2. **Types**: `compileFromFile(&#x27;src/index.schema.json&#x27;, { cwd: &#x27;src&#x27;, declareExternallyReferenced: true, additionalProperties: false, bannerComment: &lt;generated-by note naming the fork&gt;, style: { singleQuote: true, semi: true, printWidth: 120 } })` → `dist/types.d.ts`. Fail if the output contains `/\b\w+\d+\b/`-style suffixed duplicates (`OkrNode1`), which is the regression the fork exists to prevent.
+3. **Validators**: `new Ajv({ allErrors: true, strict: true, code: { source: true, esm: true } })` + `addFormats`; `standaloneCode(ajv, { validateOkrDocument: &#x27;&lt;id&gt;&#x27;, validateOkrTree, validateOkrNode, validateCompany, validateHistory, validateAction, validateChatRequest, validateChatResponse })` → `dist/validators.js`; write a matching `dist/validators.d.ts` (each export is `(data: unknown) =&gt; boolean` with an `errors` property).
+4. **Copies**: `src/*.schema.json` → `dist/json/`.
+5. **Tool schema**: `$RefParser.dereference(&#x27;src/chat-response.schema.json&#x27;)`, delete `$schema`, `$id`, `definitions`, add `required: [&#x27;reply&#x27;,&#x27;actions&#x27;,&#x27;highlight&#x27;]` → `dist/json/tool/respond-input.json`. Claude&#x27;s `input_schema` cannot follow external `$ref`s, so it gets the flattened copy.
+6. **Type-check**: `tsc --noEmit --strict dist/types.d.ts index.d.ts`.
+
+Run with `docker exec -w /src dev npm run build:schema`.
+
+## Phase 4 — Package runtime API (`schema/index.js`, `schema/index.d.ts`)
+
+- `SCHEMA_VERSION = 1`, `PACKAGE_VERSION` (read from `package.json`).
+- `validate&lt;X&gt;(data)` wrappers returning `{ ok: true, value }` or `{ ok: false, errors: string[] }` with Ajv errors rendered as `instancePath: message` (never expose raw Ajv error objects to callers).
+- `checkTreeSemantics(tree)` → `{ errors: string[], warnings: string[] }` per Decision 6. Ports the id/duplicate logic from `service/validate.js:12-17` and the cycle walk from `web/src/lib/apply.js:28-32` into one place.
+- `createDocument({ tree, company?, history?, meta? })` → stamped `OkrDocument` with `schemaVersion` and `exportedAt`.
+- `parseDocument(text | object)` → `{ ok, document }` after: JSON parse, `schemaVersion` check (reject `&gt; SCHEMA_VERSION`, migrate `&lt;` via `migrations/`), `validateOkrDocument`, `checkTreeSemantics`.
+- Re-export the JSON (`RESPOND_INPUT_SCHEMA`) and the generated types from `index.d.ts` (`export type { OkrNode, OkrTree, … } from &#x27;./dist/types.js&#x27;`).
+- `schema/test/*.test.js` using `node:test`: fixtures under `test/fixtures/{valid,invalid}/`, round-trip `createDocument → JSON → parseDocument`, `web/src/lib/tree.js` `initialTree` validates with zero warnings, `respond-input.json` contains no `$ref`, every invalid fixture fails with the expected `instancePath`.
+
+## Phase 5 — Service adoption
+
+1. `service/index.js:18-24`: replace the ad-hoc checks with `validateChatRequest(req.body)`; on failure respond `400 { error, details: errors }`. Then `checkTreeSemantics(tree)`; errors → 400, warnings → `console.warn`. Keep the `selected` resolution at `:26`.
+2. `service/validate.js`: delete `validateTree` (`:9-19`), `LEVELS`/`TEXT_FIELDS`/`MAX_TEXT` (`:5-7`) and `cleanFields` (`:42-55`). Keep `sanitizeHistory`, `mergeTurns`, and `validateResponse`, but have `validateResponse` first run each action through `validateAction` and reject with `dropped.push({ action, reason })` on shape failure, then keep its existing id/parent/cycle referential checks (`:63-114`), which are tree-relative and belong here.
+3. `service/prompt.js:8-39`: `RESPOND_TOOL.input_schema` becomes `RESPOND_INPUT_SCHEMA` imported from the package. Keep `name` and `description` here. The `## Actions` prose at `:62-67` stays; it explains intent, the schema now enforces shape.
+4. Import path: `import { validateChatRequest, validateAction, checkTreeSemantics, RESPOND_INPUT_SCHEMA } from &#x27;@okr-viewer/schema&#x27;`.
+
+## Phase 6 — Web adoption and import/export
+
+1. `web/src/App.svelte:5-6`: import `validateChatResponse`, `createDocument`, `parseDocument`, `checkTreeSemantics`.
+2. `web/src/App.svelte:37`: validate the response before `applyActions`; on failure push an error message instead of applying. In dev only (`import.meta.env.DEV`), assert `initialTree` at `:10` with `validateOkrTree` + `checkTreeSemantics` so a bad hand edit to `tree.js` fails at boot rather than mid-demo.
+3. Add **Export** and **Import** buttons next to `:92-97`. Export: `createDocument({ tree, meta: { title: &#x27;OKR Viewer export&#x27; } })` → Blob download `okr-&lt;date&gt;.json`. Import: hidden `&lt;input type=file accept=.json&gt;`, `parseDocument(await file.text())`; on success push the current tree onto `undoStack` (same pattern as `reset()` at `:59-64`) and replace `tree`; on failure surface the first three errors in the chat panel as an error message. Warnings are shown but do not block.
+4. `web/src/lib/apply.js`: no behaviour change. Add JSDoc types (`/** @param {import(&#x27;@okr-viewer/schema&#x27;).OkrTree} tree */`) so editors pick up the generated types; same for `tree.js:8`.
+5. Vite: because the package is a symlinked workspace, Vite treats it as source and pre-bundles its CJS deps on discovery. If the browser logs `does not provide an export named default` for an `ajv/dist/runtime/*` module, add those paths to `optimizeDeps.include` in `web/vite.config.js`.
+
+## Verification
+
+- `docker exec -w /src dev npm install` succeeds from a clean checkout with `schema/dist/` absent and leaves it built (Decision 7).
+- `npm run build:schema` is idempotent and `dist/types.d.ts` contains each interface once (`grep -c &#x27;export interface OkrNode&#x27; == 1`, no `OkrNode1`).
+- `npm run test:schema` passes: fixtures, round-trip, `initialTree` clean, tool schema has no `$ref`.
+- Service: `curl -X POST :8787/api/chat -d &#x27;{&quot;tree&quot;:{&quot;nodes&quot;:[{&quot;id&quot;:1}]},&quot;message&quot;:&quot;hi&quot;}&#x27;` → 400 whose `details` names `/tree/nodes/0/id`. A valid request still returns `{ reply, actions, highlight }`; a fabricated action with `op: &quot;explode&quot;` appears in the `[chat] dropped` log line.
+- Web: run the 90-second demo script unchanged, then Export, Reset, Import the file, and confirm the edited tree and undo stack are back. Import a file with `schemaVersion: 2` and confirm a clear refusal.
+- `git status` shows no `schema/dist/` and a single root `package-lock.json`.
+
+## Out of scope
+
+- Converting `web/` or `service/` to TypeScript. Types are consumed via JSDoc only.
+- Producing history (recording metric samples or change logs). Schema only.
+- Persisting anything server-side; the service stays stateless.
+- Publishing the package to any registry; `npm pack` tarballs are the only &quot;release&quot; artefact.
+- Referencing `owner` to `company.units` (future additive `unitId`).
+- Prompt tuning beyond swapping in the shared tool schema.
+
+## Risks / rollback
+
+- **Git dependency drift.** `#release` is a moving branch. The lockfile pins the commit; a CI/clean install with a stale lock still resolves the same commit. If the fork disappears, vendor `dist/` from `node_modules` into `schema/vendor/` and point the dep at `file:vendor/json-schema-to-typescript`.
+- **Stricter request validation could reject trees the UI already holds** (for example `contributes` missing on hand-written nodes). Mitigation: `contributes` is optional in the schema with `default: 0.5`, matching `apply.js:8`, and the dev-time assertion in Phase 6 step 2 catches drift before a demo.
+- **Anthropic API rejecting the flattened tool schema.** `oneOf` on `Action` is supported by the tool-use JSON Schema subset, but if the API rejects it, fall back to the current loose `{ op, id, fields }` in `respond-input.json` while keeping strict validation server-side.
+- **Rollback**: delete `schema/`, restore the two per-package lockfiles from git, revert the four touched files. No data formats ship until Phase 6, so nothing persisted needs migrating.
+
+## Completion notes
+
+*(fill in at completion)*
+---
+total 48
+drwxr-xr-x   9 tmiv74  staff   288 Sep 11 11:02 .
+drwxr-xr-x+ 51 tmiv74  staff  1632 Sep 11 12:13 ..
+drwxr-xr-x  13 tmiv74  staff   416 Sep 11 11:21 .git
+-rw-r--r--@  1 tmiv74  staff    41 Sep 10 19:03 .gitignore
+-rw-r--r--@  1 tmiv74  staff  8177 Aug 20 12:42 CLAUDE.md
+drwxr-xr-x@  3 tmiv74  staff    96 Sep 11 11:02 Plans
+-rw-r--r--@  1 tmiv74  staff  9913 Sep 10 19:13 README.md
+drwxr-xr-x@ 10 tmiv74  staff   320 Sep 11 08:32 service
+drwxr-xr-x@  9 tmiv74  staff   288 Sep 10 19:18 web
+---
+---
+name: dev-container-for-node
+description: &quot;Host Node is 12; run npm/node for this project inside the `dev` Docker container where /src maps to the project root&quot;
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 8fed4af5-d6b5-4f45-b459-38c2c0b7531e
+  modified: 2026-09-11T02:16:03.029Z
+---
+
+The host Mac only has Node 12 (no nvm/brew). The user runs a Docker container named `dev` (image `node-dev`, Node 24, npm 11) with the project root mounted at `/src`. The container has no port mappings to the host and no `pkill`/`procps`.
+
+**Why:** Vite 8, Svelte 5, and Express 5 all need Node 20+, so nothing builds on the host. The user asked (2026-09-10) to use the container for testing.
+
+**How to apply:** Run installs, builds, and tests as `docker exec -w /src/&lt;dir&gt; dev &lt;cmd&gt;`. For anything the host browser must see, serve the built `web/dist` from the host (python3 http.server works) since container ports aren&#x27;t exposed. Kill container processes by scanning `/proc/*/cmdline`.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T19-13-53-548Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T19-13-53-548Z" class="timestamp-link"><time datetime="2026-09-11T19:13:53.548Z" data-timestamp="2026-09-11T19:13:53.548Z">2026-09-11T19:13:53.548Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T19-13-53-549Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T19-13-53-549Z" class="timestamp-link"><time datetime="2026-09-11T19:13:53.549Z" data-timestamp="2026-09-11T19:13:53.549Z">2026-09-11T19:13:53.549Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message user" id="msg-2026-09-11T19-13-55-367Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-11T19-13-55-367Z" class="timestamp-link"><time datetime="2026-09-11T19:13:55.367Z" data-timestamp="2026-09-11T19:13:55.367Z">2026-09-11T19:13:55.367Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>[Request interrupted by user]</p></div></div></div>
+<div class="message user" id="msg-2026-09-11T19-14-03-224Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-11T19-14-03-224Z" class="timestamp-link"><time datetime="2026-09-11T19:14:03.224Z" data-timestamp="2026-09-11T19:14:03.224Z">2026-09-11T19:14:03.224Z</time></a></div><div class="message-content">
+<div class="user-content"><p><local-command-caveat>Caveat: The messages below were generated by the user while running local commands. DO NOT respond to these messages or otherwise consider them in your response unless the user explicitly asks you to.</local-command-caveat></p></div></div></div>
+<div class="message user" id="msg-2026-09-11T19-14-03-225Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-11T19-14-03-225Z" class="timestamp-link"><time datetime="2026-09-11T19:14:03.225Z" data-timestamp="2026-09-11T19:14:03.225Z">2026-09-11T19:14:03.225Z</time></a></div><div class="message-content">
+<div class="user-content"><p><command-name>/model</command-name>
+            <command-message>model</command-message>
+            <command-args>claude-opus-5</command-args></p></div></div></div>
+<div class="message user" id="msg-2026-09-11T19-14-03-225Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-11T19-14-03-225Z" class="timestamp-link"><time datetime="2026-09-11T19:14:03.225Z" data-timestamp="2026-09-11T19:14:03.225Z">2026-09-11T19:14:03.225Z</time></a></div><div class="message-content">
+<div class="user-content"><p><local-command-stdout>Set model to <code>claude-opus-5</code></local-command-stdout></p></div></div></div>
+        
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<span class="disabled">&larr; Prev</span>
+<span class="current">1</span>
+<a href="page-002.html">2</a>
+<a href="page-002.html">Next &rarr;</a>
+</div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

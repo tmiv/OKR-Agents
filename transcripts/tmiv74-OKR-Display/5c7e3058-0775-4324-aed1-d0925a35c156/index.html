@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - Index</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <div class="header-row">
+            <h1>Claude Code transcript</h1>
+            <div id="search-box">
+                <input type="text" id="search-input" placeholder="Search..." aria-label="Search transcripts">
+                <button id="search-btn" type="button" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                </button>
+            </div>
+        </div>
+        
+
+<div class="pagination">
+<span class="current">Index</span>
+<span class="disabled">&larr; Prev</span>
+<a href="page-001.html">1</a>
+<a href="page-001.html">Next &rarr;</a>
+</div>
+
+        <p style="color: var(--text-muted); margin-bottom: 24px;">1 prompts · 43 messages · 14 tool calls · 0 commits · 1 pages</p>
+        
+<div class="index-item"><a href="page-001.html#msg-2026-09-12T22-05-12-739Z"><div class="index-item-header"><span class="index-item-number">#1</span><time datetime="2026-09-12T22:05:12.739Z" data-timestamp="2026-09-12T22:05:12.739Z">2026-09-12T22:05:12.739Z</time></div><div class="index-item-content"><p>ok given where we are in the project  and all of the future plans. I need to write a script for a 5 minute video describing the project. I want to note that this idea is just barely developed but stems from a concept I have that okrs if viewed in a particular way feel to me like bonsai. ```# Agent Bonsai — Design</p>
+<blockquote>
+<p>Design rationale for the Agent Bonsai system: a bonsai-oriented management model for a mixed
+fleet of humans and agents. The execution plan is
+<a href="../Plans/development/AGENT_BONSAI_SYSTEM.md">Plans/development/AGENT_BONSAI_SYSTEM.md</a>.
+This doc is the <em>why</em>; the plan is the <em>what</em>.</p>
+<p>Pivoted from the earlier <strong>OKR Bonsai</strong> design (2026-08-16). The OKR version proved the
+proposal/shaping model but bound it to one management artifact (the OKR tree). This version keeps
+the bonsai discipline and generalizes the tree to <em>all</em> the work — direction, backlog, in-flight
+tasks, verification — so it can be the operating system for an agent fleet, not just its
+goal-setting layer. Revised 2026-08-20 against current agent-orchestration and engineering-
+management research (see "What the research confirms") and re-founded on the plans-corpus
+storage pattern (see "The store is a plans corpus").</p>
+</blockquote>
+<h2>The claim</h2>
+<p>Managing a fleet of humans and agents is gardening, not command-and-control. <strong>The tree grows
+itself; the gardener only shapes.</strong> Direction and resources come from above; the actors closest to
+the work grow the branches and pull the work; management shapes what grew — patiently, in small
+moves, over many seasons. Management systems fail the same way bonsai fails: someone skips the
+growing step and goes straight to carving — assigning tasks nobody proposed, rewriting scope until
+the owner no longer recognises it, deleting history, overloading a branch until it snaps.</p>
+<p>The one-line rule the whole system encodes: <strong>shape, don't carve.</strong></p>
+<h2>What each tradition contributes</h2>
+<p>The pivot is deliberately syncretic. Each established management structure gets mined for the one
+discipline it does best, and that discipline is mapped onto the tree:</p>
+<table>
+<thead>
+<tr>
+<th>Tradition</th>
+<th>The discipline we take</th>
+<th>Where it lands in the tree</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OKR</strong></td>
+<td>Alignment without dictation — outcomes above, methods below</td>
+<td><em>Light</em>: intent nodes; every branch declares what it grows toward</td>
+</tr>
+<tr>
+<td><strong>Kanban</strong></td>
+<td>Finite attention — WIP limits, pull not push, flow made visible</td>
+<td><em>Sap</em>: per-branch capacity the engine enforces; work is pulled by its doer</td>
+</tr>
+<tr>
+<td><strong>Git issues</strong></td>
+<td>Node anatomy — id, body, labels, comment thread, cross-refs; append-only; everything diffable</td>
+<td>Every node is issue-shaped; history is git</td>
+</tr>
+<tr>
+<td><strong>Agile / Scrum</strong></td>
+<td>Cadence — timeboxes, retros, demo-or-it-didn't-happen</td>
+<td><em>Seasons</em> per subtree; verification gates; season retro</td>
+</tr>
+<tr>
+<td><strong>PR review</strong></td>
+<td>Change as reviewed diff — author ≠ approver, rationale attached</td>
+<td>The <em>proposal</em> model: every mutation is proposed, reviewed, applied</td>
+</tr>
+<tr>
+<td><strong>The written-plan corpus</strong> (this workspace's own practice)</td>
+<td>Durable, template-structured documents — frontmatter for the machine, sections for the reader, folder follows status, aborts archived</td>
+<td>The <em>storage system</em>: every node is a plan-shaped markdown file (see below)</td>
+</tr>
+<tr>
+<td><strong>ADRs / spec-driven development</strong></td>
+<td>Settled questions stay settled — a decision record with context, alternatives, and consequences, read by every later change proposal</td>
+<td>The <em>genome</em>: principle documents that constrain what the tree may grow into</td>
+</tr>
+<tr>
+<td><strong>Constitutional governance</strong> (written constitutions; Constitutional AI)</td>
+<td>A short, entrenched, reason-giving document that governs behavior at runtime, amendable only by a costly named procedure, and never by the governed</td>
+<td>The genome's dominance ranking, entrenchment, and the invariant that no agent may amend it</td>
+</tr>
+</tbody>
+</table>
+<p>None of these traditions is adopted wholesale. Kanban without alignment optimizes flow toward
+nothing; OKRs without WIP limits produce beautifully aligned overcommitment; agile ceremonies
+without an append-only record produce amnesia. The tree is the frame that lets each discipline
+apply exactly where it is strong.</p>
+<h2>Vocabulary — bonsai → system</h2>
+<table>
+<thead>
+<tr>
+<th>Bonsai</th>
+<th>System concept</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tree</td>
+<td>One organisation's work tree, persisting across seasons</td>
+</tr>
+<tr>
+<td><strong>Genome (species / cultivar)</strong></td>
+<td>The set of <strong>principles</strong> that constrain what shapes this tree can take at all. Sits above seasons; changes rarely and expensively; changing it cascades</td>
+</tr>
+<tr>
+<td><strong>Splice</strong></td>
+<td>A proposal to amend the genome — the costliest move in the system, and the only one no agent may apply</td>
+</tr>
+<tr>
+<td><strong>Expression</strong></td>
+<td>How a principle reaches the tree: nodes <code>cite</code> it, the engine computes its blast radius, shears check growth against it</td>
+</tr>
+<tr>
+<td><strong>Sport</strong></td>
+<td>A node that grew true to an older genome and no longer matches the current one. Flagged for the gardener, never auto-pruned</td>
+</tr>
+<tr>
+<td><strong>Air-layering</strong></td>
+<td>Propagating a branch into its own tree with a forked genome — the escape hatch when a branch genuinely cannot live under the trunk's principles</td>
+</tr>
+<tr>
+<td>Trunk → branches</td>
+<td><strong>Intent nodes</strong> — direction at successive levels (charter → workstreams → sub-efforts); arbitrary depth</td>
+</tr>
+<tr>
+<td>Twigs and leaves</td>
+<td><strong>Work nodes</strong> — issue-shaped, concrete, pullable; every leaf carries its own verification</td>
+</tr>
+<tr>
+<td>Light</td>
+<td>Parent intent — the direction a branch grows toward. Every non-root node declares <code>alignsTo</code> within its ancestor chain</td>
+</tr>
+<tr>
+<td>Fertilizer</td>
+<td>Context attached to a node and inherited downward: docs, constraints, budgets, credentials, tool access, compute. For agents this is literal — it is the curated context bundle the agent runs with</td>
+</tr>
+<tr>
+<td><strong>Sap</strong></td>
+<td>Attention/capacity — agent <em>and human</em>. Each branch has a sap limit (WIP on growing+blooming work); each reviewer has an inbox limit (WIP on open proposals awaiting them). Enforced by the engine, not by discipline</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>A <strong>grow</strong> proposal: the actor closest to a branch drafts its sub-intents and work nodes</td>
+</tr>
+<tr>
+<td>Pruning</td>
+<td>A <strong>prune</strong> proposal: close / merge / defer nodes. Reduces <em>count</em>, never <em>ambition</em></td>
+</tr>
+<tr>
+<td>Wiring / bending</td>
+<td>A <strong>bend</strong> proposal: re-scope, re-prioritize, re-link. Bounded per move</td>
+</tr>
+<tr>
+<td><strong>Grafting</strong></td>
+<td>A <strong>graft</strong> proposal: adopt work from outside the tree (an external issue, another subtree, an inherited backlog) onto a branch, preserving its provenance</td>
+</tr>
+<tr>
+<td>Deadwood (jin / shari)</td>
+<td>Pruned, abandoned, or won't-fix nodes retained with status <code>deadwood</code>, still visible — they explain the shape</td>
+</tr>
+<tr>
+<td><strong>Wilting</strong></td>
+<td>A work node that is <code>growing</code> but stale or blocked. Wilt is a signal to the gardener, never auto-pruned</td>
+</tr>
+<tr>
+<td>Season</td>
+<td>One cadence cycle per subtree (org branches quarterly, agent branches maybe weekly): open → grow → shape → tend → verify → retro</td>
+</tr>
+<tr>
+<td>Repotting</td>
+<td>Season rollover or restructure: carry-forward, new roots</td>
+</tr>
+<tr>
+<td>Gardener</td>
+<td>Whoever holds shaping rights over a subtree — human, agent, or both</td>
+</tr>
+<tr>
+<td><strong>Tender</strong></td>
+<td>Whoever does the work: pulls ready leaves, tends them to bloom. The agent fleet is mostly tenders</td>
+</tr>
+<tr>
+<td>Shears</td>
+<td>Lint rules that flag unhealthy growth (unverifiable, unaligned, wilting, overloaded, carved, stale buds, drowned inbox)</td>
+</tr>
+</tbody>
+</table>
+<h2>The two node kinds</h2>
+<p>The OKR version had Objectives and Key Results. The pivot generalizes to:</p>
+<ul>
+<li><strong>Intent nodes</strong> (trunk, branches): <em>why</em> and <em>toward what</em>. Qualitative direction plus, where it
+  helps, a small set of measures. This is where the OKR inheritance survives — but measures are
+  optional dressing on intent, not a mandatory second node type.</li>
+<li><strong>Work nodes</strong> (twigs, leaves): <em>what</em>, plan-shaped. Frontmatter identity plus Context, Goal,
+  Verification, check-ins, comments — and, non-negotiably, the <code>## Verification</code> section: how
+  anyone would know this is done, and what evidence hardening requires. A work node without
+  verification is a bud that cannot be pulled.</li>
+</ul>
+<p>Work nodes move through kanban-shaped states:</p>
+<pre><code>budding → ready → growing → blooming → hardened
+   ↘________↘________↘________↘→ deadwood
+</code></pre>
+<ul>
+<li><code>budding</code> — proposed, not yet groomed; doesn't count against sap.</li>
+<li><code>ready</code> — groomed, verification written, pullable.</li>
+<li><code>growing</code> — pulled by a tender; <strong>counts against the branch's sap limit</strong>.</li>
+<li><code>blooming</code> — work done, evidence attached, awaiting verification; still counts against sap
+  (kanban's "done isn't done until it's verified" — blooming work still draws from the branch).</li>
+<li><code>hardened</code> — verification satisfied, by someone other than the doer, against the evidence.</li>
+<li><code>deadwood</code> — pruned at any stage; kept, greyed, linkable.</li>
+</ul>
+<h2>The genome — principles as DNA</h2>
+<p>Below the season and above everything else sits a third layer, structurally unlike the other two:
+the <strong>genome</strong>, a small set of <strong>principles</strong> that constrain what shapes this tree can take at all.</p>
+<p>This is genetics, not gardening. A juniper cannot be pruned into a maple. Species determines how a
+tree back-buds, how it heals a cut, how fast it thickens, which silhouettes are even reachable —
+and all of the gardener's shaping happens <em>inside</em> what the genetics permit. Seasons open and
+close; intent gets rewritten every quarter; the genome persists across all of it and is the reason
+the tree still looks like itself after ten years.</p>
+<h3>Why this can't just be fertilizer at the root</h3>
+<p>The distinction has to be sharp or the layer is redundant:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Fertilizer</th>
+<th>Principle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scope</td>
+<td>one node, inherited down its branch</td>
+<td>the whole tree, every season</td>
+</tr>
+<tr>
+<td>Cost to change</td>
+<td>cheap — a proposal like any other</td>
+<td>entrenched: cooling period, named consent, blast radius shown</td>
+</tr>
+<tr>
+<td>Effect of a change</td>
+<td>new growth sees it; existing nodes are untouched</td>
+<td>existing nodes can become <strong>sports</strong> — the change cascades</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>nourishes — enables work</td>
+<td>constrains — bounds the reachable shapes</td>
+</tr>
+<tr>
+<td>Lifetime</td>
+<td>a season</td>
+<td>many seasons; retirement is itself a documented event</td>
+</tr>
+<tr>
+<td>Cost of not having it</td>
+<td>a branch works without some context</td>
+<td>the fleet re-litigates settled questions every season, and answers differently each time</td>
+</tr>
+</tbody>
+</table>
+<p>That last row is the real argument. A fleet of agents with no genome is not merely unprincipled;
+it is <em>inconsistent</em> — each session re-derives the same architectural question from scratch and
+lands somewhere new, and the tree's shape becomes a record of which agent ran when. ADR practice
+and spec-driven development exist for exactly this reason in codebases; the genome is that
+discipline applied to the management tree itself.</p>
+<h3>Anatomy of a principle</h3>
+<p>Each principle is one document, schema-enforced:</p>
+<ul>
+<li><strong>Statement</strong> — one imperative sentence. Short enough to remember, specific enough to violate.</li>
+<li><strong>Arguments</strong> — at least two, giving the <em>reasoning</em>, not just the rule. This is deliberate:
+  current constitutional practice has moved from rule-based to reason-based governance precisely
+  because an agent that knows <em>why</em> can extend a principle to a case the rule never anticipated,
+  while an agent that knows only the rule either over-applies it or finds the gap.</li>
+<li><strong>Alternatives</strong> — at least two roads not taken, each with a <strong>pre-registered expected outcome</strong>:
+  what we predict would happen if we adopted it. Falsifiable, and scored later (see Conservation).</li>
+<li><strong>Cascade surface</strong> — what depends on this principle, and what would have to change if it did.</li>
+<li><strong>Entrenchment</strong> — the amendment bar: who must consent, and the minimum dormancy period.</li>
+<li><strong>Lineage</strong> — what this supersedes, and its amendment history.</li>
+</ul>
+<p>Principles carry a <strong>dominance rank</strong>, and conflicts resolve by dominance rather than by argument
+in the moment — a tiered order (irreversibility and safety → integrity of the record → capacity →
+throughput) mirroring the priority hierarchies constitutional agent frameworks converged on.</p>
+<h3>Expression and cascade</h3>
+<p>A node may <code>cite</code> a principle to declare that it invokes one. The engine computes <strong>expression</strong>:
+which nodes cite a principle, which would be affected if it changed, and — via the Seedkeeper
+persona and shears — which nodes appear to <em>conflict</em> with one without citing it.</p>
+<p>When a principle does change, every node that grew true to the old genome is flagged as a
+<strong>sport</strong>: divergent growth, not wrongdoing. A sport has three honest resolutions — reshape it to
+the new genome, <strong>promote</strong> it (the sport was right; it becomes evidence for the next amendment),
+or prune it to deadwood with the reason recorded. What the system must never do is auto-prune
+sports. A single principle edit silently invalidating half the tree is carving at the largest
+possible scale, and it is exactly what makes people afraid to touch governing documents at all.</p>
+<h3>Splicing — the cost is the point</h3>
+<p>Amending the genome is a <strong>splice</strong>, and every part of it is deliberately expensive:</p>
+<ul>
+<li><strong>Alternatives and expected outcomes are mandatory</strong> — schema-enforced, not cultural.</li>
+<li><strong>The blast radius is computed and attached.</strong> You cannot amend a principle without seeing, in
+  the proposal itself, how many nodes cite it and how many become sports.</li>
+<li><strong>Dormancy.</strong> A splice sits open for a minimum cooling period, scaled by how widely the
+  principle is cited. DNA does not change within a sprint.</li>
+<li><strong>Named consent</strong> per the principle's entrenchment.</li>
+<li><strong>No agent may apply a splice at any autonomy tier — including <code>full</code>.</strong> Agents may propose
+  one, argue it, and compute its cascade; they may never enact it. This is the single hard
+  asymmetry between humans and agents in a system that otherwise treats them as peers, and it is
+  load-bearing: the emerging consensus in agent governance is that the foundational layer must be
+  structurally immutable to automated modification rather than merely discouraged in a prompt. A
+  fleet that can rewrite its own constraints has none.</li>
+</ul>
+<h3>Conservation, contestation, and dead genes</h3>
+<p>Because every alternative carried a pre-registered prediction, the season retro can <strong>score</strong> past
+splices: did the predicted outcome occur? That turns the genome into a learning system rather than
+a wall of assertions:</p>
+<ul>
+<li>A principle that has stood several seasons, is widely cited, and whose predictions held is
+  <strong>conserved</strong> — and its amendment bar rises automatically. (In biology, the sequences conserved
+  across species are the functionally critical ones; the same inference works here.)</li>
+<li>A principle whose predictions failed becomes <strong>contested</strong> — its bar <em>falls</em>, and it is a
+  standing candidate for amendment. Being wrong in public is how a principle earns revision.</li>
+<li>A principle nothing has cited for several seasons is a <strong>dead gene</strong>: decoration, not DNA.
+  Flagged for retirement. The genome is size-capped for the same reason real constitutions are
+  short — fifty principles is a bureaucracy, and nobody can reason from a document they can't
+  hold in their head.</li>
+</ul>
+<p>Retired principles are deadwood like anything else: kept, with why they were retired and whether
+their predictions came true.</p>
+<h3>Two more mechanics the metaphor hands us for free</h3>
+<ul>
+<li><strong>Graft rejection.</strong> Work grafted in from a tree whose genome conflicts with ours is flagged as
+  a rejection risk at import — the honest version of "we adopted their backlog and then spent a
+  year discovering we disagreed about everything."</li>
+<li><strong>Air-layering.</strong> A branch that genuinely cannot live under the trunk's genome should neither
+  fight it nor water it down until it means nothing. It air-layers: propagates into its own tree
+  with a forked genome, lineage retained. In a git-backed store this is nearly free, and it is the
+  release valve that lets the genome stay strict.</li>
+</ul>
+<h3>The reflexive case</h3>
+<p>Agent Bonsai's own seven invariants <em>are</em> its genome — "nothing is deleted" is a principle with
+arguments (auditability, the shape is explained by what was removed), alternatives (hard delete,
+TTL expiry) and predicted outcomes for each. Writing them up as principle documents is the first
+real exercise of the layer, and the pilot dogfoods it.</p>
+<h2>The store is a plans corpus</h2>
+<p>The storage system is not a database wearing a file extension — it is the markdown plans structure
+this workspace already runs on, generalized into the tree's native format. The plans corpus was
+the proof: frontmatter-plus-sections markdown, written by humans and agents interchangeably,
+folder follows status, aborts archived not deleted, everything diffable in git. Agent Bonsai
+adopts that pattern wholesale as its store:</p>
+<ul>
+<li><strong>Every node is a markdown file with YAML frontmatter.</strong> Frontmatter is the machine surface —
+  id, kind, state, alignment, sap, tender, actor stamps — validated by schema. The body is the
+  human-and-agent surface: the standard sections, in order, exactly like a plan.</li>
+<li><strong>A work node is a spike-plan-shaped document.</strong> <code>## Context</code>, <code>## Goal</code>, <code>## Verification</code>,
+  <code>## Check-ins</code>, <code>## Comments</code>, <code>## Completion notes</code>. The structural rhyme is exact: a plan's
+  Goal + Verification <em>is</em> a work node's contract; Completion notes <em>are</em> the hardening evidence.
+  A leaf that outgrows a spike graduates into a full plan and links back — the tree sits above
+  the plans, it doesn't replace them.</li>
+<li><strong>Directories are the tree.</strong> A branch is a directory; its intent node is the <code>_INTENT.md</code>
+  inside it; its leaves are <code>SCREAMING_SNAKE_CASE.md</code> files beside it. Depth in the filesystem is
+  depth in the tree.</li>
+<li><strong>Folder follows status</strong> — the plans-corpus rule, applied per branch. Live work (budding
+  through blooming, state in frontmatter) sits in the branch directory; <code>hardened/</code> and
+  <code>deadwood/</code> subfolders hold the terminal states, mirroring <code>completed/</code> and <code>aborted/</code>. The
+  frontmatter <code>state:</code> is canonical; the engine moves the file when the state turns terminal.</li>
+<li><strong>Proposals are markdown too</strong> — frontmatter (type, target, actor, status) plus <code>## Rationale</code>,
+  <code>## Change</code>, <code>## Reviews</code>. Reading an inbox is reading a directory of one-page documents.</li>
+<li><strong>The genome sits outside the seasons.</strong> <code>genome/</code> is a sibling of <code>seasons/</code>, one document per
+  principle — the same frontmatter-plus-sections shape, with the required sections being
+  Statement, Arguments, Alternatives, Cascade surface, Entrenchment, Lineage. Seasons come and go
+  beneath it; retired principles move to <code>genome/retired/</code> by the same folder-follows-status rule.
+  A principle document reads exactly like a well-written ADR, because that is what it is.</li>
+<li><strong>The tree ships its own CLAUDE.md.</strong> The data repo carries the conventions — exactly as this
+  workspace does — so any Claude Code session dropped into it, with no CLI and no MCP, can read
+  the tree, follow the format, and file a well-formed proposal by writing a file. The engine is
+  the enforcer and fast path, not the only door.</li>
+</ul>
+<p>Why this beats bespoke YAML records (the previous design):</p>
+<ul>
+<li><strong>Agent-native and human-native are the same surface.</strong> Current agent-harness practice is
+  converging on curated file context as the reliable substrate; a node file <em>is</em> its own context
+  document. No serialization layer between "what the agent reads" and "what the human reads."</li>
+<li><strong>Degrades gracefully.</strong> If the engine is down or absent, the tree is still a legible, editable
+  document corpus — the engine reconciles and lints on return, rather than being a gatekeeper
+  whose absence bricks the data.</li>
+<li><strong>Proven in situ.</strong> The conventions (naming, status folders, templates, abort archiving) have
+  already survived contact with real mixed human/agent use in this workspace.</li>
+<li><strong>Tool-ecosystem free rides.</strong> Obsidian-class tools read the frontmatter and wikilinks; git
+  hosting renders every node and proposal as a document.</li>
+</ul>
+<p>The <code>TreeStore</code> interface survives from the previous design, so a DB backend remains possible if
+the tree outgrows a single repo — but the markdown corpus is the reference semantics, not a
+temporary stand-in.</p>
+<h2>What the research confirms (2026 review)</h2>
+<p>A pass over current agent-orchestration and engineering-management literature, folded into the
+design where it bites:</p>
+<ul>
+<li><strong>The binding constraint on fleet size is human review capacity, not agent count.</strong> Operator
+  studies put unassisted oversight at roughly 2–3 concurrent agents, rising to 10–20 only with a
+  purpose-built operator surface — a board, an inbox, alerts, and a governance record.
+  <em>Consequence:</em> sap explicitly covers the humans. The inbox limit is an engine-enforced WIP
+  limit on open proposals awaiting any one reviewer; the board, shears, and inbox are not
+  conveniences, they are the capacity multiplier.</li>
+<li><strong>Verifier separation is empirically supported, and rubrics beat ad-hoc checking.</strong> A distinct
+  verifier working from an explicit rubric consistently outperforms a stronger model reviewing
+  its own output; self-evaluation bias is structural. Documented failure mode: "correct answer,
+  wrong mechanism" — output looks right, the process contradicts it. <em>Consequence:</em> the
+  no-self-verification invariant stays hard; the <code>## Verification</code> section is the rubric; and
+  blooming requires <em>evidence</em> (test output, diffs, artifacts), so the verifier checks mechanism,
+  not vibes.</li>
+<li><strong>Context engineering is the reliability lever.</strong> Curated, minimal context outperforms dumped
+  context; sub-agents work best isolated, returning condensed summaries rather than transcripts;
+  external memory plus context editing yields large measured gains. <em>Consequence:</em> fertilizer is
+  a curated bundle (node + ancestors' intent + attached fertilizer + shears findings), never
+  "the whole tree"; check-ins are condensed summaries with the node file as durable memory; the
+  tender's working transcript is disposable, the node document is not.</li>
+<li><strong>Provenance segmentation is becoming table stakes.</strong> 2026 engineering-metrics practice
+  requires labeling human-, assisted-, and agent-authored work to attribute effects on quality
+  and speed at all. <em>Consequence:</em> actor kind is stamped on every proposal, check-in, commit
+  trailer, and verification — so the season retro can segment flow and quality by actor kind for
+  free.</li>
+<li><strong>Delivery metrics alone mislead; flow and friction complete them.</strong> DORA-style throughput
+  numbers can't distinguish sustainable improvement from deferred quality cost; measured flow
+  efficiency on real teams runs 15–25% (most elapsed time is waiting). <em>Consequence:</em> the retro's
+  flow report includes cycle time by state, flow efficiency, sap-refusal and bounce counts —
+  reconstructed from git history, no extra bookkeeping — and grades stay a learning tool, never
+  performance review.</li>
+<li><strong>A foundational layer must be structurally immune to automated modification.</strong> Constitutional
+  agent-governance work converges on a genesis layer deployed by human principals and alterable
+  only through a named human procedure — the argument being that a constraint an agent can edit
+  is not a constraint, and that externalized assertions hold where internalized dispositions
+  drift. <em>Consequence:</em> invariant 8 — no agent applies a splice at any autonomy tier, including
+  <code>full</code>. It is the one hard human/agent asymmetry in the design.</li>
+<li><strong>Governance has moved from rule-based to reason-based.</strong> The January 2026 revision of Claude's
+  constitution is the visible example: state the reasoning behind a principle rather than
+  enumerating behaviors, so the governed party can extend it to unanticipated cases.
+  <em>Consequence:</em> a principle document's Arguments section is mandatory and is what agents are
+  given, not the bare statement.</li>
+<li><strong>Settled decisions must be readable by every later change proposal.</strong> ADR and spec-driven
+  practice in 2026 treats decision records as live constraints on agent design choices, not
+  archive material — with drift-awareness (which decisions the live system no longer matches) as
+  the value-add. <em>Consequence:</em> <code>cite</code> links, computed expression, and sports are the drift
+  mechanism; the genome is queried on every proposal, not consulted at kickoff.</li>
+<li><strong>Runtime governance frameworks want exactly this shape.</strong> Emerging agent-governance control
+  domains (policy articulation, access control, observability, audit trail, incident response)
+  map one-to-one onto the autonomy policy, the permission engine, shears, the actor-trailed
+  append-only history, and autonomy demotion. The tree is, incidentally, an audit artifact.</li>
+</ul>
+<h2>Where the metaphor was sharpened</h2>
+<ul>
+<li><strong>Sap is the pivot's key addition — and the gardener's attention is the scarcest sap.</strong> The OKR
+  version protected <em>ambition</em>; this version also protects <em>capacity</em>, on both sides of the
+  human/agent line. A bonsai only moves so much sap; a branch forced to feed too many shoots
+  weakens all of them. Agents, unlike humans, will cheerfully accept unbounded parallel work and
+  produce unbounded half-finished branches — and then drown the one human in review. Both limits
+  are engine-enforced invariants, not lint warnings.</li>
+<li><strong>Genetics constrain; gardening shapes. Keeping them in one layer was the mistake.</strong> Before the
+  genome existed, "we don't do X here" had to be either a constraint stapled to a node (invisible
+  two branches down) or a lint rule (unarguable, unexplained, and buried in code). Both are worse
+  than a document that states the rule, gives the reasoning, names what it rejected, and costs
+  something to change.</li>
+<li><strong><code>splice</code> and <code>graft</code> are deliberately different words.</strong> In horticulture, grafting is
+  literally how you change a plant's genetics — which makes the collision worth naming rather
+  than hoping nobody notices. Here <code>graft</code> moves <em>work</em> across trees and <code>splice</code> amends
+  <em>principles</em>; the two meet in exactly one place, graft rejection, where imported work arrives
+  carrying a genome that disagrees with ours.</li>
+<li><strong>Pull, not push, is what "growth originates with the owner" becomes at the leaf.</strong> At the
+  intent level, the branch owner authors the branch. At the work level, the tender <em>pulls</em> a ready
+  leaf; nobody assigns it. A work node force-assigned by a parent is <em>carved</em> — flagged until the
+  tender genuinely accepts it.</li>
+<li><strong>Fertilizer is not the cascade.</strong> Upper intent is <em>light</em> (direction), not food. Docs, budget,
+  credentials, tool access, compute are the fertilizer — and for agents, fertilizer is literally
+  context engineering: the curated bundle, not the dump.</li>
+<li><strong>Grafting acknowledges the tree is not the world.</strong> Work arrives from outside — a customer
+  issue, an inherited repo backlog, another team's subtree. Grafting adopts it with provenance
+  instead of pretending it grew here.</li>
+<li><strong>Over-pruning kills the tree.</strong> Cut less than you want to, then wait a season and look.
+  Pruning the <em>number</em> of buds is ruthless; bending a work node's scope until the tender no longer
+  recognises it breaks the branch — that's a regrow, not a bend.</li>
+<li><strong>Wilt is information, not failure.</strong> Blocked and stale work stays visible on the branch. The
+  gardener decides whether to feed it (fertilize), wait, or prune it to deadwood. Auto-reaping
+  blocked work is carving by cron job.</li>
+<li><strong>One gardener's vision per branch.</strong> Each layer shapes only its immediate branch and trusts the
+  trunk above it. Multiple gardeners wiring one branch produce a committee-shaped tree.</li>
+<li><strong>Deadwood is a feature.</strong> Won't-fix, aborted, and superseded nodes stay in the record. The
+  shape of a tree is explained by what was removed as much as by what grew.</li>
+</ul>
+<h2>Invariants the system enforces</h2>
+<ol>
+<li><strong>Growth originates close to the work.</strong> A parent proposes; the branch owner accepts. At leaf
+   level, work is pulled by its tender, never assigned. Nodes that violate this carry
+   <code>carved: true</code> and are flagged until genuinely accepted.</li>
+<li><strong>Every mutation is a proposal.</strong> Actor identity (<code>human</code> | <code>agent</code>), type, rationale, review,
+   then a separate apply step. Proposing and applying are distinct rights.</li>
+<li><strong>Nothing is deleted.</strong> Prune → <code>deadwood</code>. History is append-only (git-backed).</li>
+<li><strong>Bends are bounded.</strong> A bend that exceeds a threshold (rewrites the node's meaning, moves
+   verification substantially, re-parents) is not applied — it becomes a <em>regrow</em> request to the
+   branch owner.</li>
+<li><strong>Sap is finite — for branches and for reviewers.</strong> A branch's <code>growing</code> + <code>blooming</code> count
+   cannot exceed its sap limit, and a <code>pull</code> that would exceed it is refused, not warned. Open
+   proposals awaiting one reviewer cannot exceed that reviewer's inbox limit — past it, new
+   agent-originated proposals queue rather than land. Raising either limit is itself a bend, with
+   rationale, visible in the retro.</li>
+<li><strong>Every leaf is verifiable, evidence is required, and the verifier is not the doer.</strong> No work
+   node blooms without evidence attached, and none hardens without its verification rubric
+   satisfied against that evidence by a different actor. An agent's work is verified by a human
+   or by a distinct verifier agent — never by itself.</li>
+<li><strong>Humans and agents are peers in the proposal model.</strong> Distinguished only by actor kind —
+   stamped on every proposal, check-in, and commit for provenance — and by a per-subtree
+   <em>autonomy policy</em> enforced by the engine (never by the agent's prompt).</li>
+<li><strong>The genome is amendable only by named humans, and never silently.</strong> No agent may apply a
+   splice at any autonomy tier. Every splice carries its computed blast radius, serves its
+   dormancy period, and leaves the affected growth flagged as sports for a gardener to resolve —
+   the engine never auto-prunes on a principle change.</li>
+</ol>
+<h2>Actors, roles, autonomy</h2>
+<ul>
+<li><strong>Actor kinds:</strong> <code>human</code>, <code>agent</code>.</li>
+<li><strong>Roles per subtree:</strong> <code>owner</code> (grows the branch), <code>gardener</code> (shapes), <code>tender</code> (pulls and does
+  work), <code>reviewer</code> (comments, verifies), <code>observer</code>.</li>
+<li><strong>Agent autonomy per subtree</strong>, in increasing order:</li>
+<li><code>propose</code> (default) — everything goes to a human inbox.</li>
+<li><code>tend</code> — may pull <code>ready</code> leaves, move its own work through states, and record check-ins;
+    hardening still requires an external verifier.</li>
+<li><code>grow</code> — may grow and shape its own subtree (a personal or agent-owned branch).</li>
+<li><code>full</code> — sandbox / dogfood only.</li>
+<li><strong>Agent personas (prompt files, not code paths):</strong></li>
+<li><em>Grower</em> — given an intent node + inherited fertilizer, drafts sub-intents and work nodes.</li>
+<li><em>Tender</em> — pulls a ready leaf, does the work, moves it to blooming with evidence.</li>
+<li><em>Verifier</em> — checks a blooming node's evidence against its verification rubric; hardens or
+    bounces with the failing line cited.</li>
+<li><em>Shears</em> — semantic lint the rule engine can't do (is this verification actually checkable?).</li>
+<li><em>Gardener's assistant</em> — proposes prunes, bends, and sap adjustments with rationale; never applies.</li>
+<li><em>Scribe</em> — records check-ins from metric sources, drafts the season retro and flow report.</li>
+<li><em>Seedkeeper</em> — the genome's librarian: flags proposals that conflict with an active
+    principle, computes cascade estimates for draft splices, surfaces dead genes, and scores
+    prior splices' pre-registered predictions at retro. Proposes; never applies a splice (no
+    actor of kind <code>agent</code> can).</li>
+</ul>
+<h2>Alternatives considered</h2>
+<ul>
+<li><strong>GitHub Issues + Projects with an agent bolted on.</strong> Closest existing shape (issues, boards,
+  labels), and the graft adapter should eventually sync with it. Rejected as the core: no autonomy
+  policy engine, no enforced sap, no proposal/apply separation, no deadwood semantics — the
+  platform would fight every invariant.</li>
+<li><strong>Off-the-shelf agile/OKR SaaS.</strong> Rejected: they model form fields and ceremonies, not the
+  proposal/shape/deadwood process, and none treat agents as first-class actors.</li>
+<li><strong>Bespoke YAML records (the previous design's store).</strong> Superseded 2026-08-20 by the plans-corpus
+  pattern above. YAML records were machine-first: agents and humans would each have needed a
+  rendering layer, and an engine outage would have left the data illegible-in-practice. The
+  markdown corpus is the same git-backed store with the proven document format on top; the schema
+  rigor survives in the frontmatter.</li>
+<li><strong>Schema-less free-form markdown.</strong> Still rejected: shears, sap enforcement, and bend-bounding
+  need the frontmatter contract and the required sections. The plans corpus works <em>because</em> it is
+  templated, not despite it.</li>
+<li><strong>DB-first web app.</strong> Deferred: right for scale, wrong for a pilot; costs the agent-native
+  surface. <code>TreeStore</code> keeps the door open.</li>
+<li><strong>Principles as root fertilizer (no separate genome layer).</strong> Rejected: fertilizer is cheap,
+  additive, and branch-scoped, and changing it never invalidates existing growth. Everything that
+  makes a principle useful — entrenchment, dominance, cascade, pre-registered predictions,
+  conservation — has to be modelled somewhere, and grafting it onto fertilizer would give
+  fertilizer two incompatible personalities.</li>
+<li><strong>An immutable genome (set at seed time, never amendable).</strong> Rejected: it converts every
+  genuine change of mind into either a fork or a lie, and the tree ossifies around its founders'
+  first-quarter opinions. Expensive-and-documented beats impossible; the escape hatch for the
+  irreconcilable case is air-layering, not amendment paralysis.</li>
+<li><strong>The genome as prompt text only (a values doc pasted into agent context).</strong> Rejected: this is
+  how principles become decoration. Without citations, computed expression, sports, and scored
+  predictions, nothing distinguishes a live principle from one everyone quietly stopped following
+  three seasons ago.</li>
+<li><strong>Auto-resolving sports on a splice (engine rewrites or prunes divergent growth).</strong> Rejected:
+  it is carving at the largest available scale, and the fear of it is precisely why people avoid
+  amending governing documents. Sports are surfaced for a gardener; the cascade is visible work,
+  not a silent migration.</li>
+<li><strong>Keeping the OKR tree as the core with work items attached.</strong> Rejected — this was the actual
+  pivot decision. OKRs earn one layer (light), not the whole trunk; forcing every task to hang off
+  a Key Result made routine work either homeless or dishonestly dressed as outcomes.</li>
+<li><strong>Encoding the metaphor everywhere in code.</strong> Rejected: bonsai <em>verbs</em> name distinct operations
+  and stay (<code>grow</code>/<code>prune</code>/<code>bend</code>/<code>graft</code>/<code>fertilize</code>/<code>repot</code>); <em>nouns</em> stay standard
+  (<code>intent</code>, <code>work</code>, <code>season</code>, <code>checkin</code>) so the data is legible to anyone who has used an issue
+  tracker or read a plan.``` don't modify the project with this, just use it to write the script.</li>
+</ul></div></a><div class="index-item-stats"><span>13 bash · 1 senduserfile</span>
+<div class="index-item-long-text"><div class="truncatable"><div class="truncatable-content"><div class="index-item-long-text-content"><p>Script written to the scratchpad (nothing in the repo touched).</p>
+<p><strong>Shape</strong> — the bonsai idea brackets the video rather than sitting in the middle, which is what lets you present it as an unfinished intuition without it looking like a hole in the pitch:</p>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Beat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0:00</td>
+<td>Cold open on the bonsai intuition, flagged as undefended</td>
+</tr>
+<tr>
+<td>0:35</td>
+<td>The problem: OKRs are a tree stored in lists; weak links invisible</td>
+</tr>
+<tr>
+<td>1:00</td>
+<td>The thesis, demoed: model's output <em>is</em> the interface (ask → fly + pulse → rewrite → undo)</td>
+</tr>
+<tr>
+<td>2:00</td>
+<td>Teams as agents: charter as a job description, persona chat</td>
+</tr>
+<tr>
+<td>2:45</td>
+<td>The briefing: unprompted audit, hover/fly/Fix, "honest and small"</td>
+</tr>
+<tr>
+<td>3:25</td>
+<td>Designed-not-built: discussions, executors, matrices, shared document</td>
+</tr>
+<tr>
+<td>4:10</td>
+<td>Return to bonsai: shape don't carve, prune count not ambition, sap, dead wood</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes on choices</strong></p>
+<ul>
+<li>Narration is ~740 words (~4:35 at 160 wpm), leaving ~25 s of deliberate silence on the fly-to and the Undo — those two beats are the only genuinely novel things on screen, so they shouldn't be narrated over. Each block carries its own word count, plus a ranked trim list and two padding lines.</li>
+<li>The four forward items are compressed to one sentence each and explicitly labelled unbuilt, matching where they actually are (concept docs, no plans). Matrices got the reliance-vs-comms gap since that's the line that sells the pair; OKR fitness is dropped for time.</li>
+<li>The close commits to four bonsai consequences — shape/carve, pruning count vs. ambition, sap as an enforced limit, dead wood retained — and then says plainly you don't know which are true. That's the honest version and it's a stronger ending than hedging throughout.</li>
+<li>Shot cues use the real datasets: Polaris (135 nodes, 61 teams) for the wide open/close, workflow-platform (27 nodes) wherever node text must be legible.</li>
+</ul>
+<p>Want me to publish it as an artifact page for teleprompter-style reading, or add a tighter 90-second cut-down of the same beats?</p></div></div><button class="expand-btn">Show more</button></div></div>
+</div></div>
+        
+
+<div class="pagination">
+<span class="current">Index</span>
+<span class="disabled">&larr; Prev</span>
+<a href="page-001.html">1</a>
+<a href="page-001.html">Next &rarr;</a>
+</div>
+
+
+        <dialog id="search-modal">
+            <div class="search-modal-header">
+                <input type="text" id="modal-search-input" placeholder="Search..." aria-label="Search transcripts">
+                <button id="modal-search-btn" type="button" aria-label="Search">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                </button>
+                <button id="modal-close-btn" type="button" aria-label="Close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+                </button>
+            </div>
+            <div id="search-status"></div>
+            <div id="search-results"></div>
+        </dialog>
+        <script>
+(function() {
+    var totalPages = 1;
+    var searchBox = document.getElementById('search-box');
+    var searchInput = document.getElementById('search-input');
+    var searchBtn = document.getElementById('search-btn');
+    var modal = document.getElementById('search-modal');
+    var modalInput = document.getElementById('modal-search-input');
+    var modalSearchBtn = document.getElementById('modal-search-btn');
+    var modalCloseBtn = document.getElementById('modal-close-btn');
+    var searchStatus = document.getElementById('search-status');
+    var searchResults = document.getElementById('search-results');
+
+    if (!searchBox || !modal) return;
+
+    // Hide search on file:// protocol (doesn't work due to CORS restrictions)
+    if (window.location.protocol === 'file:') return;
+
+    // Show search box (progressive enhancement)
+    searchBox.style.display = 'flex';
+
+    // Gist preview support - detect if we're on gisthost.github.io or gistpreview.github.io
+    var hostname = window.location.hostname;
+    var isGistPreview = hostname === 'gisthost.github.io' || hostname === 'gistpreview.github.io';
+    var gistId = null;
+    var gistOwner = null;
+    var gistInfoLoaded = false;
+
+    if (isGistPreview) {
+        // Extract gist ID from URL query string like ?78a436a8a9e7a2e603738b8193b95410/index.html
+        var queryMatch = window.location.search.match(/^\?([a-f0-9]+)/i);
+        if (queryMatch) {
+            gistId = queryMatch[1];
+        }
+    }
+
+    async function loadGistInfo() {
+        if (!isGistPreview || !gistId || gistInfoLoaded) return;
+        try {
+            var response = await fetch('https://api.github.com/gists/' + gistId);
+            if (response.ok) {
+                var info = await response.json();
+                gistOwner = info.owner.login;
+                gistInfoLoaded = true;
+            }
+        } catch (e) {
+            console.error('Failed to load gist info:', e);
+        }
+    }
+
+    function getPageFetchUrl(pageFile) {
+        if (isGistPreview && gistOwner && gistId) {
+            // Use raw gist URL for fetching content
+            return 'https://gist.githubusercontent.com/' + gistOwner + '/' + gistId + '/raw/' + pageFile;
+        }
+        return pageFile;
+    }
+
+    function getPageLinkUrl(pageFile) {
+        if (isGistPreview && gistId) {
+            // Use gistpreview URL format for navigation links
+            return '?' + gistId + '/' + pageFile;
+        }
+        return pageFile;
+    }
+
+    function escapeHtml(text) {
+        var div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    function escapeRegex(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    function openModal(query) {
+        modalInput.value = query || '';
+        searchResults.innerHTML = '';
+        searchStatus.textContent = '';
+        modal.showModal();
+        modalInput.focus();
+        if (query) {
+            performSearch(query);
+        }
+    }
+
+    function closeModal() {
+        modal.close();
+        // Update URL to remove search fragment, preserving path and query string
+        if (window.location.hash.startsWith('#search=')) {
+            history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+    }
+
+    function updateUrlHash(query) {
+        if (query) {
+            // Preserve path and query string when adding hash
+            history.replaceState(null, '', window.location.pathname + window.location.search + '#search=' + encodeURIComponent(query));
+        }
+    }
+
+    function highlightTextNodes(element, searchTerm) {
+        var walker = document.createTreeWalker(element, NodeFilter.SHOW_TEXT, null, false);
+        var nodesToReplace = [];
+
+        while (walker.nextNode()) {
+            var node = walker.currentNode;
+            if (node.nodeValue.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1) {
+                nodesToReplace.push(node);
+            }
+        }
+
+        nodesToReplace.forEach(function(node) {
+            var text = node.nodeValue;
+            var regex = new RegExp('(' + escapeRegex(searchTerm) + ')', 'gi');
+            var parts = text.split(regex);
+            if (parts.length > 1) {
+                var span = document.createElement('span');
+                parts.forEach(function(part) {
+                    if (part.toLowerCase() === searchTerm.toLowerCase()) {
+                        var mark = document.createElement('mark');
+                        mark.textContent = part;
+                        span.appendChild(mark);
+                    } else {
+                        span.appendChild(document.createTextNode(part));
+                    }
+                });
+                node.parentNode.replaceChild(span, node);
+            }
+        });
+    }
+
+    function fixInternalLinks(element, pageFile) {
+        // Update all internal anchor links to include the page file
+        var links = element.querySelectorAll('a[href^="#"]');
+        links.forEach(function(link) {
+            var href = link.getAttribute('href');
+            link.setAttribute('href', pageFile + href);
+        });
+    }
+
+    function processPage(pageFile, html, query) {
+        var parser = new DOMParser();
+        var doc = parser.parseFromString(html, 'text/html');
+        var resultsFromPage = 0;
+
+        // Find all message blocks
+        var messages = doc.querySelectorAll('.message');
+        messages.forEach(function(msg) {
+            var text = msg.textContent || '';
+            if (text.toLowerCase().indexOf(query.toLowerCase()) !== -1) {
+                resultsFromPage++;
+
+                // Get the message ID for linking
+                var msgId = msg.id || '';
+                var pageLinkUrl = getPageLinkUrl(pageFile);
+                var link = pageLinkUrl + (msgId ? '#' + msgId : '');
+
+                // Clone the message HTML and highlight matches
+                var clone = msg.cloneNode(true);
+                // Fix internal links to include the page file
+                fixInternalLinks(clone, pageLinkUrl);
+                highlightTextNodes(clone, query);
+
+                var resultDiv = document.createElement('div');
+                resultDiv.className = 'search-result';
+                resultDiv.innerHTML = '<a href="' + link + '">' +
+                    '<div class="search-result-page">' + escapeHtml(pageFile) + '</div>' +
+                    '<div class="search-result-content">' + clone.innerHTML + '</div>' +
+                    '</a>';
+                searchResults.appendChild(resultDiv);
+            }
+        });
+
+        return resultsFromPage;
+    }
+
+    async function performSearch(query) {
+        if (!query.trim()) {
+            searchStatus.textContent = 'Enter a search term';
+            return;
+        }
+
+        updateUrlHash(query);
+        searchResults.innerHTML = '';
+        searchStatus.textContent = 'Searching...';
+
+        // Load gist info if on gistpreview (needed for constructing URLs)
+        if (isGistPreview && !gistInfoLoaded) {
+            searchStatus.textContent = 'Loading gist info...';
+            await loadGistInfo();
+            if (!gistOwner) {
+                searchStatus.textContent = 'Failed to load gist info. Search unavailable.';
+                return;
+            }
+        }
+
+        var resultsFound = 0;
+        var pagesSearched = 0;
+
+        // Build list of pages to fetch
+        var pagesToFetch = [];
+        for (var i = 1; i <= totalPages; i++) {
+            pagesToFetch.push('page-' + String(i).padStart(3, '0') + '.html');
+        }
+
+        searchStatus.textContent = 'Searching...';
+
+        // Process pages in batches of 3, but show results immediately as each completes
+        var batchSize = 3;
+        for (var i = 0; i < pagesToFetch.length; i += batchSize) {
+            var batch = pagesToFetch.slice(i, i + batchSize);
+
+            // Create promises that process results immediately when each fetch completes
+            var promises = batch.map(function(pageFile) {
+                return fetch(getPageFetchUrl(pageFile))
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Failed to fetch');
+                        return response.text();
+                    })
+                    .then(function(html) {
+                        // Process and display results immediately
+                        var count = processPage(pageFile, html, query);
+                        resultsFound += count;
+                        pagesSearched++;
+                        searchStatus.textContent = 'Found ' + resultsFound + ' result(s) in ' + pagesSearched + '/' + totalPages + ' pages...';
+                    })
+                    .catch(function() {
+                        pagesSearched++;
+                        searchStatus.textContent = 'Found ' + resultsFound + ' result(s) in ' + pagesSearched + '/' + totalPages + ' pages...';
+                    });
+            });
+
+            // Wait for this batch to complete before starting the next
+            await Promise.all(promises);
+        }
+
+        searchStatus.textContent = 'Found ' + resultsFound + ' result(s) in ' + totalPages + ' pages';
+    }
+
+    // Event listeners
+    searchBtn.addEventListener('click', function() {
+        openModal(searchInput.value);
+    });
+
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            openModal(searchInput.value);
+        }
+    });
+
+    modalSearchBtn.addEventListener('click', function() {
+        performSearch(modalInput.value);
+    });
+
+    modalInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            performSearch(modalInput.value);
+        }
+    });
+
+    modalCloseBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Check for #search= in URL on page load
+    if (window.location.hash.startsWith('#search=')) {
+        var query = decodeURIComponent(window.location.hash.substring(8));
+        if (query) {
+            searchInput.value = query;
+            openModal(query);
+        }
+    }
+})();
+        </script>
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

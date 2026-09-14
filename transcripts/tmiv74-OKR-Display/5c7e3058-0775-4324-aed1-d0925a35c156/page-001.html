@@ -1,0 +1,2275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/1</h1>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+        
+<div class="message user" id="msg-2026-09-12T22-05-12-739Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T22-05-12-739Z" class="timestamp-link"><time datetime="2026-09-12T22:05:12.739Z" data-timestamp="2026-09-12T22:05:12.739Z">2026-09-12T22:05:12.739Z</time></a></div><div class="message-content">
+<div class="user-content"><p>ok given where we are in the project  and all of the future plans. I need to write a script for a 5 minute video describing the project. I want to note that this idea is just barely developed but stems from a concept I have that okrs if viewed in a particular way feel to me like bonsai. ```# Agent Bonsai — Design</p>
+<blockquote>
+<p>Design rationale for the Agent Bonsai system: a bonsai-oriented management model for a mixed
+fleet of humans and agents. The execution plan is
+<a href="../Plans/development/AGENT_BONSAI_SYSTEM.md">Plans/development/AGENT_BONSAI_SYSTEM.md</a>.
+This doc is the <em>why</em>; the plan is the <em>what</em>.</p>
+<p>Pivoted from the earlier <strong>OKR Bonsai</strong> design (2026-08-16). The OKR version proved the
+proposal/shaping model but bound it to one management artifact (the OKR tree). This version keeps
+the bonsai discipline and generalizes the tree to <em>all</em> the work — direction, backlog, in-flight
+tasks, verification — so it can be the operating system for an agent fleet, not just its
+goal-setting layer. Revised 2026-08-20 against current agent-orchestration and engineering-
+management research (see "What the research confirms") and re-founded on the plans-corpus
+storage pattern (see "The store is a plans corpus").</p>
+</blockquote>
+<h2>The claim</h2>
+<p>Managing a fleet of humans and agents is gardening, not command-and-control. <strong>The tree grows
+itself; the gardener only shapes.</strong> Direction and resources come from above; the actors closest to
+the work grow the branches and pull the work; management shapes what grew — patiently, in small
+moves, over many seasons. Management systems fail the same way bonsai fails: someone skips the
+growing step and goes straight to carving — assigning tasks nobody proposed, rewriting scope until
+the owner no longer recognises it, deleting history, overloading a branch until it snaps.</p>
+<p>The one-line rule the whole system encodes: <strong>shape, don't carve.</strong></p>
+<h2>What each tradition contributes</h2>
+<p>The pivot is deliberately syncretic. Each established management structure gets mined for the one
+discipline it does best, and that discipline is mapped onto the tree:</p>
+<table>
+<thead>
+<tr>
+<th>Tradition</th>
+<th>The discipline we take</th>
+<th>Where it lands in the tree</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>OKR</strong></td>
+<td>Alignment without dictation — outcomes above, methods below</td>
+<td><em>Light</em>: intent nodes; every branch declares what it grows toward</td>
+</tr>
+<tr>
+<td><strong>Kanban</strong></td>
+<td>Finite attention — WIP limits, pull not push, flow made visible</td>
+<td><em>Sap</em>: per-branch capacity the engine enforces; work is pulled by its doer</td>
+</tr>
+<tr>
+<td><strong>Git issues</strong></td>
+<td>Node anatomy — id, body, labels, comment thread, cross-refs; append-only; everything diffable</td>
+<td>Every node is issue-shaped; history is git</td>
+</tr>
+<tr>
+<td><strong>Agile / Scrum</strong></td>
+<td>Cadence — timeboxes, retros, demo-or-it-didn't-happen</td>
+<td><em>Seasons</em> per subtree; verification gates; season retro</td>
+</tr>
+<tr>
+<td><strong>PR review</strong></td>
+<td>Change as reviewed diff — author ≠ approver, rationale attached</td>
+<td>The <em>proposal</em> model: every mutation is proposed, reviewed, applied</td>
+</tr>
+<tr>
+<td><strong>The written-plan corpus</strong> (this workspace's own practice)</td>
+<td>Durable, template-structured documents — frontmatter for the machine, sections for the reader, folder follows status, aborts archived</td>
+<td>The <em>storage system</em>: every node is a plan-shaped markdown file (see below)</td>
+</tr>
+<tr>
+<td><strong>ADRs / spec-driven development</strong></td>
+<td>Settled questions stay settled — a decision record with context, alternatives, and consequences, read by every later change proposal</td>
+<td>The <em>genome</em>: principle documents that constrain what the tree may grow into</td>
+</tr>
+<tr>
+<td><strong>Constitutional governance</strong> (written constitutions; Constitutional AI)</td>
+<td>A short, entrenched, reason-giving document that governs behavior at runtime, amendable only by a costly named procedure, and never by the governed</td>
+<td>The genome's dominance ranking, entrenchment, and the invariant that no agent may amend it</td>
+</tr>
+</tbody>
+</table>
+<p>None of these traditions is adopted wholesale. Kanban without alignment optimizes flow toward
+nothing; OKRs without WIP limits produce beautifully aligned overcommitment; agile ceremonies
+without an append-only record produce amnesia. The tree is the frame that lets each discipline
+apply exactly where it is strong.</p>
+<h2>Vocabulary — bonsai → system</h2>
+<table>
+<thead>
+<tr>
+<th>Bonsai</th>
+<th>System concept</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Tree</td>
+<td>One organisation's work tree, persisting across seasons</td>
+</tr>
+<tr>
+<td><strong>Genome (species / cultivar)</strong></td>
+<td>The set of <strong>principles</strong> that constrain what shapes this tree can take at all. Sits above seasons; changes rarely and expensively; changing it cascades</td>
+</tr>
+<tr>
+<td><strong>Splice</strong></td>
+<td>A proposal to amend the genome — the costliest move in the system, and the only one no agent may apply</td>
+</tr>
+<tr>
+<td><strong>Expression</strong></td>
+<td>How a principle reaches the tree: nodes <code>cite</code> it, the engine computes its blast radius, shears check growth against it</td>
+</tr>
+<tr>
+<td><strong>Sport</strong></td>
+<td>A node that grew true to an older genome and no longer matches the current one. Flagged for the gardener, never auto-pruned</td>
+</tr>
+<tr>
+<td><strong>Air-layering</strong></td>
+<td>Propagating a branch into its own tree with a forked genome — the escape hatch when a branch genuinely cannot live under the trunk's principles</td>
+</tr>
+<tr>
+<td>Trunk → branches</td>
+<td><strong>Intent nodes</strong> — direction at successive levels (charter → workstreams → sub-efforts); arbitrary depth</td>
+</tr>
+<tr>
+<td>Twigs and leaves</td>
+<td><strong>Work nodes</strong> — issue-shaped, concrete, pullable; every leaf carries its own verification</td>
+</tr>
+<tr>
+<td>Light</td>
+<td>Parent intent — the direction a branch grows toward. Every non-root node declares <code>alignsTo</code> within its ancestor chain</td>
+</tr>
+<tr>
+<td>Fertilizer</td>
+<td>Context attached to a node and inherited downward: docs, constraints, budgets, credentials, tool access, compute. For agents this is literal — it is the curated context bundle the agent runs with</td>
+</tr>
+<tr>
+<td><strong>Sap</strong></td>
+<td>Attention/capacity — agent <em>and human</em>. Each branch has a sap limit (WIP on growing+blooming work); each reviewer has an inbox limit (WIP on open proposals awaiting them). Enforced by the engine, not by discipline</td>
+</tr>
+<tr>
+<td>Growth</td>
+<td>A <strong>grow</strong> proposal: the actor closest to a branch drafts its sub-intents and work nodes</td>
+</tr>
+<tr>
+<td>Pruning</td>
+<td>A <strong>prune</strong> proposal: close / merge / defer nodes. Reduces <em>count</em>, never <em>ambition</em></td>
+</tr>
+<tr>
+<td>Wiring / bending</td>
+<td>A <strong>bend</strong> proposal: re-scope, re-prioritize, re-link. Bounded per move</td>
+</tr>
+<tr>
+<td><strong>Grafting</strong></td>
+<td>A <strong>graft</strong> proposal: adopt work from outside the tree (an external issue, another subtree, an inherited backlog) onto a branch, preserving its provenance</td>
+</tr>
+<tr>
+<td>Deadwood (jin / shari)</td>
+<td>Pruned, abandoned, or won't-fix nodes retained with status <code>deadwood</code>, still visible — they explain the shape</td>
+</tr>
+<tr>
+<td><strong>Wilting</strong></td>
+<td>A work node that is <code>growing</code> but stale or blocked. Wilt is a signal to the gardener, never auto-pruned</td>
+</tr>
+<tr>
+<td>Season</td>
+<td>One cadence cycle per subtree (org branches quarterly, agent branches maybe weekly): open → grow → shape → tend → verify → retro</td>
+</tr>
+<tr>
+<td>Repotting</td>
+<td>Season rollover or restructure: carry-forward, new roots</td>
+</tr>
+<tr>
+<td>Gardener</td>
+<td>Whoever holds shaping rights over a subtree — human, agent, or both</td>
+</tr>
+<tr>
+<td><strong>Tender</strong></td>
+<td>Whoever does the work: pulls ready leaves, tends them to bloom. The agent fleet is mostly tenders</td>
+</tr>
+<tr>
+<td>Shears</td>
+<td>Lint rules that flag unhealthy growth (unverifiable, unaligned, wilting, overloaded, carved, stale buds, drowned inbox)</td>
+</tr>
+</tbody>
+</table>
+<h2>The two node kinds</h2>
+<p>The OKR version had Objectives and Key Results. The pivot generalizes to:</p>
+<ul>
+<li><strong>Intent nodes</strong> (trunk, branches): <em>why</em> and <em>toward what</em>. Qualitative direction plus, where it
+  helps, a small set of measures. This is where the OKR inheritance survives — but measures are
+  optional dressing on intent, not a mandatory second node type.</li>
+<li><strong>Work nodes</strong> (twigs, leaves): <em>what</em>, plan-shaped. Frontmatter identity plus Context, Goal,
+  Verification, check-ins, comments — and, non-negotiably, the <code>## Verification</code> section: how
+  anyone would know this is done, and what evidence hardening requires. A work node without
+  verification is a bud that cannot be pulled.</li>
+</ul>
+<p>Work nodes move through kanban-shaped states:</p>
+<pre><code>budding → ready → growing → blooming → hardened
+   ↘________↘________↘________↘→ deadwood
+</code></pre>
+<ul>
+<li><code>budding</code> — proposed, not yet groomed; doesn't count against sap.</li>
+<li><code>ready</code> — groomed, verification written, pullable.</li>
+<li><code>growing</code> — pulled by a tender; <strong>counts against the branch's sap limit</strong>.</li>
+<li><code>blooming</code> — work done, evidence attached, awaiting verification; still counts against sap
+  (kanban's "done isn't done until it's verified" — blooming work still draws from the branch).</li>
+<li><code>hardened</code> — verification satisfied, by someone other than the doer, against the evidence.</li>
+<li><code>deadwood</code> — pruned at any stage; kept, greyed, linkable.</li>
+</ul>
+<h2>The genome — principles as DNA</h2>
+<p>Below the season and above everything else sits a third layer, structurally unlike the other two:
+the <strong>genome</strong>, a small set of <strong>principles</strong> that constrain what shapes this tree can take at all.</p>
+<p>This is genetics, not gardening. A juniper cannot be pruned into a maple. Species determines how a
+tree back-buds, how it heals a cut, how fast it thickens, which silhouettes are even reachable —
+and all of the gardener's shaping happens <em>inside</em> what the genetics permit. Seasons open and
+close; intent gets rewritten every quarter; the genome persists across all of it and is the reason
+the tree still looks like itself after ten years.</p>
+<h3>Why this can't just be fertilizer at the root</h3>
+<p>The distinction has to be sharp or the layer is redundant:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Fertilizer</th>
+<th>Principle</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scope</td>
+<td>one node, inherited down its branch</td>
+<td>the whole tree, every season</td>
+</tr>
+<tr>
+<td>Cost to change</td>
+<td>cheap — a proposal like any other</td>
+<td>entrenched: cooling period, named consent, blast radius shown</td>
+</tr>
+<tr>
+<td>Effect of a change</td>
+<td>new growth sees it; existing nodes are untouched</td>
+<td>existing nodes can become <strong>sports</strong> — the change cascades</td>
+</tr>
+<tr>
+<td>Function</td>
+<td>nourishes — enables work</td>
+<td>constrains — bounds the reachable shapes</td>
+</tr>
+<tr>
+<td>Lifetime</td>
+<td>a season</td>
+<td>many seasons; retirement is itself a documented event</td>
+</tr>
+<tr>
+<td>Cost of not having it</td>
+<td>a branch works without some context</td>
+<td>the fleet re-litigates settled questions every season, and answers differently each time</td>
+</tr>
+</tbody>
+</table>
+<p>That last row is the real argument. A fleet of agents with no genome is not merely unprincipled;
+it is <em>inconsistent</em> — each session re-derives the same architectural question from scratch and
+lands somewhere new, and the tree's shape becomes a record of which agent ran when. ADR practice
+and spec-driven development exist for exactly this reason in codebases; the genome is that
+discipline applied to the management tree itself.</p>
+<h3>Anatomy of a principle</h3>
+<p>Each principle is one document, schema-enforced:</p>
+<ul>
+<li><strong>Statement</strong> — one imperative sentence. Short enough to remember, specific enough to violate.</li>
+<li><strong>Arguments</strong> — at least two, giving the <em>reasoning</em>, not just the rule. This is deliberate:
+  current constitutional practice has moved from rule-based to reason-based governance precisely
+  because an agent that knows <em>why</em> can extend a principle to a case the rule never anticipated,
+  while an agent that knows only the rule either over-applies it or finds the gap.</li>
+<li><strong>Alternatives</strong> — at least two roads not taken, each with a <strong>pre-registered expected outcome</strong>:
+  what we predict would happen if we adopted it. Falsifiable, and scored later (see Conservation).</li>
+<li><strong>Cascade surface</strong> — what depends on this principle, and what would have to change if it did.</li>
+<li><strong>Entrenchment</strong> — the amendment bar: who must consent, and the minimum dormancy period.</li>
+<li><strong>Lineage</strong> — what this supersedes, and its amendment history.</li>
+</ul>
+<p>Principles carry a <strong>dominance rank</strong>, and conflicts resolve by dominance rather than by argument
+in the moment — a tiered order (irreversibility and safety → integrity of the record → capacity →
+throughput) mirroring the priority hierarchies constitutional agent frameworks converged on.</p>
+<h3>Expression and cascade</h3>
+<p>A node may <code>cite</code> a principle to declare that it invokes one. The engine computes <strong>expression</strong>:
+which nodes cite a principle, which would be affected if it changed, and — via the Seedkeeper
+persona and shears — which nodes appear to <em>conflict</em> with one without citing it.</p>
+<p>When a principle does change, every node that grew true to the old genome is flagged as a
+<strong>sport</strong>: divergent growth, not wrongdoing. A sport has three honest resolutions — reshape it to
+the new genome, <strong>promote</strong> it (the sport was right; it becomes evidence for the next amendment),
+or prune it to deadwood with the reason recorded. What the system must never do is auto-prune
+sports. A single principle edit silently invalidating half the tree is carving at the largest
+possible scale, and it is exactly what makes people afraid to touch governing documents at all.</p>
+<h3>Splicing — the cost is the point</h3>
+<p>Amending the genome is a <strong>splice</strong>, and every part of it is deliberately expensive:</p>
+<ul>
+<li><strong>Alternatives and expected outcomes are mandatory</strong> — schema-enforced, not cultural.</li>
+<li><strong>The blast radius is computed and attached.</strong> You cannot amend a principle without seeing, in
+  the proposal itself, how many nodes cite it and how many become sports.</li>
+<li><strong>Dormancy.</strong> A splice sits open for a minimum cooling period, scaled by how widely the
+  principle is cited. DNA does not change within a sprint.</li>
+<li><strong>Named consent</strong> per the principle's entrenchment.</li>
+<li><strong>No agent may apply a splice at any autonomy tier — including <code>full</code>.</strong> Agents may propose
+  one, argue it, and compute its cascade; they may never enact it. This is the single hard
+  asymmetry between humans and agents in a system that otherwise treats them as peers, and it is
+  load-bearing: the emerging consensus in agent governance is that the foundational layer must be
+  structurally immutable to automated modification rather than merely discouraged in a prompt. A
+  fleet that can rewrite its own constraints has none.</li>
+</ul>
+<h3>Conservation, contestation, and dead genes</h3>
+<p>Because every alternative carried a pre-registered prediction, the season retro can <strong>score</strong> past
+splices: did the predicted outcome occur? That turns the genome into a learning system rather than
+a wall of assertions:</p>
+<ul>
+<li>A principle that has stood several seasons, is widely cited, and whose predictions held is
+  <strong>conserved</strong> — and its amendment bar rises automatically. (In biology, the sequences conserved
+  across species are the functionally critical ones; the same inference works here.)</li>
+<li>A principle whose predictions failed becomes <strong>contested</strong> — its bar <em>falls</em>, and it is a
+  standing candidate for amendment. Being wrong in public is how a principle earns revision.</li>
+<li>A principle nothing has cited for several seasons is a <strong>dead gene</strong>: decoration, not DNA.
+  Flagged for retirement. The genome is size-capped for the same reason real constitutions are
+  short — fifty principles is a bureaucracy, and nobody can reason from a document they can't
+  hold in their head.</li>
+</ul>
+<p>Retired principles are deadwood like anything else: kept, with why they were retired and whether
+their predictions came true.</p>
+<h3>Two more mechanics the metaphor hands us for free</h3>
+<ul>
+<li><strong>Graft rejection.</strong> Work grafted in from a tree whose genome conflicts with ours is flagged as
+  a rejection risk at import — the honest version of "we adopted their backlog and then spent a
+  year discovering we disagreed about everything."</li>
+<li><strong>Air-layering.</strong> A branch that genuinely cannot live under the trunk's genome should neither
+  fight it nor water it down until it means nothing. It air-layers: propagates into its own tree
+  with a forked genome, lineage retained. In a git-backed store this is nearly free, and it is the
+  release valve that lets the genome stay strict.</li>
+</ul>
+<h3>The reflexive case</h3>
+<p>Agent Bonsai's own seven invariants <em>are</em> its genome — "nothing is deleted" is a principle with
+arguments (auditability, the shape is explained by what was removed), alternatives (hard delete,
+TTL expiry) and predicted outcomes for each. Writing them up as principle documents is the first
+real exercise of the layer, and the pilot dogfoods it.</p>
+<h2>The store is a plans corpus</h2>
+<p>The storage system is not a database wearing a file extension — it is the markdown plans structure
+this workspace already runs on, generalized into the tree's native format. The plans corpus was
+the proof: frontmatter-plus-sections markdown, written by humans and agents interchangeably,
+folder follows status, aborts archived not deleted, everything diffable in git. Agent Bonsai
+adopts that pattern wholesale as its store:</p>
+<ul>
+<li><strong>Every node is a markdown file with YAML frontmatter.</strong> Frontmatter is the machine surface —
+  id, kind, state, alignment, sap, tender, actor stamps — validated by schema. The body is the
+  human-and-agent surface: the standard sections, in order, exactly like a plan.</li>
+<li><strong>A work node is a spike-plan-shaped document.</strong> <code>## Context</code>, <code>## Goal</code>, <code>## Verification</code>,
+  <code>## Check-ins</code>, <code>## Comments</code>, <code>## Completion notes</code>. The structural rhyme is exact: a plan's
+  Goal + Verification <em>is</em> a work node's contract; Completion notes <em>are</em> the hardening evidence.
+  A leaf that outgrows a spike graduates into a full plan and links back — the tree sits above
+  the plans, it doesn't replace them.</li>
+<li><strong>Directories are the tree.</strong> A branch is a directory; its intent node is the <code>_INTENT.md</code>
+  inside it; its leaves are <code>SCREAMING_SNAKE_CASE.md</code> files beside it. Depth in the filesystem is
+  depth in the tree.</li>
+<li><strong>Folder follows status</strong> — the plans-corpus rule, applied per branch. Live work (budding
+  through blooming, state in frontmatter) sits in the branch directory; <code>hardened/</code> and
+  <code>deadwood/</code> subfolders hold the terminal states, mirroring <code>completed/</code> and <code>aborted/</code>. The
+  frontmatter <code>state:</code> is canonical; the engine moves the file when the state turns terminal.</li>
+<li><strong>Proposals are markdown too</strong> — frontmatter (type, target, actor, status) plus <code>## Rationale</code>,
+  <code>## Change</code>, <code>## Reviews</code>. Reading an inbox is reading a directory of one-page documents.</li>
+<li><strong>The genome sits outside the seasons.</strong> <code>genome/</code> is a sibling of <code>seasons/</code>, one document per
+  principle — the same frontmatter-plus-sections shape, with the required sections being
+  Statement, Arguments, Alternatives, Cascade surface, Entrenchment, Lineage. Seasons come and go
+  beneath it; retired principles move to <code>genome/retired/</code> by the same folder-follows-status rule.
+  A principle document reads exactly like a well-written ADR, because that is what it is.</li>
+<li><strong>The tree ships its own CLAUDE.md.</strong> The data repo carries the conventions — exactly as this
+  workspace does — so any Claude Code session dropped into it, with no CLI and no MCP, can read
+  the tree, follow the format, and file a well-formed proposal by writing a file. The engine is
+  the enforcer and fast path, not the only door.</li>
+</ul>
+<p>Why this beats bespoke YAML records (the previous design):</p>
+<ul>
+<li><strong>Agent-native and human-native are the same surface.</strong> Current agent-harness practice is
+  converging on curated file context as the reliable substrate; a node file <em>is</em> its own context
+  document. No serialization layer between "what the agent reads" and "what the human reads."</li>
+<li><strong>Degrades gracefully.</strong> If the engine is down or absent, the tree is still a legible, editable
+  document corpus — the engine reconciles and lints on return, rather than being a gatekeeper
+  whose absence bricks the data.</li>
+<li><strong>Proven in situ.</strong> The conventions (naming, status folders, templates, abort archiving) have
+  already survived contact with real mixed human/agent use in this workspace.</li>
+<li><strong>Tool-ecosystem free rides.</strong> Obsidian-class tools read the frontmatter and wikilinks; git
+  hosting renders every node and proposal as a document.</li>
+</ul>
+<p>The <code>TreeStore</code> interface survives from the previous design, so a DB backend remains possible if
+the tree outgrows a single repo — but the markdown corpus is the reference semantics, not a
+temporary stand-in.</p>
+<h2>What the research confirms (2026 review)</h2>
+<p>A pass over current agent-orchestration and engineering-management literature, folded into the
+design where it bites:</p>
+<ul>
+<li><strong>The binding constraint on fleet size is human review capacity, not agent count.</strong> Operator
+  studies put unassisted oversight at roughly 2–3 concurrent agents, rising to 10–20 only with a
+  purpose-built operator surface — a board, an inbox, alerts, and a governance record.
+  <em>Consequence:</em> sap explicitly covers the humans. The inbox limit is an engine-enforced WIP
+  limit on open proposals awaiting any one reviewer; the board, shears, and inbox are not
+  conveniences, they are the capacity multiplier.</li>
+<li><strong>Verifier separation is empirically supported, and rubrics beat ad-hoc checking.</strong> A distinct
+  verifier working from an explicit rubric consistently outperforms a stronger model reviewing
+  its own output; self-evaluation bias is structural. Documented failure mode: "correct answer,
+  wrong mechanism" — output looks right, the process contradicts it. <em>Consequence:</em> the
+  no-self-verification invariant stays hard; the <code>## Verification</code> section is the rubric; and
+  blooming requires <em>evidence</em> (test output, diffs, artifacts), so the verifier checks mechanism,
+  not vibes.</li>
+<li><strong>Context engineering is the reliability lever.</strong> Curated, minimal context outperforms dumped
+  context; sub-agents work best isolated, returning condensed summaries rather than transcripts;
+  external memory plus context editing yields large measured gains. <em>Consequence:</em> fertilizer is
+  a curated bundle (node + ancestors' intent + attached fertilizer + shears findings), never
+  "the whole tree"; check-ins are condensed summaries with the node file as durable memory; the
+  tender's working transcript is disposable, the node document is not.</li>
+<li><strong>Provenance segmentation is becoming table stakes.</strong> 2026 engineering-metrics practice
+  requires labeling human-, assisted-, and agent-authored work to attribute effects on quality
+  and speed at all. <em>Consequence:</em> actor kind is stamped on every proposal, check-in, commit
+  trailer, and verification — so the season retro can segment flow and quality by actor kind for
+  free.</li>
+<li><strong>Delivery metrics alone mislead; flow and friction complete them.</strong> DORA-style throughput
+  numbers can't distinguish sustainable improvement from deferred quality cost; measured flow
+  efficiency on real teams runs 15–25% (most elapsed time is waiting). <em>Consequence:</em> the retro's
+  flow report includes cycle time by state, flow efficiency, sap-refusal and bounce counts —
+  reconstructed from git history, no extra bookkeeping — and grades stay a learning tool, never
+  performance review.</li>
+<li><strong>A foundational layer must be structurally immune to automated modification.</strong> Constitutional
+  agent-governance work converges on a genesis layer deployed by human principals and alterable
+  only through a named human procedure — the argument being that a constraint an agent can edit
+  is not a constraint, and that externalized assertions hold where internalized dispositions
+  drift. <em>Consequence:</em> invariant 8 — no agent applies a splice at any autonomy tier, including
+  <code>full</code>. It is the one hard human/agent asymmetry in the design.</li>
+<li><strong>Governance has moved from rule-based to reason-based.</strong> The January 2026 revision of Claude's
+  constitution is the visible example: state the reasoning behind a principle rather than
+  enumerating behaviors, so the governed party can extend it to unanticipated cases.
+  <em>Consequence:</em> a principle document's Arguments section is mandatory and is what agents are
+  given, not the bare statement.</li>
+<li><strong>Settled decisions must be readable by every later change proposal.</strong> ADR and spec-driven
+  practice in 2026 treats decision records as live constraints on agent design choices, not
+  archive material — with drift-awareness (which decisions the live system no longer matches) as
+  the value-add. <em>Consequence:</em> <code>cite</code> links, computed expression, and sports are the drift
+  mechanism; the genome is queried on every proposal, not consulted at kickoff.</li>
+<li><strong>Runtime governance frameworks want exactly this shape.</strong> Emerging agent-governance control
+  domains (policy articulation, access control, observability, audit trail, incident response)
+  map one-to-one onto the autonomy policy, the permission engine, shears, the actor-trailed
+  append-only history, and autonomy demotion. The tree is, incidentally, an audit artifact.</li>
+</ul>
+<h2>Where the metaphor was sharpened</h2>
+<ul>
+<li><strong>Sap is the pivot's key addition — and the gardener's attention is the scarcest sap.</strong> The OKR
+  version protected <em>ambition</em>; this version also protects <em>capacity</em>, on both sides of the
+  human/agent line. A bonsai only moves so much sap; a branch forced to feed too many shoots
+  weakens all of them. Agents, unlike humans, will cheerfully accept unbounded parallel work and
+  produce unbounded half-finished branches — and then drown the one human in review. Both limits
+  are engine-enforced invariants, not lint warnings.</li>
+<li><strong>Genetics constrain; gardening shapes. Keeping them in one layer was the mistake.</strong> Before the
+  genome existed, "we don't do X here" had to be either a constraint stapled to a node (invisible
+  two branches down) or a lint rule (unarguable, unexplained, and buried in code). Both are worse
+  than a document that states the rule, gives the reasoning, names what it rejected, and costs
+  something to change.</li>
+<li><strong><code>splice</code> and <code>graft</code> are deliberately different words.</strong> In horticulture, grafting is
+  literally how you change a plant's genetics — which makes the collision worth naming rather
+  than hoping nobody notices. Here <code>graft</code> moves <em>work</em> across trees and <code>splice</code> amends
+  <em>principles</em>; the two meet in exactly one place, graft rejection, where imported work arrives
+  carrying a genome that disagrees with ours.</li>
+<li><strong>Pull, not push, is what "growth originates with the owner" becomes at the leaf.</strong> At the
+  intent level, the branch owner authors the branch. At the work level, the tender <em>pulls</em> a ready
+  leaf; nobody assigns it. A work node force-assigned by a parent is <em>carved</em> — flagged until the
+  tender genuinely accepts it.</li>
+<li><strong>Fertilizer is not the cascade.</strong> Upper intent is <em>light</em> (direction), not food. Docs, budget,
+  credentials, tool access, compute are the fertilizer — and for agents, fertilizer is literally
+  context engineering: the curated bundle, not the dump.</li>
+<li><strong>Grafting acknowledges the tree is not the world.</strong> Work arrives from outside — a customer
+  issue, an inherited repo backlog, another team's subtree. Grafting adopts it with provenance
+  instead of pretending it grew here.</li>
+<li><strong>Over-pruning kills the tree.</strong> Cut less than you want to, then wait a season and look.
+  Pruning the <em>number</em> of buds is ruthless; bending a work node's scope until the tender no longer
+  recognises it breaks the branch — that's a regrow, not a bend.</li>
+<li><strong>Wilt is information, not failure.</strong> Blocked and stale work stays visible on the branch. The
+  gardener decides whether to feed it (fertilize), wait, or prune it to deadwood. Auto-reaping
+  blocked work is carving by cron job.</li>
+<li><strong>One gardener's vision per branch.</strong> Each layer shapes only its immediate branch and trusts the
+  trunk above it. Multiple gardeners wiring one branch produce a committee-shaped tree.</li>
+<li><strong>Deadwood is a feature.</strong> Won't-fix, aborted, and superseded nodes stay in the record. The
+  shape of a tree is explained by what was removed as much as by what grew.</li>
+</ul>
+<h2>Invariants the system enforces</h2>
+<ol>
+<li><strong>Growth originates close to the work.</strong> A parent proposes; the branch owner accepts. At leaf
+   level, work is pulled by its tender, never assigned. Nodes that violate this carry
+   <code>carved: true</code> and are flagged until genuinely accepted.</li>
+<li><strong>Every mutation is a proposal.</strong> Actor identity (<code>human</code> | <code>agent</code>), type, rationale, review,
+   then a separate apply step. Proposing and applying are distinct rights.</li>
+<li><strong>Nothing is deleted.</strong> Prune → <code>deadwood</code>. History is append-only (git-backed).</li>
+<li><strong>Bends are bounded.</strong> A bend that exceeds a threshold (rewrites the node's meaning, moves
+   verification substantially, re-parents) is not applied — it becomes a <em>regrow</em> request to the
+   branch owner.</li>
+<li><strong>Sap is finite — for branches and for reviewers.</strong> A branch's <code>growing</code> + <code>blooming</code> count
+   cannot exceed its sap limit, and a <code>pull</code> that would exceed it is refused, not warned. Open
+   proposals awaiting one reviewer cannot exceed that reviewer's inbox limit — past it, new
+   agent-originated proposals queue rather than land. Raising either limit is itself a bend, with
+   rationale, visible in the retro.</li>
+<li><strong>Every leaf is verifiable, evidence is required, and the verifier is not the doer.</strong> No work
+   node blooms without evidence attached, and none hardens without its verification rubric
+   satisfied against that evidence by a different actor. An agent's work is verified by a human
+   or by a distinct verifier agent — never by itself.</li>
+<li><strong>Humans and agents are peers in the proposal model.</strong> Distinguished only by actor kind —
+   stamped on every proposal, check-in, and commit for provenance — and by a per-subtree
+   <em>autonomy policy</em> enforced by the engine (never by the agent's prompt).</li>
+<li><strong>The genome is amendable only by named humans, and never silently.</strong> No agent may apply a
+   splice at any autonomy tier. Every splice carries its computed blast radius, serves its
+   dormancy period, and leaves the affected growth flagged as sports for a gardener to resolve —
+   the engine never auto-prunes on a principle change.</li>
+</ol>
+<h2>Actors, roles, autonomy</h2>
+<ul>
+<li><strong>Actor kinds:</strong> <code>human</code>, <code>agent</code>.</li>
+<li><strong>Roles per subtree:</strong> <code>owner</code> (grows the branch), <code>gardener</code> (shapes), <code>tender</code> (pulls and does
+  work), <code>reviewer</code> (comments, verifies), <code>observer</code>.</li>
+<li><strong>Agent autonomy per subtree</strong>, in increasing order:</li>
+<li><code>propose</code> (default) — everything goes to a human inbox.</li>
+<li><code>tend</code> — may pull <code>ready</code> leaves, move its own work through states, and record check-ins;
+    hardening still requires an external verifier.</li>
+<li><code>grow</code> — may grow and shape its own subtree (a personal or agent-owned branch).</li>
+<li><code>full</code> — sandbox / dogfood only.</li>
+<li><strong>Agent personas (prompt files, not code paths):</strong></li>
+<li><em>Grower</em> — given an intent node + inherited fertilizer, drafts sub-intents and work nodes.</li>
+<li><em>Tender</em> — pulls a ready leaf, does the work, moves it to blooming with evidence.</li>
+<li><em>Verifier</em> — checks a blooming node's evidence against its verification rubric; hardens or
+    bounces with the failing line cited.</li>
+<li><em>Shears</em> — semantic lint the rule engine can't do (is this verification actually checkable?).</li>
+<li><em>Gardener's assistant</em> — proposes prunes, bends, and sap adjustments with rationale; never applies.</li>
+<li><em>Scribe</em> — records check-ins from metric sources, drafts the season retro and flow report.</li>
+<li><em>Seedkeeper</em> — the genome's librarian: flags proposals that conflict with an active
+    principle, computes cascade estimates for draft splices, surfaces dead genes, and scores
+    prior splices' pre-registered predictions at retro. Proposes; never applies a splice (no
+    actor of kind <code>agent</code> can).</li>
+</ul>
+<h2>Alternatives considered</h2>
+<ul>
+<li><strong>GitHub Issues + Projects with an agent bolted on.</strong> Closest existing shape (issues, boards,
+  labels), and the graft adapter should eventually sync with it. Rejected as the core: no autonomy
+  policy engine, no enforced sap, no proposal/apply separation, no deadwood semantics — the
+  platform would fight every invariant.</li>
+<li><strong>Off-the-shelf agile/OKR SaaS.</strong> Rejected: they model form fields and ceremonies, not the
+  proposal/shape/deadwood process, and none treat agents as first-class actors.</li>
+<li><strong>Bespoke YAML records (the previous design's store).</strong> Superseded 2026-08-20 by the plans-corpus
+  pattern above. YAML records were machine-first: agents and humans would each have needed a
+  rendering layer, and an engine outage would have left the data illegible-in-practice. The
+  markdown corpus is the same git-backed store with the proven document format on top; the schema
+  rigor survives in the frontmatter.</li>
+<li><strong>Schema-less free-form markdown.</strong> Still rejected: shears, sap enforcement, and bend-bounding
+  need the frontmatter contract and the required sections. The plans corpus works <em>because</em> it is
+  templated, not despite it.</li>
+<li><strong>DB-first web app.</strong> Deferred: right for scale, wrong for a pilot; costs the agent-native
+  surface. <code>TreeStore</code> keeps the door open.</li>
+<li><strong>Principles as root fertilizer (no separate genome layer).</strong> Rejected: fertilizer is cheap,
+  additive, and branch-scoped, and changing it never invalidates existing growth. Everything that
+  makes a principle useful — entrenchment, dominance, cascade, pre-registered predictions,
+  conservation — has to be modelled somewhere, and grafting it onto fertilizer would give
+  fertilizer two incompatible personalities.</li>
+<li><strong>An immutable genome (set at seed time, never amendable).</strong> Rejected: it converts every
+  genuine change of mind into either a fork or a lie, and the tree ossifies around its founders'
+  first-quarter opinions. Expensive-and-documented beats impossible; the escape hatch for the
+  irreconcilable case is air-layering, not amendment paralysis.</li>
+<li><strong>The genome as prompt text only (a values doc pasted into agent context).</strong> Rejected: this is
+  how principles become decoration. Without citations, computed expression, sports, and scored
+  predictions, nothing distinguishes a live principle from one everyone quietly stopped following
+  three seasons ago.</li>
+<li><strong>Auto-resolving sports on a splice (engine rewrites or prunes divergent growth).</strong> Rejected:
+  it is carving at the largest available scale, and the fear of it is precisely why people avoid
+  amending governing documents. Sports are surfaced for a gardener; the cascade is visible work,
+  not a silent migration.</li>
+<li><strong>Keeping the OKR tree as the core with work items attached.</strong> Rejected — this was the actual
+  pivot decision. OKRs earn one layer (light), not the whole trunk; forcing every task to hang off
+  a Key Result made routine work either homeless or dishonestly dressed as outcomes.</li>
+<li><strong>Encoding the metaphor everywhere in code.</strong> Rejected: bonsai <em>verbs</em> name distinct operations
+  and stay (<code>grow</code>/<code>prune</code>/<code>bend</code>/<code>graft</code>/<code>fertilize</code>/<code>repot</code>); <em>nouns</em> stay standard
+  (<code>intent</code>, <code>work</code>, <code>season</code>, <code>checkin</code>) so the data is legible to anyone who has used an issue
+  tracker or read a plan.``` don't modify the project with this, just use it to write the script.</li>
+</ul></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-19-842Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-19-842Z" class="timestamp-link"><time datetime="2026-09-12T22:05:19.842Z" data-timestamp="2026-09-12T22:05:19.842Z">2026-09-12T22:05:19.842Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-20-188Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-20-188Z" class="timestamp-link"><time datetime="2026-09-12T22:05:20.188Z" data-timestamp="2026-09-12T22:05:20.188Z">2026-09-12T22:05:20.188Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll read the concept docs and current app state so the script matches what actually exists.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-21-668Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-21-668Z" class="timestamp-link"><time datetime="2026-09-12T22:05:21.668Z" data-timestamp="2026-09-12T22:05:21.668Z">2026-09-12T22:05:21.668Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_012QQL47GWCTxmqenf6UMQEX">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls -la &amp;&amp; echo &#34;--- Concepts&#34; &amp;&amp; ls Concepts/ &amp;&amp; echo &#34;--- Plans&#34; &amp;&amp; ls -R Plans/ | head -40 &amp;&amp; echo &#34;--- web/src&#34; &amp;&amp; ls web/src web/src/lib 2&gt;/dev/null &amp;&amp; echo &#34;--- service&#34; &amp;&amp; ls service schema</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-05-21-880Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-05-21-880Z" class="timestamp-link"><time datetime="2026-09-12T22:05:21.880Z" data-timestamp="2026-09-12T22:05:21.880Z">2026-09-12T22:05:21.880Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>total 184
+drwxr-xr-x  16 tmiv74  staff    512 Sep 12 14:46 .
+drwxr-xr-x+ 51 tmiv74  staff   1632 Sep 12 15:05 ..
+-rw-r--r--@  1 tmiv74  staff   6148 Sep 12 14:46 .DS_Store
+drwxr-xr-x@  3 tmiv74  staff     96 Sep 12 10:17 .claude
+drwxr-xr-x  15 tmiv74  staff    480 Sep 12 13:23 .git
+-rw-r--r--@  1 tmiv74  staff     41 Sep 10 19:03 .gitignore
+-rw-r--r--@  1 tmiv74  staff  11260 Sep 12 14:44 CLAUDE.md
+drwxr-xr-x@  7 tmiv74  staff    224 Sep 12 13:46 Concepts
+drwxr-xr-x@  3 tmiv74  staff     96 Sep 12 13:22 Plans
+-rw-r--r--@  1 tmiv74  staff  11417 Sep 11 14:19 README.md
+drwxr-xr-x  29 tmiv74  staff    928 Sep 11 15:13 node_modules
+-rw-r--r--@  1 tmiv74  staff  49310 Sep 11 15:59 package-lock.json
+-rw-r--r--@  1 tmiv74  staff    339 Sep 11 12:14 package.json
+drwxr-xr-x@ 12 tmiv74  staff    384 Sep 12 13:13 schema
+drwxr-xr-x@  9 tmiv74  staff    288 Sep 12 13:19 service
+drwxr-xr-x@  8 tmiv74  staff    256 Sep 11 15:33 web
+--- Concepts
+Agents as Executors - Design.md
+Depth and Focus - Design.md
+Matrix Views - Design.md
+OKR Viewer - Product Vision.md
+Teams as Agents - Design.md
+--- Plans
+completed
+
+Plans/completed:
+BUNDLED_DATASETS.md
+CAMERA_LEVEL_AUTO_MOVES.md
+CHAT_CONTEXT.md
+CHAT_TABS_AND_INTERVIEWS.md
+CLEAR_HIGHLIGHT_ON_SELECT.md
+FRAME_NODE_NEIGHBORHOOD.md
+GRAPH_KEYBOARD_SHORTCUTS.md
+NODE_HOVER_CARD.md
+OKR_NODE_EDITOR.md
+OKR_SCHEMA_PACKAGE.md
+TEAM_MODEL_AND_EDITOR.md
+TREE_BRIEFING.md
+--- web/src
+web/src:
+App.svelte
+Briefing.svelte
+Chat.svelte
+Detail.svelte
+Graph.svelte
+NodeCard.svelte
+TeamEditor.svelte
+TeamList.svelte
+app.css
+assets
+lib
+main.js
+
+web/src/lib:
+apply.js
+briefing.js
+company.js
+datasets.js
+navigate.js
+navigate.test.js
+--- service
+schema:
+dist
+index.d.ts
+index.js
+migrations
+package.json
+scripts
+src
+test
+tsconfig.check.json
+version.js
+
+service:
+index.js
+node_modules
+package.json
+prompt.js
+validate.js</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-23-735Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-23-735Z" class="timestamp-link"><time datetime="2026-09-12T22:05:23.735Z" data-timestamp="2026-09-12T22:05:23.735Z">2026-09-12T22:05:23.735Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01HhTyeuMfwxLLnCZW6itvs1">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat README.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-05-23-769Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-05-23-769Z" class="timestamp-link"><time datetime="2026-09-12T22:05:23.769Z" data-timestamp="2026-09-12T22:05:23.769Z">2026-09-12T22:05:23.769Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre># OKR Viewer
+
+A 3D OKR tree you can interrogate and edit by talking to it.
+
+Load an org&#x27;s objectives and key results as a navigable 3D graph, then ask questions in plain language — &quot;which KRs don&#x27;t ladder up to anything?&quot;, &quot;make the marketing KRs measurable&quot; — and watch Claude answer *by moving the visualization*: flying the camera to the nodes it&#x27;s talking about, and rewriting them in place when you ask it to.
+
+The pitch in one line: **the model&#x27;s output is the interface, not a chat log next to one.**
+
+---
+
+## Demo script
+
+This is the thing to build toward. Everything below serves these 90 seconds.
+
+1. **Open on the full tree.** One company objective at the top, team objectives beneath it, KRs at the leaves. Rotate it. It&#x27;s obviously a hierarchy and you can see all of it at once.
+2. **Ask a question.** &quot;Which key results don&#x27;t clearly support a company objective?&quot; → Claude answers in the panel *and* three nodes pulse red while the camera flies to them.
+3. **Ask for a fix.** &quot;Rewrite those so they&#x27;re measurable and tie them to the right objective.&quot; → the nodes&#x27; text changes, edges re-link, the graph settles into a new shape.
+4. **Undo it.** One click, tree snaps back. (This also saves you if the model does something dumb on stage.)
+
+---
+
+## Architecture
+
+```
+┌──────────────────────┐         ┌─────────────────────┐         ┌────────┐
+│  web/  (Vite+Svelte) │  POST   │  service/ (Express) │  HTTPS  │ Claude │
+│                      │ /api/   │                     │         │  API   │
+│  owns the tree ──────┼─ chat ──┼─&gt; owns the prompt    ├────────&gt;│        │
+│  renders the graph   │&lt;────────┼── + tool schema      │&lt;────────┤        │
+│  applies actions     │ {reply, │   validates IDs      │         └────────┘
+│  keeps undo stack    │  actions│                      │
+└──────────────────────┘  highlight}────────────────────┘
+```
+
+**The service is stateless.** The browser owns the tree and sends it along with every message. No session store, no database, no drift between what the service thinks the tree is and what&#x27;s on screen.
+
+**The service owns the system prompt and the tool schema.** The frontend never constructs a prompt. This means prompt iteration — which is most of your tuning time — is a service-only change.
+
+---
+
+## The contract
+
+One endpoint. One shape. Don&#x27;t add a second one.
+
+```
+POST /api/chat
+{
+  &quot;tree&quot;:           { &quot;nodes&quot;: [...] },     // the whole thing, every time
+  &quot;message&quot;:        &quot;make the marketing KRs measurable&quot;,
+  &quot;selectedNodeId&quot;: &quot;kr-7&quot; | null,          // what the user clicked, for context
+  &quot;history&quot;:        [{ &quot;role&quot;: &quot;user&quot;|&quot;assistant&quot;, &quot;content&quot;: &quot;...&quot; }]
+}
+
+→ 200
+{
+  &quot;reply&quot;:     &quot;I tightened three KRs under Marketing…&quot;,
+  &quot;actions&quot;:   [{ &quot;op&quot;: &quot;edit&quot;, &quot;id&quot;: &quot;kr-7&quot;, &quot;fields&quot;: { &quot;label&quot;: &quot;…&quot; } }],
+  &quot;highlight&quot;: [&quot;kr-7&quot;, &quot;kr-8&quot;, &quot;kr-9&quot;]
+}
+```
+
+`actions` is often empty — most messages are questions, not edits. `highlight` is almost never empty, and it&#x27;s what makes the thing feel alive.
+
+### Node shape
+
+Keep it flat. A flat array with `parent` pointers is easier to mutate than nested children, and `3d-force-graph` wants flat nodes and links anyway.
+
+```js
+{
+  id:          &#x27;kr-7&#x27;,
+  level:       &#x27;company&#x27; | &#x27;objective&#x27; | &#x27;kr&#x27;,
+  parent:      &#x27;obj-2&#x27; | null,
+  label:       &#x27;Reduce time-to-first-value for new accounts&#x27;,
+  owner:       &#x27;Marketing&#x27;,
+  metric:      &#x27;median days from signup to first workflow run&#x27;,
+  target:      &#x27;14 → 5 by Q4&#x27;,
+  contributes: 0.8            // 0–1, how well this supports its parent
+}
+```
+
+`contributes` is the field that earns the visualization. Edge thickness and color come from it, and low-scoring links are the &quot;misalignment&quot; the demo finds. Hand-author these values — it&#x27;s a demo, and a hand-tuned tree demos better than a realistic one.
+
+---
+
+## The one-tool trick
+
+Do **not** define `edit_node`, `add_node`, `relink_node`, and `highlight_nodes` as four separate tools. Real multi-tool use means Claude stops at the `tool_use` block, you send back a `tool_result`, and you make a second call to get the final text — two round trips, continuation logic, and a branch for &quot;what if it called no tools at all.&quot;
+
+Instead: **one tool, forced.**
+
+```js
+const RESPOND_TOOL = {
+  name: &#x27;respond&#x27;,
+  description: &#x27;Reply to the user about their OKR tree. Always call this exactly once.&#x27;,
+  input_schema: {
+    type: &#x27;object&#x27;,
+    properties: {
+      reply: {
+        type: &#x27;string&#x27;,
+        description: &#x27;Your answer, shown in the chat panel. Conversational, 1-3 sentences.&#x27;
+      },
+      actions: {
+        type: &#x27;array&#x27;,
+        description: &#x27;Edits to apply to the tree. Empty array if the user only asked a question.&#x27;,
+        items: {
+          type: &#x27;object&#x27;,
+          properties: {
+            op:     { type: &#x27;string&#x27;, enum: [&#x27;edit&#x27;, &#x27;add&#x27;, &#x27;relink&#x27;, &#x27;delete&#x27;] },
+            id:     { type: &#x27;string&#x27; },
+            fields: { type: &#x27;object&#x27; }
+          },
+          required: [&#x27;op&#x27;, &#x27;id&#x27;]
+        }
+      },
+      highlight: {
+        type: &#x27;array&#x27;,
+        description: &#x27;IDs of nodes your reply refers to. The camera flies to these. Use generously.&#x27;,
+        items: { type: &#x27;string&#x27; }
+      }
+    },
+    required: [&#x27;reply&#x27;, &#x27;actions&#x27;, &#x27;highlight&#x27;]
+  }
+};
+```
+
+Called with `tool_choice: { type: &#x27;tool&#x27;, name: &#x27;respond&#x27; }`. Guaranteed structured output, single call, zero branching.
+
+---
+
+## Setup
+
+Requires Node 20.19+ (Vite 8 and Express 5 both need it).
+
+The repo is one npm workspace with three packages, so there is a single install
+at the root and a single lockfile. Installing also builds `schema/` (its
+`prepare` script), which both other packages import.
+
+```bash
+git clone &lt;repo&gt; &amp;&amp; cd okr-viewer
+npm install                                   # installs all three, builds schema/
+cp service/.env.example service/.env          # add ANTHROPIC_API_KEY
+
+npm run dev:service                           # :8787
+npm run dev:web                               # :5173, in a second shell
+```
+
+Other root scripts: `npm run build:schema` after editing anything in
+`schema/src/`, and `npm run test:schema` to run the schema&#x27;s own tests.
+
+`vite.config.js` proxies `/api` → `:8787`, so there&#x27;s no CORS to fight in dev:
+
+```js
+server: { proxy: { &#x27;/api&#x27;: &#x27;http://localhost:8787&#x27; } }
+```
+
+The key lives only in `service/.env` and never reaches the browser. `.env` is gitignored — check that before your first commit, not after.
+
+Model ID goes in one place (`service/prompt.js`). Check &lt;https://docs.claude.com/en/docs/about-claude/models&gt; for the current Sonnet-class ID rather than trusting a hardcoded string from a template.
+
+---
+
+## Layout
+
+```
+okr-viewer/
+├── package.json                npm workspace root; one lockfile for all three
+├── schema/                     @okr-viewer/schema — the shape, owned in one place
+│   ├── src/*.schema.json       draft-07 schemas: node, tree, company, history,
+│   │                           action, chat request/response, document envelope
+│   ├── scripts/build.mjs       → dist/types.d.ts, dist/validators.js, tool schema
+│   ├── index.js                validate*(), checkTreeSemantics(), create/parseDocument
+│   ├── version.js              SCHEMA_VERSION, the document format version
+│   ├── migrations/             one function per major step (empty at v1)
+│   └── test/                   fixtures + round-trip tests
+├── web/
+│   ├── src/
+│   │   ├── App.svelte          layout, owns tree state + undo stack, export/import
+│   │   ├── Graph.svelte        3d-force-graph, bind:this + onMount
+│   │   ├── Chat.svelte         message list, input, loading state
+│   │   ├── Detail.svelte       selected-node sidebar
+│   │   ├── assets/datasets/    hand-written OkrDocument JSON + manifest.json
+│   │   ├── lib/datasets.js     bundles them, validates them, picks the default
+│   │   └── lib/apply.js        applyAction(tree, action) → new tree
+│   └── vite.config.js
+└── service/
+    ├── index.js                POST /api/chat
+    ├── prompt.js               system prompt + RESPOND_TOOL
+    └── validate.js             drop actions/highlights with unknown IDs
+```
+
+`schema/dist/` is generated and gitignored. Edit `schema/src/`, run
+`npm run build:schema`, and both consumers pick the change up.
+
+---
+
+## Build order
+
+Each step is shippable on its own. If the clock runs out, you stop at a checkpoint with something that demos — not a half-wired step 4.
+
+| # | Step | Est. | If you stop here |
+|---|------|------|------------------|
+| 1 | Hand-write `assets/datasets/*.json`, load via `lib/datasets.js`, render with `3d-force-graph` (`dagMode: &#x27;td&#x27;`), click → camera + detail panel | 50m | A working 3D OKR browser |
+| 2 | Chat panel → `/api/chat`, whole tree in the system prompt, Claude answers questions | 30m | &quot;Ask your OKRs anything&quot; — already demoable |
+| 3 | Honor `highlight[]`: camera fly-to + pulse | 20m | **The wow.** Answers move the view |
+| 4 | Honor `actions[]`: apply, re-render, push undo snapshot | 40m | The full pitch |
+
+**Protect steps 3 and 4 by keeping step 1 dumb.** Hand-author the JSON. No importer, no file upload, no editor UI. Twenty-five nodes is plenty and fits in a prompt with room to spare.
+
+Stretch, only if you&#x27;re ahead: highlight-by-hover on chat text, a `contributes` threshold slider, export the edited tree as JSON.
+
+---
+
+## Things that will bite you
+
+**Claude will invent node IDs.** Not often, but it will, and an unknown ID either throws in your renderer or silently no-ops in the middle of a demo. You have the tree right there in the request — filter `actions` and `highlight` against it server-side and drop what doesn&#x27;t resolve. Ten minutes of work on the single most likely live failure.
+
+**Keep the graph instance out of Svelte&#x27;s reactive system.** `3d-force-graph` mutates its own internals and does its own render loop; it fights `$state` if you let it. Create it once in `onMount` into a plain `let graph`, and push updates imperatively:
+
+```js
+$effect(() =&gt; { graph?.graphData(toGraphData(tree)); });
+```
+
+**Don&#x27;t stream.** ~2k tokens in, a few hundred out — that&#x27;s 2–4 seconds. A spinner is fine. Streaming tool-use blocks is fiddly enough to eat a meaningful slice of a two-hour budget for no demo value.
+
+**Snapshot before you mutate.** `undoStack.push(structuredClone(tree))` before applying actions. Five lines, one button, and it turns a bad model response during a live demo from a dead end into &quot;watch, I&#x27;ll just back that out.&quot;
+
+**Re-heating the layout on every edit is jarring.** After applying actions, prefer updating node objects in place over replacing the whole dataset, or the force simulation reshuffles the entire tree and the viewer loses their place.
+
+---
+
+## Scope boundary
+
+Explicitly out for v1, listed here so it stays out:
+
+- Auth, multi-user, persistence — the tree lives in memory and resets on reload
+- Importing real OKRs from anywhere
+- Streaming responses
+- Mobile layout
+- Tests</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-26-146Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-26-146Z" class="timestamp-link"><time datetime="2026-09-12T22:05:26.146Z" data-timestamp="2026-09-12T22:05:26.146Z">2026-09-12T22:05:26.146Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-26-869Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-26-869Z" class="timestamp-link"><time datetime="2026-09-12T22:05:26.869Z" data-timestamp="2026-09-12T22:05:26.869Z">2026-09-12T22:05:26.869Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_017jkFq3rnmxA2hv2mRHUP7K">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">wc -l Concepts/*.md &amp;&amp; echo &#34;=====VISION&#34; &amp;&amp; cat &#34;Concepts/OKR Viewer - Product Vision.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-05-26-918Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-05-26-918Z" class="timestamp-link"><time datetime="2026-09-12T22:05:26.918Z" data-timestamp="2026-09-12T22:05:26.918Z">2026-09-12T22:05:26.918Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     111 Concepts/Agents as Executors - Design.md
+      99 Concepts/Depth and Focus - Design.md
+     256 Concepts/Matrix Views - Design.md
+     171 Concepts/OKR Viewer - Product Vision.md
+      93 Concepts/Teams as Agents - Design.md
+     730 total
+=====VISION
+---
+tags:
+  - concept
+  - product
+  - web
+  - service
+created: 2026-09-11
+---
+# OKR Viewer - Product Vision
+
+The design rationale behind the September 2026 round of plans. The plans say *what* and *where*;
+this doc says *why* and how the pieces fit. Plans that cite this doc:
+[BUNDLED_DATASETS](../Plans/completed/BUNDLED_DATASETS.md),
+[CAMERA_LEVEL_AUTO_MOVES](../Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md),
+[CLEAR_HIGHLIGHT_ON_SELECT](../Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md),
+[OKR_NODE_EDITOR](../Plans/completed/OKR_NODE_EDITOR.md),
+[TEAM_MODEL_AND_EDITOR](../Plans/completed/TEAM_MODEL_AND_EDITOR.md),
+[CHAT_CONTEXT](../Plans/completed/CHAT_CONTEXT.md),
+[CHAT_TABS_AND_INTERVIEWS](../Plans/completed/CHAT_TABS_AND_INTERVIEWS.md).
+Companions: [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md), and
+[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md) (why the three-level ladder is a
+default, not a doctrine, and why focus is the constraint that replaces it).
+
+## The thesis, restated
+
+The README&#x27;s one-liner still holds: **the model&#x27;s output is the interface, not a chat log next to
+one.** The 3D tree is the shared workspace; the assistant acts on it by moving the camera,
+pulsing nodes, and rewriting them. Everything below extends that thesis in one direction: the
+user gets more ways to *point at* things (select, edit, open a team), and the assistant gets to
+*see* what is being pointed at. Pointing plus seeing is what makes &quot;make this measurable&quot; work
+without the user typing an id.
+
+## Three surfaces, one state
+
+| Surface | Owns | Talks to state via |
+|---|---|---|
+| **Scene** (`Graph.svelte`) | camera, pulse, selection gesture | `onSelect`, `highlight`, `tree` |
+| **Panels** (Detail / TeamEditor / TeamList) | one thing at a time, read or edit | `panel` state, `onEdit(action)` |
+| **Chat tabs** (`Chat.svelte`) | conversations, each with a mode and a subject | `send(chatId, message)`, `recall(ids)` |
+
+All three read and write the same document-shaped state in `App.svelte`: `{ tree, company,
+history }` plus UI state `{ selectedId, highlight, panel, chats }`. There is no second store.
+
+## Invariants (the load-bearing rules)
+
+1. **The service is stateless.** The browser sends the whole document every time. Teams,
+   history and view context all ride in the request; nothing is remembered server-side. This is
+   what keeps tabs, datasets and undo trivially correct: there is nothing to desync.
+2. **One endpoint, one shape, grown additively.** `POST /api/chat` gains optional fields
+   (`company`, `context`, `mode`, `subject`). It never gets a sibling endpoint and never bumps
+   `schemaVersion` for these additions. A client that sends none of the new fields still works.
+3. **Every mutation is an Action through one commit path.** The assistant, the node editor, the
+   team editor and interview outcomes all emit Actions from the same schema, and all go through
+   `commit(actions, { actor, reason })`, which snapshots for undo and appends to
+   `history.changes`. There is no &quot;direct edit&quot; path. Consequence: undo covers everything, history
+   is complete, and the model can do anything the UI can.
+4. **The document is the unit of truth.** Bundled datasets, exports and imports are all
+   `OkrDocument`s. A bundled dataset is just a file someone exported by hand.
+5. **The scene never disorients the user on its own.** Programmatic camera moves level to world
+   up; user gestures (tumble, click) take precedence over assistant pointers (highlights clear on
+   selection). The user always feels in control of the view.
+6. **Teams are data the model can be handed.** A team&#x27;s charter (mission, process, ownership
+   domain, dependencies) is written so it can be dropped into a system prompt verbatim. That is
+   the bridge to agents; see the companion doc.
+
+## Vocabulary
+
+- **Document**: `{ schemaVersion, meta, company?, tree, history? }`. What is exported, imported,
+  bundled.
+- **Tree / Node**: the OKR hierarchy. Flat nodes with `parent` pointers. Levels company →
+  objective → kr.
+- **Team** (schema name: `CompanyUnit`): an org unit with an optional **charter**. Nodes point at
+  a team by `unitId`; `owner` is the display string derived from it.
+- **Action**: one edit. Node ops `edit | relink | add | delete`; team ops
+  `editUnit | addUnit | deleteUnit`.
+- **Commit**: applying a batch of Actions with an actor and a reason. Produces one undo step and
+  one history change.
+- **Selection**: the node the user clicked. **Highlight**: the nodes the assistant pointed at.
+  Selection wins; highlight is transient.
+- **Panel**: the one thing open on the left of the scene: a node (read or edit), a team, or the
+  team list.
+- **Context**: what the user is looking at, sent with a message: selection, panel, focused field,
+  highlights, dataset.
+- **Tab**: one conversation with a **mode** (`free`, `interview-node`, `interview-team`,
+  `interview-new`) and a **subject** (a node, a team, or a parent for a new node).
+- **Interview**: a tab where the assistant asks, one question at a time, and ends by proposing
+  Actions.
+- **Persona** (future): a system prompt built from a team&#x27;s charter so an agent speaks as that
+  team.
+
+## Why these pieces, in this order
+
+```
+BUNDLED_DATASETS ─┐
+CAMERA_LEVEL ─────┼── independent, ship in any order
+CLEAR_HIGHLIGHT ──┘
+        │
+OKR_NODE_EDITOR ── introduces commit() + history
+        │
+TEAM_MODEL_AND_EDITOR ── company in state/request, team actions, team editor, team labels
+        │
+CHAT_CONTEXT ── panel/field/highlight context in the request
+        │
+CHAT_TABS_AND_INTERVIEWS ── modes, subjects, launch buttons
+        │
+(future) TEAM_AGENT_DISCUSSIONS ── personas, debates, reviews
+```
+
+- **Datasets first** because teams need somewhere to live in data, and because every later
+  verification step starts with &quot;load dataset X&quot;.
+- **Editor before teams** because the editor establishes `commit()` and history, which the team
+  editor reuses without inventing a second path.
+- **Teams before context** because &quot;the open team editor&quot; is one of the things context reports,
+  and the request must already carry `company` for the model to name teams.
+- **Context before tabs** because an interview about a team is a tab whose subject is that
+  team; the context machinery is what makes the subject resolvable.
+
+## Alternatives considered
+
+- **A `/api/interview` endpoint.** Rejected: interviews are the same tool call with a different
+  system prompt; a second endpoint would duplicate validation and drift.
+- **Team edits outside the Action system** (a `setCompany()` setter). Rejected: interviews about
+  a team must be able to propose team edits, and those must be undoable and recorded. One action
+  vocabulary or two of everything.
+- **Replacing `owner` with a required team reference** (breaking, `schemaVersion: 2`). Rejected
+  for now: additive `unitId` with `owner` as derived display text keeps every existing file and
+  prompt valid. Revisit when a migration is worth writing.
+- **OrbitControls for the camera.** Rejected: it never rolls, but it also forbids the user from
+  rolling. The ask was &quot;level on auto-moves, free on user moves&quot;.
+- **Persisting tabs or the chosen dataset.** Deferred: nothing persists yet; adding persistence
+  for one thing invites a half-built persistence layer.
+
+## Horizons
+
+Recorded 2026-09-11 so near-term decisions keep the doors open. Only Horizon 1 has plans.
+
+| Horizon | What | Why it waits |
+|---|---|---|
+| **1. Interaction model and value** (now) | The seven plans above: datasets, camera, editor, teams, context, tabs. | Everything later assumes the tree, teams and chat are worth using by one person. |
+| **2. Agents that work and measure** (mid) | An agent runs *as a team* to execute one of its OKRs through connected tools (e.g. triage 90% of incoming issues on a GitHub repo and rank them by priority). Agents and users both record progress. A progress dashboard reads it. Designed in [Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md). | Needs a team charter that is real (Horizon 1), a place to run long jobs, and tool connections with credentials. |
+| **3. Shared, live document** (distant) | The document lives in a realtime JSON-document database so several team members edit and chat against it at once. | Needs the interaction model settled first; a multi-user store hardens whatever shape it is given. |
+
+Seams to keep open now, because they are cheap today and expensive later:
+
+- **The document is the unit of truth** (invariant 4). A JSON-document realtime store
+  (Firestore, Yjs/Automerge, RxDB) can hold an `OkrDocument` as-is; nothing in the app addresses
+  state by anything other than the document and the ids inside it.
+- **Every mutation is an Action with an actor** (invariant 3). Horizon 2 adds `actor: &quot;agent&quot;`
+  and Horizon 3 adds a user identity; both are additive to `history.changes`. Never let a UI
+  path bypass `commit()`.
+- **`history.metricSamples` already exists** (`schema/src/history.schema.json`). Progress
+  tracking by users and agents writes there; the dashboard reads there. Do not invent a second
+  progress shape.
+- **Team charters are self-contained prose plus lists.** An executor agent&#x27;s system prompt is
+  the charter plus the OKR plus its tool descriptions. A future `connections` field on the unit
+  (which repos, which trackers) is additive.
+- **The level ladder is a warning in the schema, a rule only in the editor and prompt.** Keep it
+  that way so depth can be opened later without a migration; see
+  [Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).
+- **The service is stateless** (invariant 1) until Horizon 3 deliberately changes it. An agent
+  that runs for hours cannot live inside a request; that is a new process, not a change to
+  `/api/chat`.
+
+## What this round deliberately leaves out
+
+- Multi-agent discussions (designed in the companion doc, not planned).
+- Agents executing or measuring OKRs, and dashboards (Horizon 2).
+- Shared, persistent, multi-user documents (Horizon 3).
+- Teams as objects in the 3D scene beyond an optional label.
+- Auth, streaming, mobile (README scope boundary stands).</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-29-387Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-29-387Z" class="timestamp-link"><time datetime="2026-09-12T22:05:29.387Z" data-timestamp="2026-09-12T22:05:29.387Z">2026-09-12T22:05:29.387Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-29-916Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-29-916Z" class="timestamp-link"><time datetime="2026-09-12T22:05:29.916Z" data-timestamp="2026-09-12T22:05:29.916Z">2026-09-12T22:05:29.916Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01GS4T5msYMHmpNtYnxyZQRN">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat &#34;Concepts/Teams as Agents - Design.md&#34;; echo &#34;=====DEPTH&#34;; sed -n &#39;1,99p&#39; &#34;Concepts/Depth and Focus - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-05-29-961Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-05-29-961Z" class="timestamp-link"><time datetime="2026-09-12T22:05:29.961Z" data-timestamp="2026-09-12T22:05:29.961Z">2026-09-12T22:05:29.961Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---
+tags:
+  - concept
+  - teams
+  - agents
+created: 2026-09-11
+---
+# Teams as Agents - Design
+
+Why teams get a charter now, and what that charter is for later. The near-term plan is
+[TEAM_MODEL_AND_EDITOR](../Plans/completed/TEAM_MODEL_AND_EDITOR.md); the far-term plan does
+not exist yet and would be named `TEAM_AGENT_DISCUSSIONS.md`. Parent vision:
+[OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md).
+
+## The metaphor
+
+A team&#x27;s charter is a **job description for an agent**. If a human read only the charter, they
+should be able to sit in a meeting and argue that team&#x27;s corner: what it is for (mission), how
+it does its work (process), what it is the owner of (ownership domain), and who it needs
+(dependencies). Everything the OKR tree says about the team (its objectives, KRs, alignment
+scores) is the agenda for that meeting; the charter is the person attending.
+
+So the charter is written *for a prompt*, in the same way every schema description is written
+for the model (the schema plan&#x27;s rule). Field descriptions say &quot;in the team&#x27;s own words&quot;, and
+the editor shows placeholder text that reads like a persona, not like a form.
+
+## Charter shape
+
+```
+charter: {
+  mission:   &quot;why the team exists, one or two sentences&quot;,
+  process:   &quot;the business process it runs: inputs, steps, outputs, cadence&quot;,
+  owns:      [&quot;systems, metrics or decisions this team is the accountable owner of&quot;, ...],
+  dependsOn: [&quot;unit-id&quot;, ...]   // teams whose output this team needs
+}
+```
+
+- `mission` and `process` are prose because personas are prose.
+- `owns` is a list because ownership disputes (&quot;who owns activation rate?&quot;) are the most
+  interesting thing two team agents can argue about, and a list is diffable.
+- `dependsOn` is references because reviews (&quot;does Sales&#x27; KR depend on something Engineering has
+  not committed to?&quot;) need to walk a graph, not parse text.
+
+## The four discussion modes (interview answer, 2026-09-11)
+
+All four were chosen. In dependency order:
+
+1. **Chat with one team&#x27;s agent.** A tab with `mode: &#x27;persona&#x27;`, `subject: team`. The system
+   prompt is the coach prompt plus &quot;You are speaking as &lt;team&gt;. Here is your charter. Answer as
+   this team would, from its priorities and constraints.&quot; Cheapest; a direct extension of
+   interview tabs.
+2. **Agents review each other&#x27;s OKRs.** Team A&#x27;s persona is asked to critique Team B&#x27;s subtree
+   for alignment, measurability and unstated dependencies on A. Output is a normal reply +
+   highlight, optionally actions. One call per review.
+3. **Team-vs-team debate the user moderates.** N personas, one shared transcript, the user picks
+   the topic and can interject. Because the service is stateless, the *browser* orchestrates:
+   each turn is one `/api/chat` call with `mode: &#x27;persona&#x27;`, the speaking team as subject, and
+   the shared transcript as history (turns attributed by name in the content). A tab shows the
+   transcript with speaker labels.
+4. **Agents negotiate and propose tree edits.** Mode 3 with a closing turn: a neutral &quot;coach&quot;
+   call that reads the transcript and returns `actions`. Actions go through `commit()` like
+   everything else, so the user can undo the whole negotiation in one step.
+
+## Invariants the near-term plan must not break
+
+- **The charter is self-contained.** No field may depend on UI state or on another document.
+  A charter pasted into a prompt with the team&#x27;s subtree must be enough.
+- **Team edits are Actions.** Modes 1 to 4 will propose charter changes; they must be undoable
+  and land in history like node edits.
+- **A team can be handed to the model without its people.** `people` stays optional and out of
+  the persona; personas represent teams, not individuals.
+- **`owner` never disagrees with `unitId`.** The apply layer derives `owner` from the unit name
+  whenever `unitId` changes, so prompts that read `owner` and prompts that read `unitId` agree.
+
+## Alternatives considered
+
+- **Personas as a separate `agents` section in the document.** Rejected: it would drift from the
+  team it describes. The charter *is* the persona source; a future `persona` field on the unit
+  (tone, red lines) can be added additively if needed.
+- **Server-side orchestration of debates** (a `/api/discuss` endpoint that loops). Rejected for
+  now: it breaks the stateless invariant and hides turns from the user. Browser-driven turns
+  keep each call inspectable and interruptible. Revisit if latency of N sequential calls is
+  unacceptable.
+- **Free-text `domain` instead of `owns[]`.** Rejected: ownership overlap detection between two
+  teams is the first useful agent argument, and it needs discrete items.
+
+## Open questions for the future plan
+
+- Should a debate transcript be exportable into `history`? Probably as a `change` with empty
+  actions and the transcript as `reason`, but the 4000-char `reason` cap may be too small.
+- Does mode 3 need a &quot;moderator&quot; persona, or is the user enough?
+- Rate limits: N personas × M turns per debate; a debate of four teams and six rounds is 24
+  calls at ~3 s each.
+=====DEPTH
+---
+tags:
+  - concept
+  - product
+  - okr
+  - agents
+created: 2026-09-11
+---
+# Depth and Focus - Design
+
+A point of view on why multi-level OKR hierarchies, long considered an anti-pattern, become
+viable when an AI carries the alignment work, and what that does to this product&#x27;s job.
+Parent: [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md).
+
+## The received wisdom, and what it was protecting
+
+Google and the early OKR practitioners warned against individual OKRs and deep cascades. The
+warning was about **alignment fatigue** in a manual system: pushing goals down four or five
+levels meant endless meetings, spreadsheet formatting, and hand audits to find the links that
+had quietly broken. Three levels was not a law of strategy; it was the most a human
+organisation could keep honest.
+
+## What changes with AI in the loop
+
+The bottleneck moves from **administrative capacity** to **strategic clarity**. Three things
+that used to cost people-hours become cheap:
+
+- **Vertical alignment on demand.** Given the top-level objectives, a model can draft
+  context-aware sub-objectives and key results for a squad, a pod, or a person, and keep each
+  one semantically and numerically tied to the rung above it.
+- **Continuous dependency auditing.** Instead of the end-of-quarter review, the link check runs
+  on every change: &quot;Team B rewrote their key result, and Company Objective 2 is now unvouched
+  for.&quot; In this product that is already the shape of things: `contributes` is the link
+  strength, weak links are surfaced live, and every edit is an Action the assistant can react
+  to.
+- **Context preservation at scale.** A micro-metric owned by one engineer stays anchored to the
+  five-year vision because the model can always re-derive the chain, not because someone
+  remembers it.
+
+## The new bottleneck: human focus
+
+Removing the administrative ceiling exposes a psychological one. A model can draft and track
+thousands of perfectly aligned OKRs; a person can still hold three to five priorities.
+
+| Manual-era constraint | AI-era constraint |
+|---|---|
+| Administrative burden: spreadsheet cells and broken links. | Over-optimisation: too many perfect metrics that dilute focus. |
+| Rigid hierarchy: three levels because humans cannot track more. | Analysis paralysis: an endless stream of automated signals. |
+| Infrequent updates: quarterly, because that is all there was time for. | Noise versus signal: real progress versus AI-generated busywork. |
+
+## What this means for the product
+
+1. **Depth is a data-model decision, not a strategy decision.** The current ladder (company →
+   objective → key result) is enforced in the editor and the prompt and only *warned about* by
+   the schema (`schema/index.js:205`). That is the right posture: the format should tolerate
+   depth today, and a future plan can open the editor and the prompt to sub-objectives, team
+   trees that mirror the org chart, and individual key results, without a migration.
+2. **The product&#x27;s job shifts from *drawing* the tree to *keeping it honest and small*.** Two
+   capabilities matter more than nesting:
+   - **Live alignment audit.** Every Action should be able to trigger &quot;what did this break?&quot;
+     The weak-link count in the topbar is the seed; the mature form is an assistant that
+     highlights the newly orphaned or diluted chain the moment a node changes.
+   - **A focus budget.** Per team (and later per person), the number of active key results is
+     something the UI shows and the assistant pushes back on. &quot;You now have nine KRs; which
+     three matter this quarter?&quot; is a better coaching move than generating a tenth.
+3. **Generation is cheap, so the interface must make *choosing* cheap.** Interview tabs and
+   &quot;interview me about a new OKR&quot; should produce candidates the user picks from, not a finished
+   subtree they must prune. Drafts are proposals; commits are decisions.
+4. **Signal over noise is a first-class concern for executors** (Horizon 2). An agent that can
+   report progress hourly must not; sampling cadence and &quot;what changed that matters&quot; summaries
+   are part of the executor design, not an afterthought.
+5. **Depth in the 3D scene is free.** The DAG layout is level-agnostic. A five-level tree renders
+   today; the scene&#x27;s role becomes showing where focus is concentrated and where links are
+   thin, which is exactly what edge weight and colour already encode.
+
+## Principles to carry into plans
+
+- **AI drafts, humans decide.** No plan may auto-apply generated OKRs. Everything goes through
+  a visible commit the user can undo.
+- **Every rung must vouch for the one above it.** `contributes` stays required in spirit for
+  any node with a parent, at any depth.
+- **Few active priorities per owner.** When counting features, prefer ones that reduce what a
+  person must look at over ones that add what the system can produce.
+- **Audit on change, not on schedule.** Broken links are found at the edit, not at the review.
+
+## Alternatives considered
+
+- **Keep three levels as a hard rule.** Rejected as a principle, kept as today&#x27;s default. The
+  rule protected against a cost the assistant now absorbs; enforcing it forever would encode a
+  workaround as doctrine.
+- **Open depth immediately.** Deferred. Without the focus budget and live audit, deeper trees
+  reintroduce the very fatigue the rule prevented, just with the model doing the typing.
+
+## When a plan should cite this doc
+
+- Any plan that relaxes the level ladder (sub-objectives, individual KRs, org-shaped trees).
+- Any plan that adds generation (bulk OKR drafting, cascade from a company objective).
+- The executor and dashboard plans, for cadence and signal-versus-noise decisions.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-32-324Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-32-324Z" class="timestamp-link"><time datetime="2026-09-12T22:05:32.324Z" data-timestamp="2026-09-12T22:05:32.324Z">2026-09-12T22:05:32.324Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-32-825Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-32-825Z" class="timestamp-link"><time datetime="2026-09-12T22:05:32.825Z" data-timestamp="2026-09-12T22:05:32.825Z">2026-09-12T22:05:32.825Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01HiNiKRr1e4Gvy5uQfyPMwi">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,60p&#39; &#34;Concepts/Agents as Executors - Design.md&#34;; echo &#34;=====MATRIX head&#34;; sed -n &#39;1,70p&#39; &#34;Concepts/Matrix Views - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-05-32-867Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-05-32-867Z" class="timestamp-link"><time datetime="2026-09-12T22:05:32.867Z" data-timestamp="2026-09-12T22:05:32.867Z">2026-09-12T22:05:32.867Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---
+tags:
+  - concept
+  - teams
+  - agents
+  - progress
+created: 2026-09-11
+---
+# Agents as Executors - Design
+
+Horizon 2 of [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md): a team&#x27;s
+agent does not only *talk* about the team&#x27;s OKRs (see
+[Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md)), it *works* on them through
+connected tools and *measures* them, and a dashboard shows progress. No plan exists yet; this
+doc fixes the vocabulary and the seams so Horizon 1 does not close them.
+
+## The example that defines the feature
+
+A team &quot;Widget library maintenance&quot; has the KR &quot;Address 90% of incoming issues on the widget
+GitHub repo, each ranked by priority.&quot; Its agent, running as that team with the team&#x27;s charter,
+should be able to:
+
+1. connect to the repo through a tool connection the user has authorised;
+2. read incoming issues, triage and rank them, reply or label them, on a schedule or on demand;
+3. record how it is doing against the KR (issues addressed / issues received) as metric samples;
+4. leave a trail the user can inspect, undo where the tool allows, and turn off.
+
+The user should be able to do 3 by hand for any KR, agent or not, and a dashboard should read
+the same samples.
+
+## Vocabulary
+
+- **Executor**: a long-running agent process bound to one team and one or more of its nodes,
+  built from the team&#x27;s charter, the node&#x27;s label/metric/target, and a set of **connections**.
+- **Connection**: a named, authorised handle to an external system (a GitHub repo, a tracker,
+  an analytics source), owned by a team. Credentials never enter the document; the document
+  holds a reference.
+- **Run**: one execution of an executor: when, what it read, what it did, what it measured.
+- **Metric sample**: `history.metricSamples[]` `{ nodeId, at, value, note }`, already in the
+  schema. The one shape for progress, whether a person types it or an executor computes it.
+- **Progress**: a derived view over samples against a node&#x27;s `target` (baseline → goal by date).
+- **Dashboard**: a surface that reads progress across the tree; not the 3D scene.
+
+## Shape sketches (all additive to the v1 document)
+
+```
+unit.connections: [{ id, kind: &#x27;github&#x27; | &#x27;jira&#x27; | &#x27;http&#x27; | ..., label, ref: { owner, repo } }]
+unit.executors:   [{ id, nodeIds: [...], connectionIds: [...], cadence: &#x27;manual&#x27; | &#x27;hourly&#x27; | &#x27;daily&#x27;,
+                     enabled: boolean, instructions: &quot;free text the user adds to the charter&quot; }]
+history.runs:     [{ executorId, startedAt, endedAt, status, summary, actions: Action[],
+                     samples: MetricSample[] }]
+history.changes[].actor: &#x27;user&#x27; | &#x27;assistant&#x27; | &#x27;import&#x27; | &#x27;agent&#x27;
+node.target:      stays free text; a parsed { baseline, goal, by } view is derived, not stored,
+                  until a real need forces structure.
+```
+
+## Invariants
+
+- **Everything an executor changes in the document is an Action with `actor: &quot;agent&quot;`**, through
+  the same commit path. The user can undo it in the app exactly like an assistant edit.
+=====MATRIX head
+---
+tags:
+  - concept
+  - product
+  - okr
+  - teams
+created: 2026-09-12
+---
+# Matrix Views - Design
+
+Three tables that show what the tree cannot: OKR-against-OKR fitness, team-against-team
+reliance, and team-against-team communication. No plan exists yet; the plans this would spawn
+are named at the bottom. Parent:
+[OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md) and
+[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).
+
+## The idea, as stated
+
+A table whose rows and columns are both the OKRs; each cell scores how well the row OKR fits the
+column OKR. A second table of the same shape whose rows and columns are both teams; each cell
+scores how much one team relies on the other. A third of the same shape again, counting how
+often those two teams actually talk.
+
+The third one is not a third feature. Reliance is what teams *say*; communication is what teams
+*do*. Laid over each other on identical axes, the gap between them is the product.
+
+## Why a matrix, when there is already a 3D tree
+
+The scene draws exactly one edge per node: the parent link. That is deliberate — the tree is
+legible in 3D *because* it is a tree. Every real relation that is not a parent edge has nowhere
+to live today: a KR that also serves a second objective, two teams both claiming &quot;activation
+rate&quot;, two objectives that pull the same team in opposite directions, an objective that quietly
+waits on another team&#x27;s delivery. Drawing those in the scene produces the hairball the 3D view
+exists to avoid.
+
+A matrix is the dense representation of precisely those off-tree edges. Two properties earn it:
+
+- **Every pair gets a slot**, whether or not anything is in it. The tree can only show relations
+  someone already recorded; the matrix shows the ones nobody has considered.
+- **Emptiness is readable.** An empty row is an OKR nothing supports. A hot column is a team
+  everyone is waiting on. Neither is visible in a tree at any zoom level.
+
+The scene answers *where does this sit?* The matrix answers *what does this touch?*
+
+## Matrix 1 — OKR fitness
+
+`contributes` (`schema/src/okr-node.schema.json:51`) is already a fitness score: 0-1, hand
+assessed, &quot;how well this node supports its parent&quot;. One number per node, because there is one
+parent. The matrix is that same idea generalised from *node → its parent* to *row → any column*.
+The tree&#x27;s own edges are then a thin diagonal band inside the matrix; the interesting cells are
+all the others.
+
+**The scale must be signed.** `contributes` runs 0-1 because a node cannot support its parent
+negatively. Between arbitrary pairs it can: two objectives can compete for the same team, or one
+can be achievable only by hurting the other. A -1..1 cell says &quot;these two are in tension&quot;, and
+that is the single most valuable cell in the table. A 0-1 scale cannot express it, so the matrix
+does not reuse `contributes`&#x27; range even though it descends from it.
+
+Cell vocabulary, then, is roughly: *supports* (positive), *unrelated* (zero, and the common
+case), *redundant with* (positive but flagged — two nodes doing the same work), *in tension with*
+(negative).
+
+## Matrix 2 — Team reliance
+
+`charter.dependsOn` (`schema/src/company.schema.json:96`, with `owns` at `:85`) is today a list
+of unit ids: directed, unweighted, boolean, and hand-written. On the largest bundled dataset that
+is 63 edges over 61 units, only 23 of which have a charter at all. The matrix keeps the
+direction and adds two things: a weight, and a *derivation*.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-35-669Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-35-669Z" class="timestamp-link"><time datetime="2026-09-12T22:05:35.669Z" data-timestamp="2026-09-12T22:05:35.669Z">2026-09-12T22:05:35.669Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01CHN4NstWFdeHakkB3Zog23">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,40p&#39; Plans/completed/TREE_BRIEFING.md; echo &#34;=====COMPLETION&#34;; awk &#39;/## Completion notes/,0&#39; Plans/completed/TREE_BRIEFING.md | head -40; echo &#34;=====DATASETS&#34;; ls web/src/assets/datasets/ &amp;&amp; cat web/src/assets/datasets/manifest.json</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-05-38-680Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-05-38-680Z" class="timestamp-link"><time datetime="2026-09-12T22:05:38.680Z" data-timestamp="2026-09-12T22:05:38.680Z">2026-09-12T22:05:38.680Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---
+tags:
+  - plan
+  - web
+  - service
+  - schema
+  - chat
+  - agents
+status: completed
+created: 2026-09-12
+completed_on: 2026-09-12
+predecessors:
+  - completed/CHAT_TABS_AND_INTERVIEWS.md
+  - completed/CHAT_CONTEXT.md
+  - completed/FRAME_NODE_NEIGHBORHOOD.md
+---
+# Plan: Audit the tree unprompted and show the findings as a Briefing panel the user acts on
+
+## TL;DR
+The assistant reads the whole tree without being asked, on load and after every change, and
+returns 3–6 ranked findings; a Briefing panel shows them as cards the user can preview on hover,
+fly to, fix in one click through `commit()`, or dismiss. One new request mode (`audit`), one
+optional response field (`findings[]`), one prompt block, one panel component, one `$effect`
+trigger. Single repo, three packages (`schema/`, `service/`, `web/`). Out: rule-based findings,
+persistence, discussion modes 2–4, progress. Stretch: an &quot;Ask &lt;team&gt;&quot; button on a card that opens
+a persona chat with the owning team.
+
+Concept: [Depth and Focus - Design](../../Concepts/Depth%20and%20Focus%20-%20Design.md) (the
+product&#x27;s job is keeping the tree honest and small; audit on change, not on schedule; AI drafts,
+humans decide) and [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(the model&#x27;s output is the interface). The stretch phase is mode 1 of
+[Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md).
+
+## Context
+
+The assistant only ever answers. Every call to `/api/chat` starts with a user typing, and the
+three chat chips (`web/src/Chat.svelte:34-38`) are the only hint that the tree might have
+something wrong with it. The topbar counts weak links by a rule (`web/src/App.svelte:155`), which
+catches low `contributes` and nothing else: not an activity dressed as a KR, not a target with no
+baseline, not a team carrying nine KRs, not an objective with no KRs under it.
+=====COMPLETION
+## Completion notes
+
+**Planned vs. actual.** All four phases landed, stretch included, essentially as written. The
+three load-bearing bets held: `mode: &#x27;audit&#x27;` needed no new endpoint and no new tab; `findings[]`
+was additive enough that `required` never changed and every existing fixture stayed green; and
+the one `$effect` on `tree` / `company` really is the only trigger — undo, reset, dataset switch,
+import, a Fix click and an edit from a chat tab all re-audit without any call site knowing about
+the briefing. Lifting the action loop into `validateActions(tree, company, actions)` (Decision 3)
+was the cheapest part of the whole plan and bought per-finding isolation exactly as predicted; it
+returns `known` alongside `actions`/`dropped` so `validateResponse` can still filter `highlight`
+against the tree the actions leave behind.
+
+**Mid-flight adjustments.**
+- **`findings` is in the tool schema only for an audit.** This is the one change that matters.
+  With `findings` present in every mode&#x27;s `input_schema`, ordinary conversational messages came
+  back as a `respond` call carrying `{&quot;fields&quot;: {}}` and no `reply` — reproducibly, three times
+  in three on the same input that answered fine at HEAD. Bisecting the schema showed the trigger
+  was the presence of `findings` itself, not its `fix` (the duplicated Action union), and not any
+  one of its properties. `RESPOND_TOOL` became `respondTool(mode)` in `service/prompt.js:29`, and
+  the general &quot;How to respond&quot; bullet about `findings` went away with it: a mode whose schema
+  cannot express findings should not be told about them. Same lesson caught the persona block a
+  second time — a line reading &quot;No `findings`. Nobody asked us to audit anything.&quot; made *that*
+  mode emit `{&quot;fields&quot;: {}}` about one call in three, and deleting it took persona to 5/5. Naming
+  a field the tool schema does not have is what breaks these calls.
+- **The audit prompt had to be told that a missing baseline still gets a fix.** The first draft
+  followed Decision 8 but paired it with &quot;never invent a number&quot;, and the model read the two
+  together as &quot;no baseline, no fix&quot;: six good findings, zero Fix buttons. Rewriting it so
+  measurability *always* carries a fix — rewrite the label, set the `metric`, and write the
+  `target` as the measurement that has to be taken — got fixes on the mechanical findings without
+  a single invented number.
+- **Titles and `why` clamp on a word boundary.** The model overruns 80 characters often enough
+  that a hard `slice()` produced cards ending &quot;…yet it&#x27;s the w&quot;. `clamp()` in
+  `service/validate.js` cuts back to the last space and adds an ellipsis.
+- **Severity colours are `--bad` / `--meh` / `--muted`**, not `--bad` / `--objective` / `--muted`
+  as Phase 3.8 had it. Amber for medium is the app&#x27;s existing severity vocabulary (`tone()` in
+  `Detail.svelte`); blue next to red reads as a category, not a rank.
+- **`keyOf` lives in `web/src/lib/briefing.js`** rather than inline in `App.svelte`, because
+  `Briefing.svelte` needs the same identity for its `{#each}` key and its dismissal filter.
+- The trigger effect wraps `scheduleAudit()` in `untrack()`. It writes `briefing`, which it must
+  not then depend on.
+=====DATASETS
+manifest.json
+polaris-group-fy26.json
+regional-clinic-network.json
+starter.json
+workflow-platform-fy26.json
+{
+  &quot;default&quot;: &quot;workflow-platform-fy26&quot;,
+  &quot;order&quot;: [&quot;workflow-platform-fy26&quot;, &quot;polaris-group-fy26&quot;, &quot;starter&quot;, &quot;regional-clinic-network&quot;]
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-40-978Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-40-978Z" class="timestamp-link"><time datetime="2026-09-12T22:05:40.978Z" data-timestamp="2026-09-12T22:05:40.978Z">2026-09-12T22:05:40.978Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-42-876Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-42-876Z" class="timestamp-link"><time datetime="2026-09-12T22:05:42.876Z" data-timestamp="2026-09-12T22:05:42.876Z">2026-09-12T22:05:42.876Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01UR43KpwmMsJ7LZTqYGmc8D">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd web/src/assets/datasets &amp;&amp; for f in *.json; do [ &#34;$f&#34; = manifest.json ] &amp;&amp; continue; python3 - &#34;$f&#34; &lt;&lt;&#39;EOF&#39;
+import json,sys
+d=json.load(open(sys.argv[1]))
+n=d.get(&#39;tree&#39;,{}).get(&#39;nodes&#39;,[])
+u=d.get(&#39;company&#39;,{}).get(&#39;units&#39;,[])
+lv={}
+for x in n: lv[x.get(&#39;level&#39;)]=lv.get(x.get(&#39;level&#39;),0)+1
+print(sys.argv[1], d.get(&#39;meta&#39;,{}).get(&#39;title&#39;), &#39;| nodes&#39;,len(n), lv, &#39;| units&#39;,len(u))
+EOF
+done</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-05-44-904Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-05-44-904Z" class="timestamp-link"><time datetime="2026-09-12T22:05:44.904Z" data-timestamp="2026-09-12T22:05:44.904Z">2026-09-12T22:05:44.904Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>polaris-group-fy26.json Polaris Group, FY26 | nodes 135 {&#x27;company&#x27;: 1, &#x27;objective&#x27;: 21, &#x27;kr&#x27;: 113} | units 61
+regional-clinic-network.json Regional clinic network, FY26 | nodes 30 {&#x27;company&#x27;: 1, &#x27;objective&#x27;: 5, &#x27;kr&#x27;: 24} | units 23
+starter.json Starter tree | nodes 9 {&#x27;company&#x27;: 1, &#x27;objective&#x27;: 2, &#x27;kr&#x27;: 6} | units 6
+workflow-platform-fy26.json Workflow platform, FY26 | nodes 27 {&#x27;company&#x27;: 1, &#x27;objective&#x27;: 5, &#x27;kr&#x27;: 21} | units 17</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-05-58-631Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-05-58-631Z" class="timestamp-link"><time datetime="2026-09-12T22:05:58.631Z" data-timestamp="2026-09-12T22:05:58.631Z">2026-09-12T22:05:58.631Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-06-43-103Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-06-43-103Z" class="timestamp-link"><time datetime="2026-09-12T22:06:43.103Z" data-timestamp="2026-09-12T22:06:43.103Z">2026-09-12T22:06:43.103Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_011794k1sAAr5pWzyNRs5FAi">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">mkdir -p /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad &amp;&amp; cat &gt; /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md &lt;&lt;&#39;MD&#39;
+# OKR Viewer — 5-minute video script
+
+**Runtime target:** 5:00. Narration is ~700 words at ~140 wpm, leaving ~25 s of breathing room
+for demo beats where the app does the talking.
+**Format:** screen recording of the app, voice-over. Timecodes are cumulative.
+**Tone:** a builder showing a working thing and one honest, half-formed idea underneath it.
+
+---
+
+## 0:00 — 0:35 · Cold open: the bonsai
+
+**On screen:** the Polaris Group tree (135 nodes, 61 teams), slowly rotating. No UI chrome yet —
+just the shape. Cut to a two-second still of a real bonsai, then back.
+
+&gt; I want to start with the part of this I can&#39;t fully defend yet.
+&gt;
+&gt; Every OKR tree I&#39;ve ever worked on, I&#39;ve ended up looking at like this — from the outside,
+&gt; turning it, trying to see its shape. And when you do that, it stops feeling like a spreadsheet
+&gt; and starts feeling like a bonsai.
+&gt;
+&gt; A tree grows itself. The gardener only shapes. Direction comes from above — light — and the
+&gt; actual growth comes from the parts closest to the work. Good management systems fail the way
+&gt; bonsai fails: somebody skips the growing and goes straight to carving.
+&gt;
+&gt; That&#39;s the intuition. The thing I&#39;ve actually built is narrower, and it&#39;s what the rest of this
+&gt; video is about.
+
+---
+
+## 0:35 — 1:05 · The problem
+
+**On screen:** scroll a flat spreadsheet of OKRs for three seconds. Cut back to the 3D tree,
+hovering a thin, dull edge between a KR and its objective.
+
+&gt; Here&#39;s the practical problem. OKRs are a tree, and we keep storing them in lists. So the
+&gt; question that actually matters — *does this key result still support anything?* — is invisible
+&gt; until someone spends a quarter-end afternoon auditing it by hand.
+&gt;
+&gt; Every link in this tree carries a score: how well the child supports the parent. Thin, dim
+&gt; edges are the ones nobody can vouch for. You can see them from here. That&#39;s the whole reason
+&gt; the visualization earns its place.
+
+---
+
+## 1:05 — 2:00 · The thesis: the model&#39;s output is the interface
+
+**On screen:** type into the chat panel — &#34;Which key results don&#39;t clearly support a company
+objective?&#34; Let the camera fly and the nodes pulse. Then: &#34;Rewrite those so they&#39;re measurable.&#34;
+Show the node text change in place. Then click Undo and let the tree snap back.
+
+&gt; So: it&#39;s a 3D OKR tree you interrogate and edit by talking to it.
+&gt;
+&gt; Watch what happens when I ask a question. The answer comes back in the panel — but it also
+&gt; comes back *as movement*. The camera flies to the nodes it&#39;s talking about and they pulse.
+&gt;
+&gt; That&#39;s the one design rule everything else follows from: **the model&#39;s output is the interface,
+&gt; not a chat log sitting next to one.**
+&gt;
+&gt; Now I&#39;ll ask for a fix. It rewrites those key results in place, the edges re-link, the tree
+&gt; settles into a new shape. And — this is the part that makes it usable rather than a party trick
+&gt; — one click and it&#39;s back. Every change, whether it came from me, from a form, or from the
+&gt; model, goes through a single commit path. So undo covers all of it, and the history is complete.
+
+---
+
+## 2:00 — 2:50 · Teams as agents
+
+**On screen:** open the team list, then a single team&#39;s charter — mission, process, owns,
+dependsOn. Then open a persona chat tab and ask that team something pointed.
+
+&gt; The second idea is about teams. A team in here isn&#39;t just a label on a node; it has a charter:
+&gt; what it&#39;s for, how it works, what it owns, who it depends on.
+&gt;
+&gt; And that charter is written deliberately as a **job description for an agent**. If a person read
+&gt; only this, they could sit in a meeting and argue that team&#39;s corner.
+&gt;
+&gt; Which means I can talk to the team.
+&gt;
+&gt; This is a conversation with Marketing — the model is speaking from Marketing&#39;s charter, its
+&gt; priorities, its constraints. The OKR tree is the agenda for the meeting; the charter is the
+&gt; person attending it.
+
+---
+
+## 2:50 — 3:30 · The briefing
+
+**On screen:** reload, let the briefing panel populate on its own. Hover a card to preview the
+node, click one to fly to it, click Fix on another and watch the commit land.
+
+&gt; The third piece is the one I use most. Nobody asked for this.
+&gt;
+&gt; On load, and after every single change, the model reads the whole tree and comes back with a
+&gt; handful of ranked findings — an activity dressed up as a key result, a target with no baseline,
+&gt; a team quietly carrying nine priorities, an objective with nothing underneath it.
+&gt;
+&gt; Hover to see where it lives. Click to fly there. Or click Fix, and the proposed edit lands as a
+&gt; normal, undoable commit.
+&gt;
+&gt; The interesting shift is that generation is cheap now. A model will happily draft you a
+&gt; thousand perfectly aligned OKRs, and a person can still hold about three. So the product&#39;s job
+&gt; isn&#39;t drawing the tree — it&#39;s keeping the tree **honest and small**.
+
+---
+
+## 3:30 — 4:15 · Where it goes
+
+**On screen:** a simple four-card slate or hand-drawn sketch — Discussions · Executors ·
+Matrices · Shared document. Keep it deliberately rough.
+
+&gt; Four things are designed and not built.
+&gt;
+&gt; **Discussions.** One team&#39;s agent reviewing another&#39;s OKRs. A team-versus-team debate I
+&gt; moderate. And a closing turn where the agents propose the actual edits — which arrive as one
+&gt; commit I can undo in a single step.
+&gt;
+&gt; **Executors.** An agent that doesn&#39;t just talk about its team&#39;s key result but works on it
+&gt; through connected tools, and records progress as it goes — the same progress a human would type
+&gt; by hand, in the same place.
+&gt;
+&gt; **Matrices.** Tables of OKR against OKR, and team against team. One says how much teams claim
+&gt; to rely on each other; another counts how often they actually talk. Overlay them, and the gap
+&gt; between what teams say and what teams do is the product.
+&gt;
+&gt; **And a shared document,** so a team edits and argues against one tree at once instead of my
+&gt; browser tab.
+
+---
+
+## 4:15 — 5:00 · Back to the bonsai
+
+**On screen:** back to the rotating tree. Let it breathe. Land on a still frame.
+
+&gt; Which brings me back to the part I can&#39;t defend yet.
+&gt;
+&gt; If this really is bonsai, then a few things follow, and I don&#39;t know yet which of them are
+&gt; true.
+&gt;
+&gt; That you shape, you don&#39;t carve — small moves, then wait a season and look again.
+&gt;
+&gt; That pruning should cut the *number* of things, never the ambition.
+&gt;
+&gt; That a branch only moves so much sap — so attention is a hard limit the system enforces, not a
+&gt; virtue we ask people to have.
+&gt;
+&gt; And that dead wood stays in the picture. The shape of a tree is explained as much by what was
+&gt; removed as by what grew.
+&gt;
+&gt; Right now this is a viewer, an assistant that audits, and teams that can speak for themselves.
+&gt; The bonsai part is one metaphor I keep not being able to drop. I&#39;m chasing it to find out
+&gt; whether it&#39;s a real operating model, or just a nice way to look at a tree.
+&gt;
+&gt; Either way — here&#39;s the tree.
+
+---
+
+## Trim list (if you run long)
+
+Cut in this order; each is self-contained.
+
+1. **0:35–1:05, the spreadsheet beat** (~20 s) — the thin edge on screen makes the point alone.
+2. **The matrices paragraph** (~20 s) — the least built of the four, and the hardest to say fast.
+3. **The &#34;sap&#34; line in the close** (~12 s) — the shape/carve and deadwood lines carry the ending.
+
+## Production notes
+
+- **Record the demo beats before the voice-over.** Narration times to the footage, not the
+  reverse; the fly-to and the pulse need room to land.
+- **Use the 135-node Polaris tree for the opening and closing shots** and the 27-node workflow
+  platform tree for anything where text has to be readable.
+- **Don&#39;t cut away during the Undo.** The snap-back is the most reassuring two seconds in the
+  video.
+- **Say &#34;the model&#34; or &#34;the assistant&#34;, never &#34;the AI&#34;.** Consistency reads as confidence.
+- **One take on the last four lines.** If the bonsai close sounds written, it stops working.
+MD
+echo written; wc -w /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-06-44-919Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-06-44-919Z" class="timestamp-link"><time datetime="2026-09-12T22:06:44.919Z" data-timestamp="2026-09-12T22:06:44.919Z">2026-09-12T22:06:44.919Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>written
+    1486 /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-06-46-880Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-06-46-880Z" class="timestamp-link"><time datetime="2026-09-12T22:06:46.880Z" data-timestamp="2026-09-12T22:06:46.880Z">2026-09-12T22:06:46.880Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-06-47-528Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-06-47-528Z" class="timestamp-link"><time datetime="2026-09-12T22:06:47.528Z" data-timestamp="2026-09-12T22:06:47.528Z">2026-09-12T22:06:47.528Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_013pR5W1vKP6QQpXJUcefHn7">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep &#39;^&gt;&#39; /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md | wc -w</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-06-47-569Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-06-47-569Z" class="timestamp-link"><time datetime="2026-09-12T22:06:47.569Z" data-timestamp="2026-09-12T22:06:47.569Z">2026-09-12T22:06:47.569Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     986</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-06-53-438Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-06-53-438Z" class="timestamp-link"><time datetime="2026-09-12T22:06:53.438Z" data-timestamp="2026-09-12T22:06:53.438Z">2026-09-12T22:06:53.438Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-06-53-892Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-06-53-892Z" class="timestamp-link"><time datetime="2026-09-12T22:06:53.892Z" data-timestamp="2026-09-12T22:06:53.892Z">2026-09-12T22:06:53.892Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>986 spoken words is ~7 minutes. Tightening to fit 5:00 with demo pauses.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-07-25-376Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-07-25-376Z" class="timestamp-link"><time datetime="2026-09-12T22:07:25.376Z" data-timestamp="2026-09-12T22:07:25.376Z">2026-09-12T22:07:25.376Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01HqbuiPWCPiC39Q5HdQrbvi">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat &gt; /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md &lt;&lt;&#39;MD&#39;
+# OKR Viewer — 5-minute video script
+
+**Runtime:** 5:00. Narration is 700 words — ~4:20 of speech at a measured 160 wpm, leaving ~40 s
+of silence for the demo beats where the app does the talking. Don&#39;t rush to fill those.
+**Format:** screen recording, voice-over. Timecodes cumulative. Word counts per block so you can
+re-trim by ear without blowing the budget.
+
+---
+
+## 0:00 — 0:35 · Cold open: the bonsai  *(80 words)*
+
+**On screen:** the Polaris tree — 135 nodes, 61 teams — turning slowly. No UI, just the shape.
+Two-second still of a real bonsai, then back.
+
+&gt; I want to start with the part of this I can&#39;t defend yet.
+&gt;
+&gt; Every OKR tree I&#39;ve worked on, I end up looking at like this. From outside, turning it, trying
+&gt; to see its shape. And when you do that it stops feeling like a spreadsheet and starts feeling
+&gt; like a bonsai.
+&gt;
+&gt; The tree grows itself. The gardener only shapes. Direction comes from above, growth comes from
+&gt; the parts closest to the work — and these systems fail the way bonsai fails, when somebody
+&gt; skips the growing and goes straight to carving.
+&gt;
+&gt; That&#39;s the intuition. What I&#39;ve built is narrower.
+
+---
+
+## 0:35 — 1:00 · The problem  *(65 words)*
+
+**On screen:** three seconds of a flat OKR spreadsheet. Cut to the tree, hovering a thin, dull
+edge between a key result and its objective.
+
+&gt; The practical problem is that OKRs are a tree and we keep storing them in lists. So the
+&gt; question that actually matters — does this key result still support anything? — stays invisible
+&gt; until someone audits it by hand at quarter end.
+&gt;
+&gt; Every link here carries a score: how well the child supports the parent. Thin, dim edges are
+&gt; the ones nobody can vouch for. You can see them from across the room.
+
+---
+
+## 1:00 — 2:00 · The thesis: the model&#39;s output is the interface  *(125 words, plus ~15 s of demo)*
+
+**On screen:** type &#34;Which key results don&#39;t clearly support a company objective?&#34; — let the
+camera fly and the nodes pulse, and *hold*. Then &#34;Rewrite those so they&#39;re measurable,&#34; and let
+the text change in place. Then Undo, and let the tree snap back.
+
+&gt; So it&#39;s a 3D OKR tree you interrogate and edit by talking to it.
+&gt;
+&gt; Watch what happens when I ask. The answer comes back in the panel — but it also comes back as
+&gt; movement. The camera flies to the nodes it&#39;s talking about, and they pulse.
+&gt;
+&gt; That&#39;s the rule everything else follows from: the model&#39;s output *is* the interface, not a chat
+&gt; log sitting next to one.
+&gt;
+&gt; Now a fix. It rewrites those key results in place, the edges re-link, the tree settles into a
+&gt; new shape.
+&gt;
+&gt; And one click backs it out. Every change — mine, a form&#39;s, the model&#39;s — goes through one
+&gt; commit path. So undo covers all of it, and the history is complete.
+
+---
+
+## 2:00 — 2:45 · Teams as agents  *(105 words)*
+
+**On screen:** team list → one team&#39;s charter: mission, process, owns, dependsOn. Then a persona
+chat tab; ask that team something pointed about its own key results.
+
+&gt; Second idea. A team in here isn&#39;t a label on a node — it has a charter. What it&#39;s for, how it
+&gt; works, what it owns, who it depends on.
+&gt;
+&gt; And that charter is written deliberately as a job description for an agent. If a person read
+&gt; only this, they could sit in a meeting and argue that team&#39;s corner.
+&gt;
+&gt; Which means I can talk to the team. This is Marketing — the model speaking from Marketing&#39;s
+&gt; charter, its priorities, its constraints.
+&gt;
+&gt; The tree is the agenda for the meeting. The charter is the person attending it.
+
+---
+
+## 2:45 — 3:25 · The briefing  *(95 words)*
+
+**On screen:** reload; let the briefing populate on its own. Hover a card to preview the node,
+click one to fly there, click Fix on another and let the commit land.
+
+&gt; Third piece, and the one I actually use. Nobody asked for this.
+&gt;
+&gt; On load, and after every change, the model reads the whole tree and comes back with a few
+&gt; ranked findings. An activity dressed up as a key result. A target with no baseline. A team
+&gt; quietly carrying nine priorities.
+&gt;
+&gt; Hover to see where it lives, click to fly there, or click Fix and the edit lands as a normal,
+&gt; undoable commit.
+&gt;
+&gt; Because generation is cheap now. The job isn&#39;t drawing the tree — it&#39;s keeping it honest and
+&gt; small.
+
+---
+
+## 3:25 — 4:10 · Where it goes  *(115 words)*
+
+**On screen:** four rough cards or a hand sketch — Discussions · Executors · Matrices · Shared
+document. Keep it visibly unfinished.
+
+&gt; Four things are designed and not built.
+&gt;
+&gt; Discussions: one team&#39;s agent reviewing another&#39;s OKRs, a team-versus-team debate I moderate,
+&gt; and a closing turn where the agents propose the actual edits — arriving as one commit I can
+&gt; undo in one step.
+&gt;
+&gt; Executors: an agent that doesn&#39;t just talk about its key result but works on it through
+&gt; connected tools, and records progress where a human would have typed it.
+&gt;
+&gt; Matrices: team against team. One table for how much teams claim to rely on each other, one for
+&gt; how often they actually talk. The gap between those two is the product.
+&gt;
+&gt; And a shared document, so a team argues against one tree instead of my browser tab.
+
+---
+
+## 4:10 — 5:00 · Back to the bonsai  *(115 words)*
+
+**On screen:** back to the turning tree. Let it breathe. Land on a still.
+
+&gt; Which brings me back to the part I can&#39;t defend.
+&gt;
+&gt; If this really is bonsai, some things follow, and I don&#39;t know yet which are true.
+&gt;
+&gt; That you shape and don&#39;t carve — small moves, then wait a season and look again.
+&gt;
+&gt; That pruning cuts the number of things, never the ambition.
+&gt;
+&gt; That a branch only moves so much sap, so attention is a limit the system enforces rather than a
+&gt; virtue we ask people to have.
+&gt;
+&gt; And that dead wood stays in the picture, because the shape of a tree is explained as much by
+&gt; what was removed as by what grew.
+&gt;
+&gt; Today this is a viewer, an assistant that audits, and teams that speak for themselves. The
+&gt; bonsai part is a metaphor I keep not being able to drop — and I&#39;m chasing it to find out
+&gt; whether it&#39;s a real operating model or just a nice way to look at a tree.
+&gt;
+&gt; Either way. Here&#39;s the tree.
+
+---
+
+## Trim list (if you run long)
+
+In this order; each is self-contained and leaves the argument intact.
+
+1. **The spreadsheet beat, 0:35** (~20 s) — the thin edge on screen makes the point alone.
+2. **The matrices paragraph** (~18 s) — least built of the four, hardest to say quickly.
+3. **The sap line in the close** (~14 s) — shape/carve and dead wood carry the ending.
+4. **&#34;The tree is the agenda… the charter is the person attending&#34;** (~8 s) — lovely, but the
+   persona demo already showed it.
+
+## Padding (if you run short)
+
+- After the Undo: *&#34;That safety net is why I&#39;ll let it touch a real tree at all.&#34;* (~6 s)
+- In the briefing block: *&#34;Or an objective with nothing underneath it at all.&#34;* (~4 s)
+
+## Production notes
+
+- **Record the demo beats first**, then time narration to the footage. The fly-to and the pulse
+  need room to land; if you narrate over them, the one genuinely novel thing in the video reads
+  as a transition.
+- **Polaris (135 nodes) for the open and close; the 27-node workflow-platform tree** for anything
+  where node text must be readable on screen.
+- **Don&#39;t cut away during the Undo.** The snap-back is the most reassuring two seconds here.
+- **Say &#34;the model&#34; or &#34;the assistant&#34; — never &#34;the AI&#34;.** Consistency reads as confidence.
+- **One take on the last four lines.** If the bonsai close sounds written, it stops working.
+- **Hold the final still for two full seconds** before the cut, or the last line gets stepped on.
+MD
+grep &#39;^&gt;&#39; /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md | wc -w</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-07-25-461Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-07-25-461Z" class="timestamp-link"><time datetime="2026-09-12T22:07:25.461Z" data-timestamp="2026-09-12T22:07:25.461Z">2026-09-12T22:07:25.461Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     839</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-07-28-456Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-07-28-456Z" class="timestamp-link"><time datetime="2026-09-12T22:07:28.456Z" data-timestamp="2026-09-12T22:07:28.456Z">2026-09-12T22:07:28.456Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-07-30-483Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-07-30-483Z" class="timestamp-link"><time datetime="2026-09-12T22:07:30.483Z" data-timestamp="2026-09-12T22:07:30.483Z">2026-09-12T22:07:30.483Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_019hPgHLXDX36RWhenHx9KF3">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad &amp;&amp; awk &#39;/^## /{name=$0; c=0} /^&gt;/{n=split($0,a,&#34; &#34;); c+=n-1} /^## /{if(prev)print prev&#34;: &#34;pc; prev=name; pc=0} {if(name==prev)pc=c} END{print prev&#34;: &#34;pc}&#39; OKR_VIEWER_VIDEO_SCRIPT.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-07-32-440Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-07-32-440Z" class="timestamp-link"><time datetime="2026-09-12T22:07:32.440Z" data-timestamp="2026-09-12T22:07:32.440Z">2026-09-12T22:07:32.440Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>## 0:00 — 0:35 · Cold open: the bonsai  *(80 words)*: 100
+## 0:35 — 1:00 · The problem  *(65 words)*: 73
+## 1:00 — 2:00 · The thesis: the model&#x27;s output is the interface  *(125 words, plus ~15 s of demo)*: 119
+## 2:00 — 2:45 · Teams as agents  *(105 words)*: 97
+## 2:45 — 3:25 · The briefing  *(95 words)*: 91
+## 3:25 — 4:10 · Where it goes  *(115 words)*: 116
+## 4:10 — 5:00 · Back to the bonsai  *(115 words)*: 160
+## Trim list (if you run long): 0
+## Padding (if you run short): 0
+## Production notes: 0
+Shell cwd was reset to /Users/tmiv74/OKR-Display</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-07-37-342Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-07-37-342Z" class="timestamp-link"><time datetime="2026-09-12T22:07:37.342Z" data-timestamp="2026-09-12T22:07:37.342Z">2026-09-12T22:07:37.342Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-07-50-234Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-07-50-234Z" class="timestamp-link"><time datetime="2026-09-12T22:07:50.234Z" data-timestamp="2026-09-12T22:07:50.234Z">2026-09-12T22:07:50.234Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01AXxdTB8qQh6QcLpr75XD9w">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad &amp;&amp; python3 - &lt;&lt;&#39;EOF&#39;
+import re
+p=&#39;OKR_VIEWER_VIDEO_SCRIPT.md&#39;
+s=open(p).read()
+
+s=s.replace(&#34;&#34;&#34;&gt; Every OKR tree I&#39;ve worked on, I end up looking at like this. From outside, turning it, trying
+&gt; to see its shape. And when you do that it stops feeling like a spreadsheet and starts feeling
+&gt; like a bonsai.
+&gt;
+&gt; The tree grows itself. The gardener only shapes. Direction comes from above, growth comes from
+&gt; the parts closest to the work — and these systems fail the way bonsai fails, when somebody
+&gt; skips the growing and goes straight to carving.
+&gt;
+&gt; That&#39;s the intuition. What I&#39;ve built is narrower.&#34;&#34;&#34;,
+&#34;&#34;&#34;&gt; Every OKR tree I&#39;ve worked on, I end up looking at like this. From outside, turning it, trying
+&gt; to see its shape. And when you do that it stops feeling like a spreadsheet and starts feeling
+&gt; like a bonsai.
+&gt;
+&gt; The tree grows itself; the gardener only shapes. And these systems fail the way bonsai fails —
+&gt; when somebody skips the growing and goes straight to carving.
+&gt;
+&gt; That&#39;s the intuition. What I&#39;ve built is narrower.&#34;&#34;&#34;)
+
+s=s.replace(&#34;&#34;&#34;&gt; Which brings me back to the part I can&#39;t defend.
+&gt;
+&gt; If this really is bonsai, some things follow, and I don&#39;t know yet which are true.
+&gt;
+&gt; That you shape and don&#39;t carve — small moves, then wait a season and look again.
+&gt;
+&gt; That pruning cuts the number of things, never the ambition.
+&gt;
+&gt; That a branch only moves so much sap, so attention is a limit the system enforces rather than a
+&gt; virtue we ask people to have.
+&gt;
+&gt; And that dead wood stays in the picture, because the shape of a tree is explained as much by
+&gt; what was removed as by what grew.
+&gt;
+&gt; Today this is a viewer, an assistant that audits, and teams that speak for themselves. The
+&gt; bonsai part is a metaphor I keep not being able to drop — and I&#39;m chasing it to find out
+&gt; whether it&#39;s a real operating model or just a nice way to look at a tree.
+&gt;
+&gt; Either way. Here&#39;s the tree.&#34;&#34;&#34;,
+&#34;&#34;&#34;&gt; Which brings me back to the part I can&#39;t defend.
+&gt;
+&gt; If this really is bonsai, some things follow, and I don&#39;t know which are true yet.
+&gt;
+&gt; That you shape and don&#39;t carve — small moves, then wait a season and look again.
+&gt;
+&gt; That pruning cuts the number of things, never the ambition.
+&gt;
+&gt; That a branch only moves so much sap, so attention is a limit the system enforces rather than a
+&gt; virtue we ask people to have.
+&gt;
+&gt; And that dead wood stays in the picture, because a tree&#39;s shape is explained as much by what
+&gt; was removed as by what grew.
+&gt;
+&gt; Today this is a viewer, an assistant that audits, and teams that speak for themselves. The
+&gt; bonsai part is a metaphor I keep failing to drop, and I&#39;m chasing it to find out whether it&#39;s a
+&gt; real operating model or just a nice way to look at a tree.
+&gt;
+&gt; Either way. Here&#39;s the tree.&#34;&#34;&#34;)
+
+s=s.replace(&#34;Cold open: the bonsai  *(80 words)*&#34;,&#34;Cold open: the bonsai  *(85 words)*&#34;)
+s=s.replace(&#34;The problem  *(65 words)*&#34;,&#34;The problem  *(72 words)*&#34;)
+s=s.replace(&#34;interface  *(125 words, plus ~15 s of demo)*&#34;,&#34;interface  *(119 words, plus ~15 s of demo)*&#34;)
+s=s.replace(&#34;Teams as agents  *(105 words)*&#34;,&#34;Teams as agents  *(97 words)*&#34;)
+s=s.replace(&#34;The briefing  *(95 words)*&#34;,&#34;The briefing  *(91 words)*&#34;)
+s=s.replace(&#34;Where it goes  *(115 words)*&#34;,&#34;Where it goes  *(116 words)*&#34;)
+s=s.replace(&#34;Back to the bonsai  *(115 words)*&#34;,&#34;Back to the bonsai  *(145 words)*&#34;)
+s=s.replace(&#34;**Runtime:** 5:00. Narration is 700 words&#34;,&#34;**Runtime:** 5:00. Narration is ~725 words&#34;)
+open(p,&#39;w&#39;).write(s)
+EOF
+awk &#39;/^## /{name=$0; c=0} /^&gt;/{n=split($0,a,&#34; &#34;); c+=n-1} {if(name)t[name]=c} END{s=0; for(k in t) s+=t[k]; print &#34;total spoken:&#34;, s}&#39; OKR_VIEWER_VIDEO_SCRIPT.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-07-51-986Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-07-51-986Z" class="timestamp-link"><time datetime="2026-09-12T22:07:51.986Z" data-timestamp="2026-09-12T22:07:51.986Z">2026-09-12T22:07:51.986Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>total spoken: 738
+Shell cwd was reset to /Users/tmiv74/OKR-Display</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-07-54-860Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-07-54-860Z" class="timestamp-link"><time datetime="2026-09-12T22:07:54.860Z" data-timestamp="2026-09-12T22:07:54.860Z">2026-09-12T22:07:54.860Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-07-57-492Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-07-57-492Z" class="timestamp-link"><time datetime="2026-09-12T22:07:57.492Z" data-timestamp="2026-09-12T22:07:57.492Z">2026-09-12T22:07:57.492Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01PBPFUgQCNe7ZqaKpAyGiUt">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0929a35c156/scratchpad 2&gt;/dev/null; cd /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad &amp;&amp; sed -i &#39;&#39; &#39;s/Narration is ~725 words — ~4:20 of speech at a measured 160 wpm, leaving ~40 s/Narration is ~740 words — ~4:35 of speech at a measured 160 wpm, leaving ~25 s/&#39; OKR_VIEWER_VIDEO_SCRIPT.md &amp;&amp; sed -n &#39;1,8p&#39; OKR_VIEWER_VIDEO_SCRIPT.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-07-59-327Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-07-59-327Z" class="timestamp-link"><time datetime="2026-09-12T22:07:59.327Z" data-timestamp="2026-09-12T22:07:59.327Z">2026-09-12T22:07:59.327Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre># OKR Viewer — 5-minute video script
+
+**Runtime:** 5:00. Narration is ~740 words — ~4:35 of speech at a measured 160 wpm, leaving ~25 s
+of silence for the demo beats where the app does the talking. Don&#x27;t rush to fill those.
+**Format:** screen recording, voice-over. Timecodes cumulative. Word counts per block so you can
+re-trim by ear without blowing the budget.
+
+---
+Shell cwd was reset to /Users/tmiv74/OKR-Display</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-08-02-426Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-08-02-426Z" class="timestamp-link"><time datetime="2026-09-12T22:08:02.426Z" data-timestamp="2026-09-12T22:08:02.426Z">2026-09-12T22:08:02.426Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_01PWN2r6hayjVkxtsJxrboe7"><div class="tool-header"><span class="tool-icon">⚙</span> SendUserFile</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;files&#34;: [
+    &#34;/private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md&#34;
+  ],
+  &#34;status&#34;: &#34;normal&#34;,
+  &#34;caption&#34;: &#34;5-minute video script — bonsai open, three built pieces, four designed ones, bonsai close. Nothing in the project was modified.&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T22-08-02-870Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T22-08-02-870Z" class="timestamp-link"><time datetime="2026-09-12T22:08:02.870Z" data-timestamp="2026-09-12T22:08:02.870Z">2026-09-12T22:08:02.870Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>1 file delivered to user.
+  /private/tmp/claude-501/-Users-tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/scratchpad/OKR_VIEWER_VIDEO_SCRIPT.md → file_uuid: cddb6e47-3347-41ff-85da-682f407586b0</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T22-08-15-129Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T22-08-15-129Z" class="timestamp-link"><time datetime="2026-09-12T22:08:15.129Z" data-timestamp="2026-09-12T22:08:15.129Z">2026-09-12T22:08:15.129Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Script written to the scratchpad (nothing in the repo touched).</p>
+<p><strong>Shape</strong> — the bonsai idea brackets the video rather than sitting in the middle, which is what lets you present it as an unfinished intuition without it looking like a hole in the pitch:</p>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Beat</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0:00</td>
+<td>Cold open on the bonsai intuition, flagged as undefended</td>
+</tr>
+<tr>
+<td>0:35</td>
+<td>The problem: OKRs are a tree stored in lists; weak links invisible</td>
+</tr>
+<tr>
+<td>1:00</td>
+<td>The thesis, demoed: model's output <em>is</em> the interface (ask → fly + pulse → rewrite → undo)</td>
+</tr>
+<tr>
+<td>2:00</td>
+<td>Teams as agents: charter as a job description, persona chat</td>
+</tr>
+<tr>
+<td>2:45</td>
+<td>The briefing: unprompted audit, hover/fly/Fix, "honest and small"</td>
+</tr>
+<tr>
+<td>3:25</td>
+<td>Designed-not-built: discussions, executors, matrices, shared document</td>
+</tr>
+<tr>
+<td>4:10</td>
+<td>Return to bonsai: shape don't carve, prune count not ambition, sap, dead wood</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Notes on choices</strong></p>
+<ul>
+<li>Narration is ~740 words (~4:35 at 160 wpm), leaving ~25 s of deliberate silence on the fly-to and the Undo — those two beats are the only genuinely novel things on screen, so they shouldn't be narrated over. Each block carries its own word count, plus a ranked trim list and two padding lines.</li>
+<li>The four forward items are compressed to one sentence each and explicitly labelled unbuilt, matching where they actually are (concept docs, no plans). Matrices got the reliance-vs-comms gap since that's the line that sells the pair; OKR fitness is dropped for time.</li>
+<li>The close commits to four bonsai consequences — shape/carve, pruning count vs. ambition, sap as an enforced limit, dead wood retained — and then says plainly you don't know which are true. That's the honest version and it's a stronger ending than hedging throughout.</li>
+<li>Shot cues use the real datasets: Polaris (135 nodes, 61 teams) for the wide open/close, workflow-platform (27 nodes) wherever node text must be legible.</li>
+</ul>
+<p>Want me to publish it as an artifact page for teleprompter-style reading, or add a tighter 90-second cut-down of the same beats?</p></div></div></div>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

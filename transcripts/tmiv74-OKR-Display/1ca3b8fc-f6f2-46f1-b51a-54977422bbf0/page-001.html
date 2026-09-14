@@ -1,0 +1,1938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/1</h1>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+        
+<div class="message user" id="msg-2026-09-14T12-59-49-085Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-14T12-59-49-085Z" class="timestamp-link"><time datetime="2026-09-14T12:59:49.085Z" data-timestamp="2026-09-14T12:59:49.085Z">2026-09-14T12:59:49.085Z</time></a></div><div class="message-content">
+<div class="user-content"><p>Let's write a plan that caches the initial briefing review results based on a content hash. The cache should use the local db as storage. this will prevent over usage of the API on page reloads.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T12-59-52-489Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T12-59-52-489Z" class="timestamp-link"><time datetime="2026-09-14T12:59:52.489Z" data-timestamp="2026-09-14T12:59:52.489Z">2026-09-14T12:59:52.489Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T12-59-53-100Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T12-59-53-100Z" class="timestamp-link"><time datetime="2026-09-14T12:59:53.100Z" data-timestamp="2026-09-14T12:59:53.100Z">2026-09-14T12:59:53.100Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll start by reading the TREE_BRIEFING plan and finding the briefing code and whatever "local db" already exists, then write the plan in <code>Plans/development/</code>.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T12-59-54-752Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T12-59-54-752Z" class="timestamp-link"><time datetime="2026-09-14T12:59:54.752Z" data-timestamp="2026-09-14T12:59:54.752Z">2026-09-14T12:59:54.752Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_017kyAT7N5XkPqYNLnvHY6oX">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List workspace and read TREE_BRIEFING plan</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls &amp;&amp; ls Plans/* Concepts &amp;&amp; cat Plans/completed/TREE_BRIEFING.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T12-59-54-951Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T12-59-54-951Z" class="timestamp-link"><time datetime="2026-09-14T12:59:54.951Z" data-timestamp="2026-09-14T12:59:54.951Z">2026-09-14T12:59:54.951Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>CLAUDE.md
+Concepts
+Plans
+README.md
+docker-compose.yml
+node_modules
+package-lock.json
+package.json
+schema
+service
+transcripts
+web
+Concepts:
+Agents as Executors - Design.md
+Depth and Focus - Design.md
+Matrix Views - Design.md
+OKR Viewer - Product Vision.md
+Teams as Agents - Design.md
+
+Plans/completed:
+BUNDLED_DATASETS.md
+CAMERA_LEVEL_AUTO_MOVES.md
+CHAT_CONTEXT.md
+CHAT_TABS_AND_INTERVIEWS.md
+CLEAR_HIGHLIGHT_ON_SELECT.md
+DOCKER_IMAGES_AND_CI.md
+FRAME_NODE_NEIGHBORHOOD.md
+GRAPH_KEYBOARD_SHORTCUTS.md
+NODE_HOVER_CARD.md
+OKR_NODE_EDITOR.md
+OKR_SCHEMA_PACKAGE.md
+SERVICE_CORS.md
+TEAM_MODEL_AND_EDITOR.md
+TREE_BRIEFING.md
+---
+tags:
+  - plan
+  - web
+  - service
+  - schema
+  - chat
+  - agents
+status: completed
+created: 2026-09-12
+completed_on: 2026-09-12
+predecessors:
+  - completed/CHAT_TABS_AND_INTERVIEWS.md
+  - completed/CHAT_CONTEXT.md
+  - completed/FRAME_NODE_NEIGHBORHOOD.md
+---
+# Plan: Audit the tree unprompted and show the findings as a Briefing panel the user acts on
+
+## TL;DR
+The assistant reads the whole tree without being asked, on load and after every change, and
+returns 3–6 ranked findings; a Briefing panel shows them as cards the user can preview on hover,
+fly to, fix in one click through `commit()`, or dismiss. One new request mode (`audit`), one
+optional response field (`findings[]`), one prompt block, one panel component, one `$effect`
+trigger. Single repo, three packages (`schema/`, `service/`, `web/`). Out: rule-based findings,
+persistence, discussion modes 2–4, progress. Stretch: an &quot;Ask &lt;team&gt;&quot; button on a card that opens
+a persona chat with the owning team.
+
+Concept: [Depth and Focus - Design](../../Concepts/Depth%20and%20Focus%20-%20Design.md) (the
+product&#x27;s job is keeping the tree honest and small; audit on change, not on schedule; AI drafts,
+humans decide) and [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(the model&#x27;s output is the interface). The stretch phase is mode 1 of
+[Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md).
+
+## Context
+
+The assistant only ever answers. Every call to `/api/chat` starts with a user typing, and the
+three chat chips (`web/src/Chat.svelte:34-38`) are the only hint that the tree might have
+something wrong with it. The topbar counts weak links by a rule (`web/src/App.svelte:155`), which
+catches low `contributes` and nothing else: not an activity dressed as a KR, not a target with no
+baseline, not a team carrying nine KRs, not an objective with no KRs under it.
+
+Polaris has 135 nodes and 61 teams (`web/src/assets/datasets/polaris-group-fy26.json`). Nobody
+reads that. The claim this project makes is that the model absorbs the reading so a person can
+hold three to five priorities; today the app does not demonstrate that claim, because the
+reading only happens when asked.
+
+Everything needed to demonstrate it exists: one endpoint with a `mode`
+(`schema/src/chat-request.schema.json:56`), a response the service filters against the tree
+(`service/validate.js:122-261`), preview-on-hover from a panel (`web/src/TeamList.svelte:29-35`),
+`flyTo` (`web/src/Graph.svelte:183`), and `commit()` with an actor and a reason
+(`web/src/App.svelte:188-212`) so any fix is undoable and lands in history.
+
+## Goal
+
+When a document loads, and after every change to it, the assistant audits the tree without being
+asked and the user sees a ranked list of three to six findings, each of which they can look at,
+fix in one click, or dismiss.
+
+## Decisions (locked in)
+
+1. **An audit is a request mode, not a tab.** `mode: &#x27;audit&#x27;` joins the `chatMode` enum. The
+   request carries the usual document, `message: &#x27;Audit the tree.&#x27;`, empty `history`, no
+   `subject`. The service does not know or care that no conversation exists. A fifth endpoint
+   was rejected by invariant 2 of the vision doc; a fifth tab was rejected because a briefing is
+   read at a glance, not talked in.
+2. **The response grows one optional field, `findings[]`.** Additive; `required` at
+   `schema/src/chat-response.schema.json:34` does not change, so every fixture and client still
+   passes. Shape:
+   ```
+   findings: [{
+     title:    string (1–80)        // &quot;Three Marketing KRs describe activities, not outcomes&quot;
+     why:      string (1–300)       // one or two sentences the user reads on the card
+     severity: &#x27;high&#x27; | &#x27;medium&#x27; | &#x27;low&#x27;
+     nodeIds:  string[] (1–20)      // what to preview, highlight and fly to
+     fix:      Action[] (0–20)      // optional; empty when the fix is a judgement call
+   }]  // maxItems 8
+   ```
+   The browser reads `findings` only from a response to an audit request. A model that returns
+   findings in a free conversation is harmless and ignored.
+3. **Each fix is validated on its own, against the tree as sent.** The user applies findings one
+   at a time in any order, so a fix may not depend on another finding&#x27;s fix having landed. The
+   action loop in `validateResponse` becomes a reusable `validateActions(tree, company, actions)`
+   and runs once per finding with fresh `known` / `parentOf` sets. A finding whose `nodeIds` all
+   fail to resolve is dropped; a finding whose `fix` actions all drop keeps its card and loses its
+   Fix button. No fix may contain `delete` or `deleteUnit`; the prompt forbids it and the
+   validator strips it.
+4. **One trigger: the document changed.** A `$effect` in `App.svelte` that reads `tree` and
+   `company` schedules an audit 1500 ms later. Both are `$state.raw`, so identity changes on
+   every commit, undo, reset, switch and import, and the effect fires on mount. A sequence number
+   captured at send time discards any response that lands after a newer audit was scheduled, and
+   an `AbortController` cancels the in-flight fetch. No call site has to remember to re-audit.
+5. **The briefing is a fourth panel kind.** `panel = { kind: &#x27;briefing&#x27; }` in the one panel slot
+   (`web/src/App.svelte:91`), rendered by a new `Briefing.svelte` styled as `.detail` like
+   `TeamList`. It opens by itself the first time an audit of a document returns at least one
+   finding, and only if no panel is open: a node the user has clicked is never pushed aside. It
+   reopens from the topbar.
+6. **The topbar stat becomes the button.** `N weak links` at `web/src/App.svelte:544` becomes
+   `Reviewing…` while an audit runs, `N to review` when it is ready, and falls back to the
+   rule-based weak-link count when the service cannot be reached. The rule does not go away; it
+   is what the app shows when the model cannot.
+7. **A card&#x27;s three verbs are Show, Fix, Dismiss.** Hover previews the finding&#x27;s nodes exactly
+   as a team row does. Show sets `highlight` to `nodeIds` (the existing `recall()`) and calls
+   `graph.flyTo(nodeIds)`. Fix calls `commit(fix, { actor: &#x27;assistant&#x27;, reason: `${title}. ${why}` })`,
+   so undo and history come free and the re-audit that follows shrinks the list. Dismiss hides
+   the card for the life of this document, keyed by its sorted `nodeIds`; `resetSession()` clears
+   dismissals.
+8. **The audit prompt names the categories, ranks by impact, and fixes only what is mechanical.**
+   Making a KR measurable, relinking to the objective it really supports, correcting
+   `contributes`, assigning a `unitId`: these get a `fix`. &quot;This team has nine KRs, which three
+   matter?&quot; gets no fix and a `why` that asks the question. That is the focus budget from the
+   concept doc, delivered as a finding rather than a counter.
+9. **`max_tokens` rises to 8192 for audit requests only.** Six findings with fixes is more than a
+   reply; every other mode keeps 4096 (`service/index.js:83`).
+
+## Phase 1 — Schema
+
+1. `schema/src/chat-request.schema.json:56`: add `&quot;audit&quot;` to the `chatMode` enum and extend its
+   description: &quot;audit: no user question; read the whole tree and return `findings`.&quot;
+2. `schema/src/chat-request.schema.json:181`: add `&quot;briefing&quot;` to the `openPanel.kind` enum so
+   the view context can say the panel is open (`sanitizeContext` at `service/validate.js:53`
+   already passes through a kind that needs no id).
+3. `schema/src/chat-response.schema.json:23-33`: after `highlight`, add `findings` with a
+   `$ref` to a new `definitions.finding` carrying the shape in Decision 2. Every description is
+   written for the model, per the schema plan&#x27;s rule: `why` is &quot;what the user reads on the card,
+   one or two sentences, no ids&quot;; `fix` is &quot;the actions that resolve this finding on their own,
+   or empty when the resolution is a judgement the user must make&quot;. `fix` items `$ref`
+   `action.schema.json` like `actions` does.
+4. The build (`schema/scripts/build.mjs:185-219`) flattens the response into
+   `RESPOND_INPUT_SCHEMA` and regenerates `dist/types.d.ts` (`:94`); a `Finding` type appears
+   without a hand edit. Re-export it from `schema/index.d.ts:20,57` beside `ChatResponse`.
+5. Fixtures (`schema/test/fixtures/`): `valid/chat-response.with-findings.json` (two findings,
+   one with a fix, one without), `valid/chat-request.audit.json` (mode audit, no subject, empty
+   history), `invalid/chat-response.finding-without-title.json` (`at: &quot;/findings/0&quot;`),
+   `invalid/chat-response.finding-bad-severity.json`. `npm test` in `schema/` stays green.
+
+## Phase 2 — Service
+
+1. `service/validate.js:87-120` (`resolveTab`): before the fall-through at `:119`, accept
+   `mode === &#x27;audit&#x27;` with `subject: null`. An audit never has a subject to lose.
+2. `service/validate.js:122-261` (`validateResponse`): lift lines `:150-248` into
+   `validateActions(tree, company, actions)` returning `{ actions, dropped }`; `validateResponse`
+   calls it once for `input.actions`. Then, for each `input.findings[]` entry (cap 8):
+   - keep `nodeIds` that exist in the tree; drop the finding if none survive;
+   - clamp `title`/`why` to the schema lengths, default `severity` to `medium`;
+   - run `validateActions` on `fix` with fresh sets, strip `delete` / `deleteUnit`, and keep
+     whatever survives;
+   - report every drop through the existing `dropped` array so `service/index.js:99` logs it.
+   Return `findings` beside `reply`, `actions`, `highlight` at `:261`.
+3. `service/index.js:83`: `max_tokens: tab.mode === &#x27;audit&#x27; ? 8192 : 4096`. `:104-107`: add the
+   findings count to the log line and `findings: out.findings` to the JSON. The no-tool-call
+   fallback at `:95` sends `findings: []`.
+4. `service/prompt.js:145-218` (`roleBlock`): before `return &#x27;&#x27;` at `:218`, an `audit` block:
+   - &quot;You are not answering a question. Read the whole tree and the teams and report what most
+     needs a person&#x27;s attention. Return 3–6 `findings`, ranked by impact on the company
+     objective, highest first.&quot;
+   - the categories to look for: KRs with no metric or no baseline in the target; activities
+     written as KRs; `contributes` below 0.4 or plainly wrong given the labels; objectives with
+     no KRs; nodes with no team; a team owning more than five KRs; a KR that depends on another
+     team&#x27;s work that has no KR of its own (read `dependsOn`).
+   - &quot;Group by problem, not by node: one finding may name several nodes. `fix` only when the
+     actions resolve the finding without a decision from the user; a fix never deletes. `reply`
+     is one sentence on the state of the tree. `highlight` is the `nodeIds` of your first
+     finding.&quot;
+   - The block sits where the interview blocks sit, above the view block, for the reason the
+     comment at `:220-227` gives.
+5. `service/prompt.js:98-101` (`viewBlock`): a `briefing` panel line: &quot;The briefing panel is
+   open, listing what you found wrong with the tree on the last audit.&quot; Free conversations
+   started from a card can then say &quot;fix the second one&quot;.
+6. `service/prompt.js:239-243` (&quot;How to respond&quot;): one line, &quot;`findings`: only in an audit; leave
+   it out otherwise.&quot;
+
+## Phase 3 — Web: audit state, trigger and the Briefing panel
+
+1. `web/src/App.svelte` near `:155` (`weakLinks`): audit state.
+   ```
+   let briefing = $state.raw({ status: &#x27;idle&#x27;, findings: [], seq: 0 });  // idle | running | ready | error
+   let dismissed = $state.raw(new Set());
+   let auditTimer, auditAbort;
+   ```
+   `audit()` builds the same body `send()` builds at `:283-292` with `mode: &#x27;audit&#x27;`,
+   `message: &#x27;Audit the tree.&#x27;`, `history: []`, `subject: null`; on success it reads
+   `validateChatResponse(...).value.findings ?? []`, sets `status: &#x27;ready&#x27;`, and opens the panel
+   per Decision 5. It never touches `highlight`, `chats` or `commit()`: an audit is a reading,
+   not a reply, and nothing goes into history until the user clicks Fix. On a failed fetch it
+   sets `status: &#x27;error&#x27;` and keeps the previous findings.
+2. The trigger (Decision 4), beside the panel effect at `:93-98`:
+   ```
+   $effect(() =&gt; { tree; company; scheduleAudit(); });
+   ```
+   `scheduleAudit()` clears `auditTimer`, aborts `auditAbort`, sets `status: &#x27;running&#x27;`, and
+   arms a 1500 ms timer around `audit()`. The `seq` check makes late responses harmless.
+3. `resetSession()` at `:373-384`: `dismissed = new Set()` and `briefing = { status: &#x27;idle&#x27;,
+   findings: [], seq: briefing.seq }`. The effect in step 2 re-audits because `tree` changed.
+4. `viewContext` at `:164-171`: `{ kind: &#x27;briefing&#x27; }` needs no special casing; it already
+   forwards `kind` for anything without an id.
+5. New `web/src/Briefing.svelte`, modelled on `TeamList.svelte`:
+   - props `{ briefing, dismissed, tree, company, onShow, onFix, onDismiss, onClose,
+     onNewChat = null }`;
+   - `&lt;aside class=&quot;detail briefing&quot;&gt;` with the `TeamList` header shape (`:38-44`);
+   - one card per finding not in `dismissed`: a severity dot (`--bad` / `--objective` / `--muted`),
+     `title`, `why`, and the owning team(s) derived from `nodeIds` through `unitName()`;
+   - the row spreads `hover(nodeIds)` (`TeamList.svelte:29-35`) so hovering previews;
+   - buttons in `.actions` (`app.css:169`): **Show**, **Fix** only when `fix.length`, **Dismiss**;
+   - `status === &#x27;running&#x27;` shows the `.hint` &quot;Reviewing the tree…&quot; above whatever findings are
+     already there, so a re-audit after a fix does not blank the panel; `ready` with nothing left
+     says &quot;Nothing needs attention.&quot;; `error` says the service is unreachable and offers a Retry.
+6. `web/src/App.svelte:567-612`: a fourth branch in the stage markup:
+   ```
+   {:else if panel?.kind === &#x27;briefing&#x27;}
+     &lt;Briefing {briefing} {dismissed} {tree} {company}
+       onShow={(ids) =&gt; { recall(ids); graph?.flyTo(ids); }}
+       onFix={(f) =&gt; commit(f.fix, { actor: &#x27;assistant&#x27;, reason: `${f.title}. ${f.why}` })}
+       onDismiss={(f) =&gt; (dismissed = new Set([...dismissed, keyOf(f)]))}
+       onRetry={scheduleAudit}
+       onClose={() =&gt; (panel = null)} /&gt;
+   ```
+   `keyOf(f)` is `[...f.nodeIds].sort().join(&#x27;|&#x27;)`.
+7. `web/src/App.svelte:541-545`: the stat becomes a button that toggles
+   `panel = panel?.kind === &#x27;briefing&#x27; ? null : { kind: &#x27;briefing&#x27; }`, with `class:on` like the
+   Teams button at `:553` and text per Decision 6. Keep `.topbar .stats .warn` (`app.css:59`)
+   for the fallback count; add a `.busy` state that reuses the blinking dot from
+   `.tab.busy .name::after` (`app.css:243`).
+8. `web/src/app.css` after `:191`: `.detail .finding` (card spacing, a 3 px left border in the
+   severity colour) and `.detail .finding .why` (muted, 12 px). Nothing else is new; the card
+   reuses `.detail h3`, `.actions`, `.hint`, `.count`.
+
+## Phase 4 — Stretch: ask the team
+
+Mode 1 from the Teams as Agents doc, launched from a finding so the demo goes &quot;the model found
+this, now hear the team&#x27;s side&quot;.
+
+1. `schema/src/chat-request.schema.json:56`: add `&quot;persona&quot;`; subject is `{ kind: &#x27;team&#x27;, id }`.
+2. `service/validate.js:100-104`: `persona` resolves exactly like `interview-team`.
+3. `service/prompt.js` `roleBlock`: a `persona` block: &quot;You are speaking as &lt;team&gt;. Here is your
+   charter. Answer as this team would, from its priorities and constraints; say &#x27;we&#x27;. You may
+   propose actions on your own nodes only.&quot; Charter prose is dropped in verbatim, which is what
+   the charter was written for.
+4. `web/src/App.svelte:335-342` (`newChat`): interviews send the hidden kick-off; a persona tab
+   sends an `opening` message the caller passes, visible. Signature grows `{ opening }`.
+5. `Briefing.svelte`: when a finding&#x27;s nodes resolve to exactly one team with a charter, an
+   **Ask &lt;team&gt;** button calls
+   `onNewChat({ mode: &#x27;persona&#x27;, subject: { kind: &#x27;team&#x27;, id }, title: `As ${name}`,
+   opening: `The briefing says: ${title}. ${why} How does your team see this?` })`.
+   Only when the stretch lands; the button is absent otherwise, and `Briefing` takes
+   `onNewChat = null` like `Detail.svelte:18` does.
+
+## Verification
+
+- `schema/`: `npm run build &amp;&amp; npm test` green with the four new fixtures; `dist/types.d.ts`
+  has one `Finding` type and no suffixed duplicate (the build&#x27;s own check at
+  `scripts/build.mjs:118`).
+- `service/`: with `polaris-group-fy26.json` as the body and `mode: &#x27;audit&#x27;`, `curl` returns 3–6
+  findings, every `nodeIds` entry exists, no fix contains a delete, and the log line reports the
+  findings count. A second call with `mode: &#x27;free&#x27;` and the same tree returns no `findings` key
+  or an empty one.
+- `web/` (dev server, browser):
+  1. Load Polaris. The stat reads &quot;Reviewing…&quot;, then &quot;N to review&quot;, and the Briefing opens with
+     N cards, high severity first.
+  2. Hover a card: its nodes bloom white. Click Show: the camera flies and the nodes pulse red.
+  3. Click Fix on a measurability finding: labels change in the scene, history gains a change
+     with `actor: &#x27;assistant&#x27;`, the panel says &quot;Reviewing…&quot;, and the list comes back one shorter.
+  4. ⌘Z: the tree snaps back and the finding returns on the next audit.
+  5. Dismiss a card, fix another: the dismissed one stays hidden. Switch to Starter: dismissals
+     and findings clear, a fresh audit runs on the 9-node tree.
+  6. Click a node while the Briefing is open: the node panel replaces it (one panel slot); the
+     stat button brings the Briefing back.
+  7. Stop the service: the stat falls back to &quot;N weak links&quot;, the panel says the service is
+     unreachable, Retry re-arms the audit. Nothing throws in the console.
+  8. Send &quot;fix the second one&quot; in a free chat with the Briefing open: the reply resolves it.
+- Stretch: Ask Marketing from a finding opens a tab titled &quot;As Marketing&quot; whose first visible
+  message is the finding and whose reply says &quot;we&quot;.
+
+## Out of scope
+
+- Rule-based findings computed in the browser without the model. The weak-link count stays as
+  the fallback and nothing more.
+- Persisting dismissals or findings across reloads; nothing else persists either.
+- Discussion modes 2–4 (reviews, debates, negotiated edits). Mode 1 is the stretch here only
+  because a finding is the natural opening line.
+- Progress, `metricSamples`, and any dashboard (Horizon 2).
+- Streaming the audit. One call, one JSON, like everything else.
+- Auditing on a schedule. The trigger is a change to the document, per the concept doc.
+
+## Risks / rollback
+
+- **Latency.** A 135-node audit with fixes may take 10–15 s on Sonnet. The panel never blocks:
+  old findings stay visible under &quot;Reviewing…&quot;, and the user can keep chatting. If it is too slow
+  on stage, drop `max_tokens` back and ask for four findings.
+- **Cost.** One call per commit. The 1500 ms debounce collapses an interview&#x27;s closing batch and
+  a burst of editor keystrokes (each field commit) into one audit; the abort drops the rest. If
+  it is still too chatty, gate re-audits behind the Fix button and a manual Retry.
+- **Fix quality.** A fix is only as good as the model&#x27;s reading, which is why every fix is a
+  commit the user made and can undo, and why fixes never delete. The per-finding validation
+  (Decision 3) means a bad id in one fix cannot poison another.
+- **Rollback.** Every change is additive: remove the `$effect`, the panel branch and the stat
+  button, and the schema field, mode and prompt block are dead but harmless.
+
+## Completion notes
+
+**Planned vs. actual.** All four phases landed, stretch included, essentially as written. The
+three load-bearing bets held: `mode: &#x27;audit&#x27;` needed no new endpoint and no new tab; `findings[]`
+was additive enough that `required` never changed and every existing fixture stayed green; and
+the one `$effect` on `tree` / `company` really is the only trigger — undo, reset, dataset switch,
+import, a Fix click and an edit from a chat tab all re-audit without any call site knowing about
+the briefing. Lifting the action loop into `validateActions(tree, company, actions)` (Decision 3)
+was the cheapest part of the whole plan and bought per-finding isolation exactly as predicted; it
+returns `known` alongside `actions`/`dropped` so `validateResponse` can still filter `highlight`
+against the tree the actions leave behind.
+
+**Mid-flight adjustments.**
+- **`findings` is in the tool schema only for an audit.** This is the one change that matters.
+  With `findings` present in every mode&#x27;s `input_schema`, ordinary conversational messages came
+  back as a `respond` call carrying `{&quot;fields&quot;: {}}` and no `reply` — reproducibly, three times
+  in three on the same input that answered fine at HEAD. Bisecting the schema showed the trigger
+  was the presence of `findings` itself, not its `fix` (the duplicated Action union), and not any
+  one of its properties. `RESPOND_TOOL` became `respondTool(mode)` in `service/prompt.js:29`, and
+  the general &quot;How to respond&quot; bullet about `findings` went away with it: a mode whose schema
+  cannot express findings should not be told about them. Same lesson caught the persona block a
+  second time — a line reading &quot;No `findings`. Nobody asked us to audit anything.&quot; made *that*
+  mode emit `{&quot;fields&quot;: {}}` about one call in three, and deleting it took persona to 5/5. Naming
+  a field the tool schema does not have is what breaks these calls.
+- **The audit prompt had to be told that a missing baseline still gets a fix.** The first draft
+  followed Decision 8 but paired it with &quot;never invent a number&quot;, and the model read the two
+  together as &quot;no baseline, no fix&quot;: six good findings, zero Fix buttons. Rewriting it so
+  measurability *always* carries a fix — rewrite the label, set the `metric`, and write the
+  `target` as the measurement that has to be taken — got fixes on the mechanical findings without
+  a single invented number.
+- **Titles and `why` clamp on a word boundary.** The model overruns 80 characters often enough
+  that a hard `slice()` produced cards ending &quot;…yet it&#x27;s the w&quot;. `clamp()` in
+  `service/validate.js` cuts back to the last space and adds an ellipsis.
+- **Severity colours are `--bad` / `--meh` / `--muted`**, not `--bad` / `--objective` / `--muted`
+  as Phase 3.8 had it. Amber for medium is the app&#x27;s existing severity vocabulary (`tone()` in
+  `Detail.svelte`); blue next to red reads as a category, not a rank.
+- **`keyOf` lives in `web/src/lib/briefing.js`** rather than inline in `App.svelte`, because
+  `Briefing.svelte` needs the same identity for its `{#each}` key and its dismissal filter.
+- The trigger effect wraps `scheduleAudit()` in `untrack()`. It writes `briefing`, which it must
+  not then depend on.
+
+**Surprises / residual risks.**
+- **A re-audit after a Fix does not come back one shorter.** Verification step 3 assumed it
+  would; what actually happens is that the fixed problem leaves and the next-ranked one arrives,
+  so the count holds at 5–6 on a tree with more than six problems. The list is a ranked window,
+  not a queue — worth knowing before demoing it as a burn-down.
+- **&quot;Ask &amp;lt;team&amp;gt;&quot; is rarer than Phase 4 assumed.** The prompt tells the model to group by
+  problem, and problems cross teams, so most findings name two or three and the button is
+  correctly absent. Roughly one finding in six on the bundled datasets resolves to a single
+  chartered team. If it needs to be more common, the gate is `askable()` in `Briefing.svelte`,
+  not the prompt — widening the prompt would cost the grouping that makes the cards readable.
+- **Latency is as feared**: 15–20 s for Polaris (135 nodes, ~33k input tokens), 8–15 s for the
+  small trees. The panel never blocks and the old cards stay up under &quot;Reviewing the tree…&quot;, so
+  it reads as a background read rather than a wait, but a demo should load the document before
+  the audience is looking at it.
+- **Cost is one audit per commit**, debounced at 1500 ms. An interview&#x27;s closing batch collapses
+  into one; a burst of Detail-panel field commits does too. Still the obvious thing to gate if
+  this gets expensive.
+- The service&#x27;s no-`reply` fallback (&quot;I couldn&#x27;t come up with an answer for that&quot;) is now the
+  only thing standing between a malformed tool call and a blank panel. It predates this plan and
+  was never exercised until the schema change above started triggering it; a retry-once would be
+  a cheap follow-up.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T12-59-57-930Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T12-59-57-930Z" class="timestamp-link"><time datetime="2026-09-14T12:59:57.930Z" data-timestamp="2026-09-14T12:59:57.930Z">2026-09-14T12:59:57.930Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T12-59-57-933Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T12-59-57-933Z" class="timestamp-link"><time datetime="2026-09-14T12:59:57.933Z" data-timestamp="2026-09-14T12:59:57.933Z">2026-09-14T12:59:57.933Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-01-056Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-01-056Z" class="timestamp-link"><time datetime="2026-09-14T13:00:01.056Z" data-timestamp="2026-09-14T13:00:01.056Z">2026-09-14T13:00:01.056Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_014G7fEEtiess97GL4eRGnmS">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Search for local db and list packages</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -rniE &#34;indexeddb|localStorage|sqlite|better-sqlite|level|lowdb|idb|dexie|\bdb\b&#34; --include=*.js --include=*.svelte --include=*.json --include=*.mjs --include=*.md --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=transcripts . | grep -viE &#34;package-lock|\&#34;level\&#34;: &#34; | head -60; echo ---; cat package.json service/package.json web/package.json; echo ---; ls service web web/src web/src/lib; echo ---; cat docker-compose.yml</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T13-00-01-210Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T13-00-01-210Z" class="timestamp-link"><time datetime="2026-09-14T13:00:01.210Z" data-timestamp="2026-09-14T13:00:01.210Z">2026-09-14T13:00:01.210Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>(eval):1: no matches found: --include=*.js
+---
+{
+  &quot;name&quot;: &quot;okr-viewer&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;workspaces&quot;: [
+    &quot;schema&quot;,
+    &quot;web&quot;,
+    &quot;service&quot;
+  ],
+  &quot;scripts&quot;: {
+    &quot;build:schema&quot;: &quot;npm run build -w schema&quot;,
+    &quot;test:schema&quot;: &quot;npm test -w schema&quot;,
+    &quot;dev:web&quot;: &quot;npm run dev -w web&quot;,
+    &quot;dev:service&quot;: &quot;npm run dev -w service&quot;
+  }
+}
+{
+  &quot;name&quot;: &quot;okr-viewer-service&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;node --watch index.js&quot;,
+    &quot;start&quot;: &quot;node index.js&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@okr-viewer/schema&quot;: &quot;^0.1.0&quot;,
+    &quot;@anthropic-ai/sdk&quot;: &quot;^0.125.0&quot;,
+    &quot;dotenv&quot;: &quot;^17.4.0&quot;,
+    &quot;express&quot;: &quot;^5.2.0&quot;
+  }
+}
+{
+  &quot;name&quot;: &quot;okr-viewer-web&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;,
+    &quot;preview&quot;: &quot;vite preview&quot;,
+    &quot;test&quot;: &quot;node --test \&quot;src/**/*.test.js\&quot;&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@okr-viewer/schema&quot;: &quot;^0.1.0&quot;,
+    &quot;3d-force-graph&quot;: &quot;^1.80.0&quot;,
+    &quot;three&quot;: &quot;&gt;=0.179 &lt;1&quot;,
+    &quot;three-spritetext&quot;: &quot;^1.10.0&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@sveltejs/vite-plugin-svelte&quot;: &quot;^7.3.0&quot;,
+    &quot;svelte&quot;: &quot;^5.57.0&quot;,
+    &quot;vite&quot;: &quot;^8.3.0&quot;
+  }
+}
+---
+service:
+Dockerfile
+index.js
+node_modules
+package.json
+prompt.js
+validate.js
+
+web:
+Dockerfile
+dist
+docker-entrypoint.d
+index.html
+nginx.conf.template
+node_modules
+package.json
+src
+vite.config.js
+
+web/src:
+App.svelte
+Briefing.svelte
+Chat.svelte
+Detail.svelte
+Graph.svelte
+NodeCard.svelte
+TeamEditor.svelte
+TeamList.svelte
+app.css
+assets
+lib
+main.js
+
+web/src/lib:
+apply.js
+briefing.js
+company.js
+datasets.js
+navigate.js
+navigate.test.js
+---
+# Runs the pair the way the images expect to be run: the browser only ever
+# talks to `web`, which forwards /api/ to `service`. The API key stays on the
+# service container and never reaches a bundle.
+#
+#   cp service/.env.example service/.env   # add ANTHROPIC_API_KEY
+#   docker compose up --build              # → http://localhost:8080
+#
+# Both images build from the repo root; the Dockerfiles live in their packages.
+
+services:
+  service:
+    build:
+      context: .
+      dockerfile: service/Dockerfile
+    image: okr-viewer-service
+    environment:
+      - PORT=8787
+      # The origin the browser is on, which with this file is the web
+      # container&#x27;s published port below. Not the service&#x27;s own address, and
+      # not a bare hostname — CORS compares scheme://host:port exactly.
+      - APP_ORIGIN=${APP_ORIGIN:-http://localhost:8080}
+      # Valueless on purpose: it passes the shell&#x27;s key through when there is
+      # one and stays unset otherwise, so it never clobbers what env_file read.
+      # Never a build arg — a build arg is readable in the image history.
+      - ANTHROPIC_API_KEY
+    env_file:
+      - path: service/.env
+        required: false
+    # Not published by default: reaching it through the web container&#x27;s proxy is
+    # the supported path. Uncomment to curl /api/health directly.
+    # ports:
+    #   - &quot;8787:8787&quot;
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    image: okr-viewer-web
+    environment:
+      # Where the service lives, for the /api/ proxy. No trailing slash — nginx
+      # forwards the path through unchanged. The mirror of APP_ORIGIN above:
+      # each container names the other&#x27;s host in its own environment.
+      - SERVICE_URL=${SERVICE_URL:-http://service:8787}
+    ports:
+      - &quot;8080:8080&quot;
+    depends_on:
+      service:
+        condition: service_healthy
+    restart: unless-stopped</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-04-356Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-04-356Z" class="timestamp-link"><time datetime="2026-09-14T13:00:04.356Z" data-timestamp="2026-09-14T13:00:04.356Z">2026-09-14T13:00:04.356Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-06-825Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-06-825Z" class="timestamp-link"><time datetime="2026-09-14T13:00:06.825Z" data-timestamp="2026-09-14T13:00:06.825Z">2026-09-14T13:00:06.825Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_011wx2qDwrqCBbTBVMtnLUR9">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Search for db/persistence/cache mentions and read README</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -rniE &#34;indexeddb|localStorage|sqlite|lowdb|\bidb\b|dexie|\bdb\b|persist|cache&#34; --include=&#39;*.js&#39; --include=&#39;*.svelte&#39; --include=&#39;*.mjs&#39; --include=&#39;*.md&#39; --include=&#39;*.json&#39; --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=transcripts . | grep -v package-lock | head -60; echo ---README; cat README.md | head -120</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T13-00-06-891Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T13-00-06-891Z" class="timestamp-link"><time datetime="2026-09-14T13:00:06.891Z" data-timestamp="2026-09-14T13:00:06.891Z">2026-09-14T13:00:06.891Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>README.md:354:- Auth, multi-user, persistence — the tree lives in memory and resets on reload
+Plans/completed/TREE_BRIEFING.md:25:persistence, discussion modes 2–4, progress. Stretch: an &quot;Ask &lt;team&gt;&quot; button on a card that opens
+Plans/completed/TREE_BRIEFING.md:277:- Persisting dismissals or findings across reloads; nothing else persists either.
+CLAUDE.md:206:  (Horizon 3). Nothing persists today, tabs included.
+Plans/completed/DOCKER_IMAGES_AND_CI.md:65:`.github/workflows/docker.yml`: a matrix over the two images using buildx, GHA layer cache and
+Plans/completed/DOCKER_IMAGES_AND_CI.md:96:  failed with `failed to compute cache key ... &quot;/service/validate.js&quot;: not found` — naming a file
+Plans/completed/DOCKER_IMAGES_AND_CI.md:105:  `service/index.js`, both `npm ci` layers stayed `CACHED` and only the source COPY reran, because
+Plans/completed/DOCKER_IMAGES_AND_CI.md:116:  /api/chat` 400 (schema errors) both through the nginx proxy, gzip on, one `Cache-Control` per
+Plans/completed/DOCKER_IMAGES_AND_CI.md:117:  asset. Images are 64MB (web) / 183MB (service) from a cold cache. The live risk is the
+Plans/completed/BUNDLED_DATASETS.md:129:- Remembering the chosen dataset across reloads (nothing persists yet).
+Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md:212:- User-rebindable keys or persisted preferences. Nothing persists yet (Horizon 3).
+Plans/completed/OKR_SCHEMA_PACKAGE.md:122:- Persisting anything server-side; the service stays stateless.
+Plans/completed/OKR_SCHEMA_PACKAGE.md:132:- **Rollback**: delete `schema/`, restore the two per-package lockfiles from git, revert the four touched files. No data formats ship until Phase 6, so nothing persisted needs migrating.
+Plans/completed/CHAT_TABS_AND_INTERVIEWS.md:150:- Persisting tabs. Renaming tabs. Drag-reordering.
+Concepts/Matrix Views - Design.md:252:   the view over it rather than the reason for it. It needs somewhere to persist, so it is gated
+service/index.js:46:  // and Vary keeps a cache from handing one origin another&#x27;s response.
+Concepts/OKR Viewer - Product Vision.md:131:- **Persisting tabs or the chosen dataset.** Deferred: nothing persists yet; adding persistence
+Concepts/OKR Viewer - Product Vision.md:132:  for one thing invites a half-built persistence layer.
+Concepts/OKR Viewer - Product Vision.md:169:- Shared, persistent, multi-user documents (Horizon 3).
+---README
+# OKR Viewer
+
+A 3D OKR tree you can interrogate and edit by talking to it.
+
+Load an org&#x27;s objectives and key results as a navigable 3D graph, then ask questions in plain language — &quot;which KRs don&#x27;t ladder up to anything?&quot;, &quot;make the marketing KRs measurable&quot; — and watch Claude answer *by moving the visualization*: flying the camera to the nodes it&#x27;s talking about, and rewriting them in place when you ask it to.
+
+The pitch in one line: **the model&#x27;s output is the interface, not a chat log next to one.**
+
+---
+
+## Demo script
+
+This is the thing to build toward. Everything below serves these 90 seconds.
+
+1. **Open on the full tree.** One company objective at the top, team objectives beneath it, KRs at the leaves. Rotate it. It&#x27;s obviously a hierarchy and you can see all of it at once.
+2. **Ask a question.** &quot;Which key results don&#x27;t clearly support a company objective?&quot; → Claude answers in the panel *and* three nodes pulse red while the camera flies to them.
+3. **Ask for a fix.** &quot;Rewrite those so they&#x27;re measurable and tie them to the right objective.&quot; → the nodes&#x27; text changes, edges re-link, the graph settles into a new shape.
+4. **Undo it.** One click, tree snaps back. (This also saves you if the model does something dumb on stage.)
+
+---
+
+## Architecture
+
+```
+┌──────────────────────┐         ┌─────────────────────┐         ┌────────┐
+│  web/  (Vite+Svelte) │  POST   │  service/ (Express) │  HTTPS  │ Claude │
+│                      │ /api/   │                     │         │  API   │
+│  owns the tree ──────┼─ chat ──┼─&gt; owns the prompt    ├────────&gt;│        │
+│  renders the graph   │&lt;────────┼── + tool schema      │&lt;────────┤        │
+│  applies actions     │ {reply, │   validates IDs      │         └────────┘
+│  keeps undo stack    │  actions│                      │
+└──────────────────────┘  highlight}────────────────────┘
+```
+
+**The service is stateless.** The browser owns the tree and sends it along with every message. No session store, no database, no drift between what the service thinks the tree is and what&#x27;s on screen.
+
+**The service owns the system prompt and the tool schema.** The frontend never constructs a prompt. This means prompt iteration — which is most of your tuning time — is a service-only change.
+
+---
+
+## The contract
+
+One endpoint. One shape. Don&#x27;t add a second one.
+
+```
+POST /api/chat
+{
+  &quot;tree&quot;:           { &quot;nodes&quot;: [...] },     // the whole thing, every time
+  &quot;message&quot;:        &quot;make the marketing KRs measurable&quot;,
+  &quot;selectedNodeId&quot;: &quot;kr-7&quot; | null,          // what the user clicked, for context
+  &quot;history&quot;:        [{ &quot;role&quot;: &quot;user&quot;|&quot;assistant&quot;, &quot;content&quot;: &quot;...&quot; }]
+}
+
+→ 200
+{
+  &quot;reply&quot;:     &quot;I tightened three KRs under Marketing…&quot;,
+  &quot;actions&quot;:   [{ &quot;op&quot;: &quot;edit&quot;, &quot;id&quot;: &quot;kr-7&quot;, &quot;fields&quot;: { &quot;label&quot;: &quot;…&quot; } }],
+  &quot;highlight&quot;: [&quot;kr-7&quot;, &quot;kr-8&quot;, &quot;kr-9&quot;]
+}
+```
+
+`actions` is often empty — most messages are questions, not edits. `highlight` is almost never empty, and it&#x27;s what makes the thing feel alive.
+
+### Node shape
+
+Keep it flat. A flat array with `parent` pointers is easier to mutate than nested children, and `3d-force-graph` wants flat nodes and links anyway.
+
+```js
+{
+  id:          &#x27;kr-7&#x27;,
+  level:       &#x27;company&#x27; | &#x27;objective&#x27; | &#x27;kr&#x27;,
+  parent:      &#x27;obj-2&#x27; | null,
+  label:       &#x27;Reduce time-to-first-value for new accounts&#x27;,
+  owner:       &#x27;Marketing&#x27;,
+  metric:      &#x27;median days from signup to first workflow run&#x27;,
+  target:      &#x27;14 → 5 by Q4&#x27;,
+  contributes: 0.8            // 0–1, how well this supports its parent
+}
+```
+
+`contributes` is the field that earns the visualization. Edge thickness and color come from it, and low-scoring links are the &quot;misalignment&quot; the demo finds. Hand-author these values — it&#x27;s a demo, and a hand-tuned tree demos better than a realistic one.
+
+---
+
+## The one-tool trick
+
+Do **not** define `edit_node`, `add_node`, `relink_node`, and `highlight_nodes` as four separate tools. Real multi-tool use means Claude stops at the `tool_use` block, you send back a `tool_result`, and you make a second call to get the final text — two round trips, continuation logic, and a branch for &quot;what if it called no tools at all.&quot;
+
+Instead: **one tool, forced.**
+
+```js
+const RESPOND_TOOL = {
+  name: &#x27;respond&#x27;,
+  description: &#x27;Reply to the user about their OKR tree. Always call this exactly once.&#x27;,
+  input_schema: {
+    type: &#x27;object&#x27;,
+    properties: {
+      reply: {
+        type: &#x27;string&#x27;,
+        description: &#x27;Your answer, shown in the chat panel. Conversational, 1-3 sentences.&#x27;
+      },
+      actions: {
+        type: &#x27;array&#x27;,
+        description: &#x27;Edits to apply to the tree. Empty array if the user only asked a question.&#x27;,
+        items: {
+          type: &#x27;object&#x27;,
+          properties: {
+            op:     { type: &#x27;string&#x27;, enum: [&#x27;edit&#x27;, &#x27;add&#x27;, &#x27;relink&#x27;, &#x27;delete&#x27;] },
+            id:     { type: &#x27;string&#x27; },
+            fields: { type: &#x27;object&#x27; }
+          },
+          required: [&#x27;op&#x27;, &#x27;id&#x27;]
+        }
+      },
+      highlight: {
+        type: &#x27;array&#x27;,
+        description: &#x27;IDs of nodes your reply refers to. The camera flies to these. Use generously.&#x27;,
+        items: { type: &#x27;string&#x27; }
+      }
+    },</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-16-181Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-16-181Z" class="timestamp-link"><time datetime="2026-09-14T13:00:16.181Z" data-timestamp="2026-09-14T13:00:16.181Z">2026-09-14T13:00:16.181Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-16-186Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-16-186Z" class="timestamp-link"><time datetime="2026-09-14T13:00:16.186Z" data-timestamp="2026-09-14T13:00:16.186Z">2026-09-14T13:00:16.186Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>No database exists in the repo—the service is stateless, so "local db" refers to the browser's IndexedDB. I'll lock that in as a decision and move on to pinpointing the exact audit code paths to cite by line.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-17-797Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-17-797Z" class="timestamp-link"><time datetime="2026-09-14T13:00:17.797Z" data-timestamp="2026-09-14T13:00:17.797Z">2026-09-14T13:00:17.797Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01KDh7XZQ21we4vysrzWxeWq">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Locate audit-related lines in App.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -nE &#34;briefing|audit|Audit|dismissed|resetSession|seq|Abort|\\\$effect|untrack|tree = |company = |\\\$state|function commit|function send|fetch\(|datasetId|dataset&#34; web/src/App.svelte | head -120</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T13-00-19-314Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T13-00-19-314Z" class="timestamp-link"><time datetime="2026-09-14T13:00:19.314Z" data-timestamp="2026-09-14T13:00:19.314Z">2026-09-14T13:00:19.314Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>2:  import { untrack } from &#x27;svelte&#x27;;
+9:  import { DATASETS, DEFAULT_DATASET_ID, getDataset } from &#x27;./lib/datasets.js&#x27;;
+11:  import { keyOf } from &#x27;./lib/briefing.js&#x27;;
+22:  // datasets.js validates every bundled document at boot in dev.
+23:  let datasetId = $state(DEFAULT_DATASET_ID);
+25:  // The tree is $state.raw on purpose: apply.js always returns a new tree, so
+27:  let tree = $state.raw(structuredClone(getDataset(DEFAULT_DATASET_ID).document.tree));
+30:  // the same split the document has. A dataset without one gets an empty org
+34:    const dataset = getDataset(id);
+35:    return structuredClone(dataset.document.company ?? { name: dataset.title, units: [] });
+38:  let company = $state.raw(companyOf(DEFAULT_DATASET_ID));
+41:  // not an audit log — undo restores the history alongside the tree, so an
+43:  // until then a fresh dataset starts empty.
+47:  let history = $state.raw(historyOf(DEFAULT_DATASET_ID));
+51:  // (see resetSession). A snapshot is still the whole document state, dataset
+54:  let undoStack = $state.raw([]);
+55:  let selectedId = $state(null);
+56:  let highlight = $state.raw([]);
+59:  let preview = $state.raw([]);
+60:  let editing = $state(false);
+61:  let showTeamLabels = $state(false);
+82:  let chats = $state([freshChat()]);
+83:  let activeChatId = $state(chats[0].id);
+86:  // Notes the app writes about itself (an undo, an import, a dataset switch)
+93:  // | { kind: &#x27;briefing&#x27; }. Which node is a separate question — `selectedId`
+95:  let panel = $state(null);
+100:  $effect(() =&gt; {
+114:  let focusedField = $state(null);
+135:  $effect(() =&gt; {
+144:    datasetId,
+154:  // it, and so can a dataset switch). Fall back to the list rather than leaving
+156:  $effect(() =&gt; {
+161:  // ── the briefing ──────────────────────────────────────────────────────────
+169:  // Nothing here goes near `commit()`: an audit is a reading, not a reply, and
+171:  let briefing = $state.raw({ status: &#x27;idle&#x27;, findings: [], error: null }); // idle | running | ready | error
+172:  let dismissed = $state.raw(new Set());
+174:  // Deliberately not $state: an audit reads these from timers and from an
+175:  // $effect, and a sequence number that re-triggered the effect that set it
+176:  // would audit forever.
+177:  let auditSeq = 0;
+178:  let auditTimer = null;
+179:  let auditAbort = null;
+180:  let briefingShown = false;
+182:  async function audit() {
+183:    const seq = ++auditSeq;
+184:    auditAbort = new AbortController();
+186:      const res = await fetch(&#x27;/api/chat&#x27;, {
+189:        signal: auditAbort.signal,
+192:        // subject. `context` still rides along, so a briefing that is already
+197:          message: &#x27;Audit the tree.&#x27;,
+201:          mode: &#x27;audit&#x27;,
+211:      // A response that lands after a newer audit was scheduled describes a
+213:      if (seq !== auditSeq) return;
+215:      briefing = { status: &#x27;ready&#x27;, findings, error: null };
+218:      if (findings.length &amp;&amp; !briefingShown &amp;&amp; !panel) {
+219:        briefingShown = true;
+220:        panel = { kind: &#x27;briefing&#x27; };
+223:      if (err.name === &#x27;AbortError&#x27; || seq !== auditSeq) return;
+224:      // Keep the findings we have: a failed re-audit should not empty a panel
+226:      briefing = { status: &#x27;error&#x27;, findings: briefing.findings, error: err.message };
+232:  // audit each. The abort drops whatever is still out.
+233:  function scheduleAudit() {
+234:    clearTimeout(auditTimer);
+235:    auditAbort?.abort();
+236:    auditSeq++; // anything still in flight is now stale, aborted or not
+237:    briefing = { status: &#x27;running&#x27;, findings: briefing.findings, error: null };
+238:    auditTimer = setTimeout(audit, 1500);
+241:  // The one trigger: the document changed. Both halves are $state.raw, so their
+243:  // effect runs on mount, which is the first audit. No call site has to
+244:  // remember to re-audit. `untrack` keeps the writes inside scheduleAudit()
+246:  $effect(() =&gt; {
+249:    untrack(scheduleAudit);
+251:      clearTimeout(auditTimer);
+252:      auditAbort?.abort();
+256:  const openFindings = $derived(briefing.findings.filter((f) =&gt; !dismissed.has(keyOf(f))));
+259:  // audit has come back it is the rule-based count it replaces, so the number
+261:  const briefingStat = $derived(
+262:    briefing.status === &#x27;running&#x27;
+264:      : briefing.status === &#x27;ready&#x27;
+287:    dataset: getDataset(datasetId).title
+302:  function commit(actions = [], { actor, reason, undoable = true } = {}) {
+374:  async function send(chatId, message, { hidden = false } = {}) {
+388:      const res = await fetch(&#x27;/api/chat&#x27;, {
+450:  // `opening` is the other way round: a tab opened from a briefing card starts
+477:    tree = previous.tree;
+478:    company = previous.company;
+479:    datasetId = previous.datasetId;
+493:  function resetSession() {
+504:    // The $effect on `tree` re-audits the new one, and the panel is allowed to
+506:    briefing = { status: &#x27;idle&#x27;, findings: [], error: null };
+507:    dismissed = new Set();
+508:    briefingShown = false;
+513:  // Reset, import and dataset switch all replace the document, so they replace
+514:  // both halves of it: a tree from one dataset beside another&#x27;s org would leave
+517:    tree = structuredClone(getDataset(datasetId).document.tree);
+518:    company = companyOf(datasetId);
+519:    history = historyOf(datasetId); // back to the dataset&#x27;s own history, not ours
+520:    resetSession();
+523:  // Switching datasets replaces the document outright, the same way import
+526:    if (id === datasetId) return;
+527:    const dataset = getDataset(id);
+528:    datasetId = dataset.id;
+529:    tree = structuredClone(dataset.document.tree);
+530:    company = companyOf(dataset.id);
+531:    history = historyOf(dataset.id);
+532:    resetSession(); // the note below lands in the fresh tab resetSession just opened
+533:    note(`Loaded &quot;${dataset.title}&quot; (${tree.nodes.length} nodes).`, { note: true });
+548:    const doc = createDocument({ tree, company, history, meta: { title: getDataset(datasetId).title } });
+569:    tree = out.document.tree;
+573:    company = structuredClone(out.document.company ?? { name: out.document.meta?.title ?? file.name, units: [] });
+575:    resetSession();
+578:    // resetSession has just emptied the stack and an import is not a step back.
+676:        class:on={panel?.kind === &#x27;briefing&#x27;}
+677:        class:busy={briefing.status === &#x27;running&#x27;}
+678:        class:warn={briefing.status === &#x27;ready&#x27; ? openFindings.length : weakLinks}
+679:        onclick={() =&gt; (panel = panel?.kind === &#x27;briefing&#x27; ? null : { kind: &#x27;briefing&#x27; })}
+680:        title={briefing.status === &#x27;error&#x27;
+684:        {briefingStat}
+689:      &lt;select value={datasetId} onchange={(e) =&gt; switchDataset(e.target.value)} title=&quot;Load one of the bundled OKR documents&quot;&gt;
+690:        {#each DATASETS as dataset (dataset.id)}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-22-472Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-22-472Z" class="timestamp-link"><time datetime="2026-09-14T13:00:22.472Z" data-timestamp="2026-09-14T13:00:22.472Z">2026-09-14T13:00:22.472Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01URaAUoDznjyhkEGirj14hm">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read audit block in App.svelte, briefing.js, and Briefing.svelte status lines</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n 160,300p web/src/App.svelte; echo ---BRIEFINGJS; cat -n web/src/lib/briefing.js; echo ---BRIEFING_SVELTE; grep -nE &#34;status|hint|Retry|onRetry|Reviewing|Nothing|unreachable&#34; web/src/Briefing.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T13-00-22-538Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T13-00-22-538Z" class="timestamp-link"><time datetime="2026-09-14T13:00:22.538Z" data-timestamp="2026-09-14T13:00:22.538Z">2026-09-14T13:00:22.538Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>  // ── the briefing ──────────────────────────────────────────────────────────
+  //
+  // The assistant reads the tree without being asked. `weakLinks` above is the
+  // rule this replaces: it counts one kind of problem and cannot see an
+  // activity dressed as a key result, a target with no baseline, or a team
+  // carrying nine of them. The rule stays as the fallback for when the service
+  // is unreachable — it is what the app can say when the model cannot.
+  //
+  // Nothing here goes near `commit()`: an audit is a reading, not a reply, and
+  // nothing enters the document until the user clicks Fix on a card.
+  let briefing = $state.raw({ status: &#x27;idle&#x27;, findings: [], error: null }); // idle | running | ready | error
+  let dismissed = $state.raw(new Set());
+
+  // Deliberately not $state: an audit reads these from timers and from an
+  // $effect, and a sequence number that re-triggered the effect that set it
+  // would audit forever.
+  let auditSeq = 0;
+  let auditTimer = null;
+  let auditAbort = null;
+  let briefingShown = false;
+
+  async function audit() {
+    const seq = ++auditSeq;
+    auditAbort = new AbortController();
+    try {
+      const res = await fetch(&#x27;/api/chat&#x27;, {
+        method: &#x27;POST&#x27;,
+        headers: { &#x27;content-type&#x27;: &#x27;application/json&#x27; },
+        signal: auditAbort.signal,
+        // The same body `send()` builds, minus everything a conversation has:
+        // no question was typed, there is no history, and no one node is the
+        // subject. `context` still rides along, so a briefing that is already
+        // open is something the model knows about.
+        body: JSON.stringify({
+          tree,
+          company,
+          message: &#x27;Audit the tree.&#x27;,
+          selectedNodeId: null,
+          history: [],
+          context: viewContext,
+          mode: &#x27;audit&#x27;,
+          subject: null
+        })
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() =&gt; ({}));
+        throw new Error(body.error ?? `${res.status} ${res.statusText}`);
+      }
+      const checked = validateChatResponse(await res.json());
+      if (!checked.ok) throw new Error(&quot;the service sent a response this app can&#x27;t read&quot;);
+      // A response that lands after a newer audit was scheduled describes a
+      // tree that is no longer on the stage.
+      if (seq !== auditSeq) return;
+      const findings = checked.value.findings ?? [];
+      briefing = { status: &#x27;ready&#x27;, findings, error: null };
+      // It shows itself once per document, and never over something the user
+      // opened: a node they clicked is not pushed aside by a background read.
+      if (findings.length &amp;&amp; !briefingShown &amp;&amp; !panel) {
+        briefingShown = true;
+        panel = { kind: &#x27;briefing&#x27; };
+      }
+    } catch (err) {
+      if (err.name === &#x27;AbortError&#x27; || seq !== auditSeq) return;
+      // Keep the findings we have: a failed re-audit should not empty a panel
+      // the user is reading.
+      briefing = { status: &#x27;error&#x27;, findings: briefing.findings, error: err.message };
+    }
+  }
+
+  // Debounced because one gesture is several commits: an interview&#x27;s closing
+  // batch, or a field-by-field edit in the Detail panel, would otherwise be an
+  // audit each. The abort drops whatever is still out.
+  function scheduleAudit() {
+    clearTimeout(auditTimer);
+    auditAbort?.abort();
+    auditSeq++; // anything still in flight is now stale, aborted or not
+    briefing = { status: &#x27;running&#x27;, findings: briefing.findings, error: null };
+    auditTimer = setTimeout(audit, 1500);
+  }
+
+  // The one trigger: the document changed. Both halves are $state.raw, so their
+  // identity changes on every commit, undo, reset, switch and import — and the
+  // effect runs on mount, which is the first audit. No call site has to
+  // remember to re-audit. `untrack` keeps the writes inside scheduleAudit()
+  // from making this effect depend on its own output.
+  $effect(() =&gt; {
+    tree;
+    company;
+    untrack(scheduleAudit);
+    return () =&gt; {
+      clearTimeout(auditTimer);
+      auditAbort?.abort();
+    };
+  });
+
+  const openFindings = $derived(briefing.findings.filter((f) =&gt; !dismissed.has(keyOf(f))));
+
+  // The topbar stat, which is also the button that opens the panel. Until an
+  // audit has come back it is the rule-based count it replaces, so the number
+  // never goes blank.
+  const briefingStat = $derived(
+    briefing.status === &#x27;running&#x27;
+      ? &#x27;Reviewing…&#x27;
+      : briefing.status === &#x27;ready&#x27;
+        ? openFindings.length
+          ? `${openFindings.length} to review`
+          : &#x27;Nothing to review&#x27;
+        : `${weakLinks} weak link${weakLinks === 1 ? &#x27;&#x27; : &#x27;s&#x27;}`
+  );
+
+  // What the user is looking at, in the shape the chat schema calls
+  // ViewContext. One builder, because every chat request wants the same
+  // answer: pointing plus seeing is what makes &quot;make this measurable&quot; work
+  // without anyone typing an id. Keys that would be `undefined` are left out
+  // rather than sent — `additionalProperties: false` tolerates absence, not
+  // nulls in the wrong place.
+  const viewContext = $derived({
+    panel: panel &amp;&amp; {
+      kind: panel.kind,
+      // A node panel takes its id from the selection; a team panel carries
+      // its own. The teams list names nothing, so it has no id.
+      ...(panel.kind === &#x27;node&#x27; ? { ...(selectedId ? { id: selectedId } : {}), editing } : {}),
+      ...(panel.kind === &#x27;team&#x27; ? { id: panel.id } : {}),
+      ...(focusedField ? { field: focusedField } : {})
+    },
+    highlighted: highlight,
+    dataset: getDataset(datasetId).title
+  });
+
+  // ── the one commit path ───────────────────────────────────────────────────
+  //
+  // Every mutation of the document goes through here, whoever authored it and
+  // whichever half it touches: the assistant&#x27;s actions, the user&#x27;s edits in the
+  // Detail panel, a charter rewritten in TeamEditor, the empty batch that marks
+  // an import. One place that validates, snapshots for undo, applies, and
+  // writes the change into history — so user and model edits are
+  // indistinguishable downstream, and a team edit undoes exactly like a node
+  // edit because it is the same kind of thing.
+  //
+  // `undoable: false` is for callers that already snapshotted before replacing
+---BRIEFINGJS
+     1	// What a finding is called once the model has stopped talking about it.
+     2	//
+     3	// Findings have no ids: the model writes a fresh list on every audit, and two
+     4	// audits of the same tree describe the same problem in different words. What
+     5	// does survive re-wording is the set of nodes the finding is about, so that is
+     6	// the identity — a dismissed card stays dismissed across the re-audit that
+     7	// follows the fix beside it, and the `{#each}` key does not re-mount a card
+     8	// whose title was rephrased.
+     9	//
+    10	// Sorted, so the model&#x27;s ordering inside one finding never splits the key.
+    11	
+    12	/**
+    13	 * @typedef {import(&#x27;@okr-viewer/schema&#x27;).Finding} Finding
+    14	 */
+    15	
+    16	/**
+    17	 * Stable identity of a finding: its node set.
+    18	 * @param {{ nodeIds?: readonly string[] }} finding
+    19	 * @returns {string}
+    20	 */
+    21	export const keyOf = (finding) =&gt; [...(finding?.nodeIds ?? [])].sort().join(&#x27;|&#x27;);
+---BRIEFING_SVELTE
+13:    onRetry,
+86:  {#if briefing.status === &#x27;running&#x27;}
+87:    &lt;p class=&quot;hint reviewing&quot;&gt;Reviewing the tree…&lt;/p&gt;
+88:  {:else if briefing.status === &#x27;error&#x27;}
+89:    &lt;p class=&quot;hint bad&quot;&gt;Couldn&#x27;t reach the assistant{briefing.error ? `: ${briefing.error}` : &#x27;&#x27;}.&lt;/p&gt;
+90:    &lt;div class=&quot;actions&quot;&gt;&lt;button class=&quot;ghost&quot; onclick={onRetry}&gt;Retry&lt;/button&gt;&lt;/div&gt;
+123:  {:else if briefing.status === &#x27;ready&#x27;}
+124:    &lt;p class=&quot;hint&quot;&gt;Nothing needs attention.&lt;/p&gt;
+128:    &lt;p class=&quot;hint&quot;&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-28-714Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-28-714Z" class="timestamp-link"><time datetime="2026-09-14T13:00:28.714Z" data-timestamp="2026-09-14T13:00:28.714Z">2026-09-14T13:00:28.714Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-31-090Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-31-090Z" class="timestamp-link"><time datetime="2026-09-14T13:00:31.090Z" data-timestamp="2026-09-14T13:00:31.090Z">2026-09-14T13:00:31.090Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_015qNHSLjorQibUL6Er7Y8ZR">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read service entry, vite config, test style, Briefing props, node version</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat -n service/index.js | sed -n 1,140p; echo ---VITE; cat web/vite.config.js; echo ---TEST; head -30 web/src/lib/navigate.test.js; echo ---BRIEFING_PROPS; sed -n 1,40p web/src/Briefing.svelte; sed -n 120,140p web/src/Briefing.svelte; echo ---NODE; docker exec dev node --version 2&gt;&amp;1 | head -2; echo ---CSS; grep -nE &#34;\.hint|\.busy|\.stats&#34; web/src/app.css | head</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T13-00-33-048Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T13-00-33-048Z" class="timestamp-link"><time datetime="2026-09-14T13:00:33.048Z" data-timestamp="2026-09-14T13:00:33.048Z">2026-09-14T13:00:33.048Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1	import &#x27;dotenv/config&#x27;;
+     2	import express from &#x27;express&#x27;;
+     3	import Anthropic from &#x27;@anthropic-ai/sdk&#x27;;
+     4	import { MODEL, respondTool, systemPrompt } from &#x27;./prompt.js&#x27;;
+     5	import { sanitizeContext, sanitizeHistory, mergeTurns, resolveTab, validateResponse } from &#x27;./validate.js&#x27;;
+     6	import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from &#x27;@okr-viewer/schema&#x27;;
+     7	
+     8	const PORT = Number(process.env.PORT) || 8787;
+     9	
+    10	// Which browser origins may use this service. An *origin* is scheme://host[:port]
+    11	// — that is what the browser sends and what CORS compares, so a bare hostname
+    12	// here matches nothing. Comma-separated for the &quot;dev and staging&quot; case, and `*`
+    13	// as a deliberate opt-out for a deployment that gates access somewhere else.
+    14	//
+    15	// The default is the dev server from the README, so `npm run dev:*` needs no
+    16	// setup. In a container it is set explicitly: with the compose stack the browser
+    17	// is on the web container&#x27;s port, and nginx passes that Origin through.
+    18	const APP_ORIGIN = (process.env.APP_ORIGIN ?? &#x27;http://localhost:5173&#x27;)
+    19	  .split(&#x27;,&#x27;)
+    20	  .map((o) =&gt; o.trim())
+    21	  .filter(Boolean);
+    22	const originAllowed = (origin) =&gt; APP_ORIGIN.includes(&#x27;*&#x27;) || APP_ORIGIN.includes(origin);
+    23	
+    24	const app = express();
+    25	
+    26	// Above express.json() on purpose: a refused origin should not get a 2MB body
+    27	// parsed on its behalf.
+    28	app.use((req, res, next) =&gt; {
+    29	  const origin = req.get(&#x27;origin&#x27;);
+    30	
+    31	  // No Origin at all is not a CORS case. Same-origin GETs, the container
+    32	  // healthcheck and every server-side caller send none, and refusing them would
+    33	  // break the healthcheck while protecting nobody — CORS is enforced by the
+    34	  // browser, and a script with curl never asks in the first place.
+    35	  if (!origin) return next();
+    36	
+    37	  if (!originAllowed(origin)) {
+    38	    // 403 rather than &quot;just omit the header&quot;. Omitting it makes the browser
+    39	    // discard the *response*, but by then the handler has run and the tokens
+    40	    // are spent. Refusing here is the part that matters.
+    41	    console.warn(`[cors] refused ${origin} (APP_ORIGIN: ${APP_ORIGIN.join(&#x27;, &#x27;)})`);
+    42	    return res.status(403).json({ error: &#x27;This origin may not use the service.&#x27; });
+    43	  }
+    44	
+    45	  // Echo the caller rather than replying `*`: the allowlist can hold several,
+    46	  // and Vary keeps a cache from handing one origin another&#x27;s response.
+    47	  res.set(&#x27;Access-Control-Allow-Origin&#x27;, origin);
+    48	  res.vary(&#x27;Origin&#x27;);
+    49	  res.set(&#x27;Access-Control-Allow-Methods&#x27;, &#x27;GET, POST, OPTIONS&#x27;);
+    50	  res.set(&#x27;Access-Control-Allow-Headers&#x27;, &#x27;Content-Type&#x27;);
+    51	  res.set(&#x27;Access-Control-Max-Age&#x27;, &#x27;86400&#x27;);
+    52	
+    53	  // The preflight never reaches a route: it is asking about the real request,
+    54	  // and the headers above are the whole answer.
+    55	  if (req.method === &#x27;OPTIONS&#x27;) return res.sendStatus(204);
+    56	  next();
+    57	});
+    58	
+    59	app.use(express.json({ limit: &#x27;2mb&#x27; }));
+    60	
+    61	// Created lazily so a missing key surfaces as a clear 500, not a crash at boot.
+    62	let client;
+    63	const getClient = () =&gt; (client ??= new Anthropic());
+    64	
+    65	app.get(&#x27;/api/health&#x27;, (_req, res) =&gt; res.json({ ok: true, model: MODEL }));
+    66	
+    67	app.post(&#x27;/api/chat&#x27;, async (req, res) =&gt; {
+    68	  // One structural check for the whole body, straight from the shared schema.
+    69	  const request = validateChatRequest(req.body);
+    70	  if (!request.ok) {
+    71	    return res.status(400).json({ error: &#x27;The request does not match the chat schema.&#x27;, details: request.errors });
+    72	  }
+    73	  const {
+    74	    tree,
+    75	    company = null,
+    76	    message,
+    77	    selectedNodeId = null,
+    78	    history = [],
+    79	    context = null,
+    80	    mode = &#x27;free&#x27;,
+    81	    subject = null
+    82	  } = request.value;
+    83	
+    84	  // Shape is not enough: a tree can be well-formed and still be unusable.
+    85	  // Warnings (an off-ladder link, say) are normal mid-edit, so they only log.
+    86	  const semantics = checkTreeSemantics(tree);
+    87	  if (semantics.errors.length) {
+    88	    return res.status(400).json({ error: &#x27;The tree is structurally broken.&#x27;, details: semantics.errors });
+    89	  }
+    90	  if (semantics.warnings.length) console.warn(&#x27;[chat] tree warnings:&#x27;, JSON.stringify(semantics.warnings));
+    91	
+    92	  // The org gets the same treatment, and only when it is sent at all: a request
+    93	  // without `company` is a document that has no teams, not a broken one.
+    94	  if (company) {
+    95	    const org = checkCompanySemantics(company);
+    96	    if (org.errors.length) {
+    97	      return res.status(400).json({ error: &#x27;The company is structurally broken.&#x27;, details: org.errors });
+    98	    }
+    99	    if (org.warnings.length) console.warn(&#x27;[chat] company warnings:&#x27;, JSON.stringify(org.warnings));
+   100	  }
+   101	  // A node pointing at a team that is gone is never fatal — it just means the
+   102	  // model should read that node&#x27;s `owner` text instead.
+   103	  const ownership = checkOwnership(tree, company);
+   104	  if (ownership.warnings.length) console.warn(&#x27;[chat] ownership warnings:&#x27;, JSON.stringify(ownership.warnings));
+   105	
+   106	  const selected = typeof selectedNodeId === &#x27;string&#x27; &amp;&amp; tree.nodes.some((n) =&gt; n.id === selectedNodeId) ? selectedNodeId : null;
+   107	  // Same treatment for what the user is looking at: unknown ids are dropped,
+   108	  // never rejected. A stale highlight is not a broken request.
+   109	  const view = sanitizeContext(tree, company, context);
+   110	  if (view.dropped.length) console.warn(&#x27;[chat] context: dropped&#x27;, JSON.stringify(view.dropped));
+   111	
+   112	  // An interview is only an interview if its subject is in this document. A tab
+   113	  // opened on a node the user has since deleted (or a stale tab beside an
+   114	  // imported file) is not a broken request — it is a conversation that has lost
+   115	  // what it was about, so it falls back to the coach prompt and says so in the
+   116	  // log rather than 400-ing a message the user already typed.
+   117	  const tab = resolveTab(tree, company, mode, subject);
+   118	  if (tab.dropped) console.warn(`[chat] ${mode}: ${tab.dropped}`);
+   119	
+   120	  // An interview runs long: eight questions plus answers is past the free
+   121	  // conversation&#x27;s cap, and a summary that cannot see the first answers is
+   122	  // worse than no summary.
+   123	  const messages = mergeTurns([
+   124	    ...sanitizeHistory(history, tab.mode === &#x27;free&#x27; ? 12 : 24),
+   125	    { role: &#x27;user&#x27;, content: message.trim() }
+   126	  ]);
+   127	
+   128	  const started = Date.now();
+   129	  try {
+   130	    const response = await getClient().messages.create({
+   131	      model: MODEL,
+   132	      // Six findings, each with a fix, is a lot more output than a reply.
+   133	      max_tokens: tab.mode === &#x27;audit&#x27; ? 8192 : 4096,
+   134	      system: systemPrompt(tree, company, selected, view.context, tab),
+   135	      // Only an audit gets a tool it can report findings with.
+   136	      tools: [respondTool(tab.mode)],
+   137	      tool_choice: { type: &#x27;tool&#x27;, name: &#x27;respond&#x27; },
+   138	      messages
+   139	    });
+   140	
+---VITE
+import { defineConfig } from &#x27;vite&#x27;;
+import { svelte } from &#x27;@sveltejs/vite-plugin-svelte&#x27;;
+
+export default defineConfig({
+  plugins: [svelte()],
+  // Dev-only: the browser talks to /api and Vite forwards it to the service,
+  // so the API key never leaves service/.env and there is no CORS to fight.
+  server: {
+    host: &#x27;0.0.0.0&#x27;, // reachable from outside the container / on the LAN
+    proxy: { &#x27;/api&#x27;: &#x27;http://localhost:8787&#x27; }
+  }
+});
+---TEST
+import test from &#x27;node:test&#x27;;
+import assert from &#x27;node:assert/strict&#x27;;
+import {
+  rootOf, parentOf, firstChildOf, childrenOf, siblingOf, neighborhoodOf, step
+} from &#x27;./navigate.js&#x27;;
+
+// Six nodes: a root, two objectives, three KRs under the first objective.
+// Deliberately not in tree order in the array — sibling order is array order,
+// and the interleaving proves the filters, not the layout, pick the siblings.
+const tree = {
+  nodes: [
+    { id: &#x27;root&#x27;, parent: null },
+    { id: &#x27;obj-a&#x27;, parent: &#x27;root&#x27; },
+    { id: &#x27;kr-1&#x27;, parent: &#x27;obj-a&#x27; },
+    { id: &#x27;obj-b&#x27;, parent: &#x27;root&#x27; },
+    { id: &#x27;kr-2&#x27;, parent: &#x27;obj-a&#x27; },
+    { id: &#x27;kr-3&#x27;, parent: &#x27;obj-a&#x27; }
+  ]
+};
+
+test(&#x27;rootOf finds the one node with a null parent&#x27;, () =&gt; {
+  assert.equal(rootOf(tree).id, &#x27;root&#x27;);
+  assert.equal(rootOf({ nodes: [] }), null);
+});
+
+test(&#x27;parent of a KR is its objective, and the root has no parent&#x27;, () =&gt; {
+  assert.equal(parentOf(tree, &#x27;kr-2&#x27;).id, &#x27;obj-a&#x27;);
+  assert.equal(parentOf(tree, &#x27;root&#x27;), null);
+});
+
+---BRIEFING_PROPS
+&lt;script&gt;
+  import { unitName } from &#x27;./lib/company.js&#x27;;
+  import { keyOf } from &#x27;./lib/briefing.js&#x27;;
+
+  let {
+    briefing,
+    dismissed,
+    tree,
+    company = null,
+    onShow,
+    onFix,
+    onDismiss,
+    onRetry,
+    onClose,
+    onPreview = () =&gt; {},
+    onNewChat = null
+  } = $props();
+
+  // Dismissal is a view filter, not an edit: the finding is still in
+  // `briefing.findings`, it is simply not shown again for this document.
+  const open = $derived(briefing.findings.filter((f) =&gt; !dismissed.has(keyOf(f))));
+
+  // Who this lands on. A finding groups nodes by problem, so it can span teams;
+  // nodes with no team are exactly what one category of finding is about, and
+  // are named as such rather than skipped silently.
+  const byNode = $derived(new Map(tree.nodes.map((n) =&gt; [n.id, n])));
+
+  function owners(ids) {
+    const names = new Set();
+    let orphans = 0;
+    for (const id of ids) {
+      const name = unitName(company, byNode.get(id)?.unitId);
+      if (name) names.add(name);
+      else orphans++;
+    }
+    const out = [...names];
+    if (orphans) out.push(orphans === ids.length ? &#x27;no team&#x27; : `${orphans} with no team`);
+    return out;
+  }
+
+        &lt;/li&gt;
+      {/each}
+    &lt;/ul&gt;
+  {:else if briefing.status === &#x27;ready&#x27;}
+    &lt;p class=&quot;hint&quot;&gt;Nothing needs attention.&lt;/p&gt;
+  {/if}
+
+  {#if briefing.findings.length &gt; open.length}
+    &lt;p class=&quot;hint&quot;&gt;
+      {briefing.findings.length - open.length} dismissed.
+    &lt;/p&gt;
+  {/if}
+&lt;/aside&gt;
+---NODE
+v24.4.1
+---CSS
+58:.topbar .stats { color: var(--muted); display: flex; align-items: baseline; gap: 6px; }
+59:.topbar .stats .warn { color: var(--bad); }
+62:.topbar .stats .stat {
+66:.topbar .stats .stat:hover:not(:disabled) { border-color: var(--border); color: var(--text); }
+67:.topbar .stats .stat.on { border-color: var(--accent); color: var(--accent); }
+68:.topbar .stats .stat.busy::after { content: &#x27; ·&#x27;; animation: blink 1.2s infinite; }
+192:.detail .hint { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+228:.detail .hint.bad { color: var(--bad); }
+230:.detail .hint.reviewing::after { content: &#x27; ·&#x27;; animation: blink 1.2s infinite; }
+283:.tab.busy .name::after { content: &#x27; ·&#x27;; animation: blink 1.2s infinite; }</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-36-433Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-36-433Z" class="timestamp-link"><time datetime="2026-09-14T13:00:36.433Z" data-timestamp="2026-09-14T13:00:36.433Z">2026-09-14T13:00:36.433Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>Next I'll check how the service builds the prompt for cache key invalidation, and whether the <code>context</code> field varies between reloads enough to exclude it from the key.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T13-00-39-260Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T13-00-39-260Z" class="timestamp-link"><time datetime="2026-09-14T13:00:39.260Z" data-timestamp="2026-09-14T13:00:39.260Z">2026-09-14T13:00:39.260Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01RUUmJ3LvgywjRDdihafDiQ">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read service response handling, prompt exports, schema exports, datasets loader</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n 140,175p service/index.js; echo ---PROMPT; grep -nE &#34;^export|MODEL|PROMPT_VERSION|version&#34; service/prompt.js | head -20; echo ---SCHEMA-INDEX; grep -nE &#34;Finding|validateChatResponse|ChatResponse&#34; schema/index.d.ts schema/index.js 2&gt;/dev/null | head; ls schema schema/src schema/scripts; echo ---DATASETS; sed -n 1,40p web/src/lib/datasets.js; echo ---GIT; git log --oneline -3 -- service/prompt.js; echo ---README-DEV; grep -nE &#34;npm run|docker exec|dev container|localhost:5173&#34; README.md | head -12</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T13-00-39-382Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T13-00-39-382Z" class="timestamp-link"><time datetime="2026-09-14T13:00:39.382Z" data-timestamp="2026-09-14T13:00:39.382Z">2026-09-14T13:00:39.382Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>    const call = response.content.find((b) =&gt; b.type === &#x27;tool_use&#x27; &amp;&amp; b.name === &#x27;respond&#x27;);
+    if (!call) {
+      const text = response.content.filter((b) =&gt; b.type === &#x27;text&#x27;).map((b) =&gt; b.text).join(&#x27;\n&#x27;).trim();
+      const why = response.stop_reason === &#x27;refusal&#x27; ? &#x27;declined to answer&#x27; : `stopped early (${response.stop_reason})`;
+      console.warn(`[chat] no respond call: ${why}`);
+      return res.json({ reply: text || `The model ${why}. Try rephrasing.`, actions: [], highlight: [], findings: [] });
+    }
+
+    const out = validateResponse(tree, company, call.input);
+    if (out.dropped.length) console.warn(&#x27;[chat] dropped from model output:&#x27;, JSON.stringify(out.dropped));
+    // `ctx=` says what the user was looking at, because a reply that resolved
+    // &quot;this&quot; to the wrong thing is a prompt bug you cannot see from the reply.
+    const p = view.context?.panel;
+    const ctx = p ? `${p.kind}${p.id ? `:${p.id}` : &#x27;&#x27;}${p.field ? `/${p.field}` : &#x27;&#x27;}` : &#x27;none&#x27;;
+    console.log(
+      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights · ${out.findings.length} findings · ctx=${ctx} · mode=${tab.mode}`
+    );
+    res.json({ reply: out.reply, actions: out.actions, highlight: out.highlight, findings: out.findings });
+  } catch (err) {
+    // The SDK throws a plain Error (not AuthenticationError) when it finds no
+    // credentials at all, so match that case explicitly.
+    if (err instanceof Anthropic.AuthenticationError || /authentication method/i.test(err?.message ?? &#x27;&#x27;)) {
+      console.error(&#x27;[chat] auth failed — is ANTHROPIC_API_KEY set in service/.env?&#x27;);
+      return res.status(500).json({ error: &#x27;The service has no valid ANTHROPIC_API_KEY.&#x27; });
+    }
+    if (err instanceof Anthropic.RateLimitError) {
+      return res.status(429).json({ error: &#x27;Rate limited by the Claude API. Wait a moment and retry.&#x27; });
+    }
+    if (err instanceof Anthropic.APIConnectionError) {
+      console.error(&#x27;[chat] connection error:&#x27;, err.message);
+      return res.status(502).json({ error: &#x27;Could not reach the Claude API.&#x27; });
+    }
+    if (err instanceof Anthropic.APIError) {
+      console.error(`[chat] API error ${err.status}:`, err.message);
+      return res.status(502).json({ error: `Claude API error (${err.status}).` });
+---PROMPT
+6:export const MODEL = &#x27;claude-sonnet-5&#x27;;
+29:export const respondTool = (mode) =&gt; ({
+315:export function systemPrompt(tree, company, selectedNodeId, context = null, { mode = &#x27;free&#x27;, subject = null } = {}) {
+---SCHEMA-INDEX
+schema/index.js:26:  validateChatResponse as _validateChatResponse,
+schema/index.js:161:export const validateChatResponse = wrap(_validateChatResponse, { actions: true });
+schema/index.d.ts:20:  ChatResponse,
+schema/index.d.ts:29:  Finding,
+schema/index.d.ts:58:  ChatResponse,
+schema/index.d.ts:67:  Finding,
+schema/index.d.ts:104:export declare function validateChatResponse(data: unknown): ValidationResult&lt;ChatResponse&gt;;
+schema:
+dist
+index.d.ts
+index.js
+migrations
+package.json
+scripts
+src
+test
+tsconfig.check.json
+version.js
+
+schema/scripts:
+build.mjs
+clean.mjs
+
+schema/src:
+action.schema.json
+chat-request.schema.json
+chat-response.schema.json
+company.schema.json
+history.schema.json
+index.schema.json
+okr-document.schema.json
+okr-node.schema.json
+okr-tree.schema.json
+---DATASETS
+// The bundled OkrDocuments the app can boot from.
+//
+// Every dataset is a file in ../assets/datasets/*.json in exactly the format
+// Export writes and Import reads, so a bundled tree and a downloaded one are
+// interchangeable — and `company` / `history` can be added to a dataset later
+// without inventing a second format.
+//
+// Vite inlines the JSON at build time (eager glob), so there is no fetch, no
+// loading state and no 404 path: if a file is here, it is in the bundle.
+
+import manifest from &#x27;../assets/datasets/manifest.json&#x27;;
+import { parseDocument } from &#x27;@okr-viewer/schema&#x27;;
+
+const files = import.meta.glob(&#x27;../assets/datasets/*.json&#x27;, { eager: true, import: &#x27;default&#x27; });
+
+const slugOf = (path) =&gt; path.slice(path.lastIndexOf(&#x27;/&#x27;) + 1, -&#x27;.json&#x27;.length);
+
+const documents = new Map();
+for (const [path, document] of Object.entries(files)) {
+  const slug = slugOf(path);
+  if (slug === &#x27;manifest&#x27;) continue;
+  documents.set(slug, document);
+}
+
+// Manifest order first, then anything it does not mention, alphabetically — so
+// dropping a new file into the folder works without touching the manifest.
+const ordered = [
+  ...(manifest.order ?? []).filter((id) =&gt; documents.has(id)),
+  ...[...documents.keys()].filter((id) =&gt; !(manifest.order ?? []).includes(id)).sort()
+];
+
+/** @type {{ id: string, title: string, document: object }[]} */
+export const DATASETS = ordered.map((id) =&gt; ({
+  id,
+  title: documents.get(id).meta?.title || id,
+  document: documents.get(id)
+}));
+
+if (!documents.has(manifest.default)) {
+  // A blank page with a stack trace beats a silent fallback to whichever file
+---GIT
+74ca79d add tree briefing implementation
+dfcb47f Add chat tabs with a mode and a subject, and interview launchers
+b37df59 Send what the user is looking at with every chat message
+---README-DEV
+143:npm run dev:service                           # :8787
+144:npm run dev:web                               # :5173, in a second shell
+147:Other root scripts: `npm run build:schema` after editing anything in
+148:`schema/src/`, and `npm run test:schema` to run the schema&#x27;s own tests.
+238:- **Unset → `http://localhost:5173`**, the Vite dev origin, so `npm run dev:*`
+311:`npm run build:schema`, and both consumers pick the change up.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-51-29-574Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-51-29-574Z" class="timestamp-link"><time datetime="2026-09-14T14:51:29.574Z" data-timestamp="2026-09-14T14:51:29.574Z">2026-09-14T14:51:29.574Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-51-29-579Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-51-29-579Z" class="timestamp-link"><time datetime="2026-09-14T14:51:29.579Z" data-timestamp="2026-09-14T14:51:29.579Z">2026-09-14T14:51:29.579Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-51-31-898Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-51-31-898Z" class="timestamp-link"><time datetime="2026-09-14T14:51:31.898Z" data-timestamp="2026-09-14T14:51:31.898Z">2026-09-14T14:51:31.898Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_0194oVbU2r2EdDeC3gMcrh3f">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check response schema strictness, schema version, audit prompt block, commit validation</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -nE &#34;additionalProperties|\&#34;required\&#34;&#34; schema/src/chat-response.schema.json; echo ---VERSION; cat schema/version.js | head -30; echo ---AUDITBLOCK; grep -nE &#34;audit&#34; service/prompt.js | head -12; echo ---APPLY; grep -nE &#34;^export|throw|unknown&#34; web/src/lib/apply.js | head -12; echo ---COMMIT; sed -n 302,330p web/src/App.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T14-51-32-042Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T14-51-32-042Z" class="timestamp-link"><time datetime="2026-09-14T14:51:32.042Z" data-timestamp="2026-09-14T14:51:32.042Z">2026-09-14T14:51:32.042Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>43:  &quot;required&quot;: [&quot;reply&quot;, &quot;actions&quot;, &quot;highlight&quot;],
+44:  &quot;additionalProperties&quot;: false,
+89:      &quot;required&quot;: [&quot;title&quot;, &quot;why&quot;, &quot;severity&quot;, &quot;nodeIds&quot;],
+90:      &quot;additionalProperties&quot;: false
+---VERSION
+// The document format version, in one place.
+//
+// Bump it when a change to schema/src/ breaks documents written by the previous
+// version, and add the matching step to migrations/index.js at the same time.
+// Additive changes (a new optional property) do not bump it.
+export const SCHEMA_VERSION = 1;
+---AUDITBLOCK
+16:// `findings` is in that schema, and it is handed to an audit and to nothing
+21:// fine without it. Nothing about the audit path is harmed by the narrower
+28:/** The `respond` tool as this mode needs it. Only an audit may report findings. */
+32:  input_schema: mode === &#x27;audit&#x27; ? RESPOND_INPUT_SCHEMA : WITHOUT_FINDINGS
+116:    // findings from the last audit, in the order you ranked them. Saying so is
+119:      &#x27;The briefing panel is open, listing what you found wrong with the tree on the last audit, ranked as you ranked them. &quot;The first one&quot;, &quot;the second one&quot; and &quot;that finding&quot; mean entries in that list.&#x27;
+274:  if (mode === &#x27;audit&#x27;) {
+330:- \`findings\`: only in an audit, where the section below says so. Leave it out of every ordinary reply.
+---APPLY
+38:export function descendants(tree, id) {
+57: * (an unknown id, a parent that would make a cycle) is ignored rather than
+58: * thrown — the service has already filtered the model&#x27;s output.
+63:export function applyAction(tree, action) {
+123:export function applyDocumentActions({ tree, company = null }, actions = []) {
+159:export function applyActions(tree, actions = []) {
+---COMMIT
+  function commit(actions = [], { actor, reason, undoable = true } = {}) {
+    const valid = [];
+    for (const action of actions) {
+      const checked = validateAction(action);
+      if (checked.ok) valid.push(action);
+      else if (import.meta.env.DEV) console.warn(&#x27;[commit] dropped an invalid action:&#x27;, checked.errors, action);
+    }
+    // An empty batch on purpose (import) is a legal change; a batch whose every
+    // action was dropped is not a change at all.
+    if (actions.length &amp;&amp; !valid.length) return;
+
+    if (undoable) undoStack = [...undoStack, snapshot()];
+    if (valid.length) ({ tree, company } = applyDocumentActions({ tree, company }, valid));
+
+    const change = { at: new Date().toISOString(), actor, actions: valid };
+    if (reason) change.reason = String(reason).slice(0, 4000); // schema: maxLength 4000
+    history = { ...history, changes: [...history.changes, change] };
+
+    if (import.meta.env.DEV) {
+      const out = validateHistory(history);
+      if (!out.ok) console.error(&#x27;[commit] history no longer validates:&#x27;, out.errors);
+    }
+  }
+
+  // A short reason for a change the user made by hand, so the log reads like
+  // the assistant&#x27;s replies do.
+  function describe(action) {
+    const node = tree.nodes.find((n) =&gt; n.id === action.id);
+    const label = node?.label ?? action.id;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-52-01-788Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-52-01-788Z" class="timestamp-link"><time datetime="2026-09-14T14:52:01.788Z" data-timestamp="2026-09-14T14:52:01.788Z">2026-09-14T14:52:01.788Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-52-01-796Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-52-01-796Z" class="timestamp-link"><time datetime="2026-09-14T14:52:01.796Z" data-timestamp="2026-09-14T14:52:01.796Z">2026-09-14T14:52:01.796Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-53-16-904Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-53-16-904Z" class="timestamp-link"><time datetime="2026-09-14T14:53:16.904Z" data-timestamp="2026-09-14T14:53:16.904Z">2026-09-14T14:53:16.904Z</time></a></div><div class="message-content"><div class="file-tool write-tool" data-tool-id="toolu_01JvZy27vSxezZmXvtc9PggG">
+<div class="file-tool-header write-header"><span class="file-tool-icon">📝</span> Write <span class="file-tool-path">BRIEFING_AUDIT_CACHE.md</span></div>
+<div class="file-tool-fullpath">/Users/tmiv74/OKR-Display/Plans/development/BRIEFING_AUDIT_CACHE.md</div>
+<div class="truncatable"><div class="truncatable-content"><pre class="file-content">---
+tags:
+  - plan
+  - web
+  - chat
+  - agents
+  - cost
+status: development
+created: 2026-09-14
+predecessors:
+  - completed/TREE_BRIEFING.md
+---
+# Plan: Cache audit findings in the browser, keyed by a hash of the document
+
+Concept: [Depth and Focus - Design](../../Concepts/Depth%20and%20Focus%20-%20Design.md) (audit
+on change, not on schedule). This plan is the cost half of TREE_BRIEFING&#39;s &#34;Cost is one audit per
+commit&#34; residual risk: the same document should never be audited twice.
+
+## Context
+
+TREE_BRIEFING made the assistant read the whole tree unprompted. The only trigger is the
+`$effect` on `tree` / `company` at `web/src/App.svelte:246-254`, which fires on mount, so every
+page reload audits the bundled default dataset again. The document is identical on every load
+(`structuredClone` of the same JSON, `App.svelte:27`), and the audit takes 15–20 s and ~33k
+input tokens on Polaris (completion notes of TREE_BRIEFING). A developer reloading the page
+twenty times in an hour spends twenty audits on one tree. Undo has the same shape: ⌘Z after a Fix
+restores a tree that was audited seconds ago and audits it a third time.
+
+Nothing persists today, and the service is stateless by design (README, &#34;The service is
+stateless&#34;): there is no database anywhere in the repo. The browser is the place a reload cache
+belongs, because a reload is a browser event and the browser already owns the document.
+
+## Goal
+
+Reloading the page, switching back to a dataset, or undoing to a tree that was already audited
+shows that audit&#39;s findings from IndexedDB without calling the service; only a document the
+browser has not seen before costs an API call.
+
+## Decisions (locked in)
+
+1. **The store is IndexedDB, in the browser, with no library.** One database `okr-viewer`, one
+   object store `audits` with `keyPath: &#39;key&#39;` and an index on `savedAt`. A ~70-line wrapper
+   over the raw API is less than the `idb` package and its types. Rejected: a service-side
+   cache (it would be the first server state, and it would not survive a container restart,
+   which is what a reload of the compose stack is); `localStorage` (synchronous, 5 MB, and a
+   JSON blob per audit across forty trees gets close to the cap).
+2. **The key is a hash of the canonical document, plus a cache version.** Canonical means:
+   object keys sorted recursively, arrays kept in order (sibling order is array order, so two
+   trees that differ only in node order are different trees), `undefined` values dropped. The
+   input is `{ v: AUDIT_CACHE_VERSION, tree, company }` and nothing else: `history`, `context`
+   (the open panel, the highlight, the dataset title), `selectedNodeId` and `mode` are all
+   excluded, because the findings must not depend on what the user was looking at, and the
+   prompt for an audit does not use them beyond a one-line note. Two ways of arriving at the
+   same document (bundled load, import of an export, undo) hash the same.
+3. **The hash is pure JavaScript and synchronous.** `crypto.subtle` is `undefined` outside a
+   secure context, and the dev server is deliberately served on the LAN over plain http
+   (`web/vite.config.js`, `host: &#39;0.0.0.0&#39;`), so a SHA-256 through Web Crypto would silently
+   disable the cache on exactly the machines it is demoed from. A two-seed cyrb53 (106 bits of
+   output) over the canonical string is deterministic, a few milliseconds on Polaris, and runs
+   under `node --test`. A false positive would show findings for a different tree; at 106 bits
+   over a few hundred documents it will not happen.
+4. **What is cached is the validated `findings` array, with a save time.** The entry is
+   `{ key, findings, savedAt, nodes, title }`; `nodes` (a count) and `title` (the dataset title)
+   are for reading the store in DevTools and nothing else. `reply` and `highlight` are not
+   stored: an audit never touches `highlight` or the chats (`App.svelte:169-170`).
+5. **Empty results are cached for one hour, non-empty for fourteen days, errors never.** The
+   service&#39;s no-tool-call fallback returns `findings: []` (`service/index.js:141-146`) and the
+   response schema has `additionalProperties: false` (`schema/src/chat-response.schema.json:44`),
+   so the browser cannot tell &#34;the tree is clean&#34; from &#34;the model stopped early&#34; without a schema
+   change. A short TTL bounds the damage of pinning the bad case while still saving the reload
+   after a clean audit. The TTLs are checked on read, and an expired hit is a miss.
+6. **`AUDIT_CACHE_VERSION` lives in `web/src/lib/auditCache.js` and is bumped by hand** when
+   the audit prompt block (`service/prompt.js:274`) or `MODEL` (`service/prompt.js:6`) changes.
+   The coupling is documented in a comment at both ends. A fingerprint reported by
+   `/api/health` would remove the hand step but costs a fetch before every lookup; it is a
+   follow-up, not this plan.
+7. **The lookup sits inside `audit()`, after the debounce, under the same sequence check.**
+   A hit and a miss both go through `if (seq !== auditSeq) return` so a cached result cannot
+   land on a tree that has since changed. The 1500 ms debounce stays for both: it collapses a
+   burst of commits, which a cache does not. `briefing` grows a `cached: boolean` so the panel
+   can say where the findings came from.
+8. **Re-run bypasses the cache once; Retry does not.** Retry (`Briefing.svelte:90`) exists for
+   errors, which are never cached, so it needs no bypass. A new Re-run button on a cached
+   briefing calls `scheduleAudit({ fresh: true })`, which sets a one-shot flag that `audit()`
+   reads and clears. A fresh result overwrites the entry.
+9. **The cache never throws into `audit()`.** Every store call is wrapped: no IndexedDB
+   (some private windows), a quota error, a blocked upgrade, a corrupt entry, all degrade to a
+   miss or a dropped write with one `console.warn` in dev. The audit path behaves exactly as it
+   does today when the store is unusable.
+10. **Eviction is a count cap of 40 by `savedAt`, run after every write.** No background
+    sweeper; forty Polaris-sized entries is well under a megabyte.
+
+## Phase 1 — Canonical form and hash (`web/src/lib/canonical.js`)
+
+1. New `web/src/lib/canonical.js` exporting:
+   - `canonicalize(value)`: returns a JSON string with object keys sorted at every depth,
+     arrays in order, `undefined` and functions dropped like `JSON.stringify` does, `null`
+     kept. Plain recursion; documents are small.
+   - `hash(string)`: cyrb53 run twice with seeds `0` and `1`, each result as 14 hex digits,
+     concatenated. Exported on its own so a test can pin known digests.
+   - `digest(value)`: `hash(canonicalize(value))`.
+2. New `web/src/lib/canonical.test.js` in the style of `web/src/lib/navigate.test.js`:
+   key order does not change the digest; array order does; `structuredClone` of a value has
+   the same digest; a one-character label change changes it; `undefined` and absent are the
+   same; two fixed inputs pin two fixed digests so a future refactor of the hash is caught.
+   `npm test -w web` (`web/package.json`, `node --test &#34;src/**/*.test.js&#34;`) picks it up with
+   no config.
+
+## Phase 2 — The store (`web/src/lib/auditCache.js`)
+
+1. New `web/src/lib/auditCache.js`:
+   - `export const AUDIT_CACHE_VERSION = 1;` with the comment from Decision 6.
+   - `auditKey(tree, company)`: `digest({ v: AUDIT_CACHE_VERSION, tree, company })`.
+     Synchronous.
+   - `openDb()`: memoised promise; `indexedDB.open(&#39;okr-viewer&#39;, 1)`, `onupgradeneeded`
+     creates `audits` with `keyPath: &#39;key&#39;` and index `savedAt`. Resolves `null` when
+     `indexedDB` is undefined or `open` rejects, so every caller has one falsy check.
+   - `readAudit(key)`: returns `{ findings, savedAt }` or `null`. Applies Decision 5&#39;s TTLs
+     (`findings.length ? 14d : 1h`) and deletes an expired entry on the way out.
+   - `writeAudit(key, { findings, nodes, title })`: `put`, then `evict()`.
+   - `evict(limit = 40)`: open a cursor on the `savedAt` index ascending and delete until the
+     count is at the limit. Runs inside the same transaction as the write.
+   - Every function catches, `console.warn`s in `import.meta.env.DEV`, and returns `null` /
+     `undefined`. Nothing here is `$state`; it is plain module code.
+2. No unit test for the IndexedDB half: `node --test` has no IndexedDB and a fake is more code
+   than the wrapper. It is verified in the browser (below). The hashing half, which is where a
+   subtle bug would hide, is fully tested in Phase 1.
+
+## Phase 3 — Wire it into the audit (`web/src/App.svelte`)
+
+1. `App.svelte:11`: import `auditKey`, `readAudit`, `writeAudit` beside `keyOf`.
+2. `App.svelte:171`: `briefing` gains `cached: false`. Every existing write of `briefing`
+   (`:215`, `:226`, `:237`, `:506`) sets `cached` explicitly so the flag never leaks from a
+   cached result into a live one: running/error/idle carry the previous value, ready sets it.
+3. `App.svelte:180`: `let auditFresh = false;` beside the other non-`$state` audit locals.
+4. `App.svelte:182-229` (`audit()`): after `seq`/`auditAbort` are set and before the `fetch`:
+   ```
+   const key = auditKey(tree, company);
+   const fresh = auditFresh; auditFresh = false;
+   const hit = fresh ? null : await readAudit(key);
+   if (seq !== auditSeq) return;
+   if (hit) { settle(hit.findings, { cached: true }); return; }
+   ```
+   where `settle(findings, { cached })` is the block at `:214-221` lifted into a local
+   function (set `briefing`, open the panel once per document). After a successful live
+   response, `settle(findings, { cached: false })` then
+   `writeAudit(key, { findings, nodes: tree.nodes.length, title: getDataset(datasetId).title })`
+   without `await`: the panel should not wait on the disk. The `key` is computed from the
+   `tree` / `company` captured at the top of `audit()`, not re-read after the `await`s, so a
+   response is stored under the document it describes.
+5. `App.svelte:233-239` (`scheduleAudit`): signature becomes `scheduleAudit({ fresh = false } = {})`
+   and sets `auditFresh = fresh`. The `$effect` at `:249` calls `untrack(scheduleAudit)` with no
+   argument, so the default keeps the effect unchanged; only a Re-run passes `fresh: true`.
+   Note the `untrack(scheduleAudit)` form calls with no args already; no edit needed there.
+6. `App.svelte:680-683`: the stat button&#39;s `title` adds &#34;(from cache)&#34; when
+   `briefing.status === &#39;ready&#39; &amp;&amp; briefing.cached`, so the topbar tells the truth without a
+   new visual state.
+7. `App.svelte` Briefing branch (the `&lt;Briefing … /&gt;` in the stage markup): pass
+   `onRerun={() =&gt; scheduleAudit({ fresh: true })}`.
+
+## Phase 4 — Say so in the panel (`web/src/Briefing.svelte`)
+
+1. `Briefing.svelte:5-16`: add `onRerun = null` to the props.
+2. After the findings list and before the `ready` / &#34;Nothing needs attention&#34; branch
+   (`:123-124`), when `briefing.status === &#39;ready&#39; &amp;&amp; briefing.cached`:
+   ```
+   &lt;p class=&#34;hint cached&#34;&gt;From an earlier review of this tree.
+     {#if onRerun}&lt;button class=&#34;ghost&#34; onclick={onRerun}&gt;Re-run&lt;/button&gt;{/if}&lt;/p&gt;
+   ```
+   One line, muted, using `.hint` (`app.css:192`) and the existing `.ghost` button. No new
+   CSS beyond `.detail .hint.cached button { margin-left: 6px; }` after `app.css:230`.
+3. Nothing else changes: cards, Show, Fix, Dismiss, Ask, and dismissals are untouched.
+   Dismissals stay session-only (TREE_BRIEFING, out of scope), so a reload shows every
+   cached card again; that is the documented behaviour, not a bug.
+
+## Verification
+
+- `npm test -w web` (inside the dev container): the canonical tests pass; the two pinned digests
+  match.
+- Browser, with the service log visible:
+  1. Clear site data. Load Polaris. The service logs one `mode=audit` line; the Briefing opens.
+     DevTools → Application → IndexedDB → `okr-viewer` / `audits` shows one entry with
+     `nodes: 135` and a `title`.
+  2. Reload. The stat reads &#34;Reviewing…&#34; for ~1.5 s then &#34;N to review&#34; with the same N; the
+     panel shows the same cards with the &#34;From an earlier review&#34; line; the service logs
+     nothing. The stat button&#39;s tooltip says &#34;(from cache)&#34;.
+  3. Click Fix on a card. The service logs an audit (the tree is new); the cached line is gone.
+     ⌘Z. No service log line: the previous tree&#39;s findings come back from the store.
+  4. Click Re-run on a cached briefing. The service logs an audit; the entry&#39;s `savedAt`
+     advances.
+  5. Switch to Starter, then back to Polaris. The second switch to each dataset costs nothing.
+  6. Stop the service, reload. Cached findings still render with `status: &#39;ready&#39;` and no error
+     line; the fallback &#34;N weak links&#34; is not shown, because the app has real findings.
+  7. Open a private window (Firefox blocks IndexedDB there). Load Polaris: one audit, no
+     console error, no cache line. The app works exactly as before this plan.
+  8. Bump `AUDIT_CACHE_VERSION` to 2, reload: an audit runs, and the store now holds two entries
+     for Polaris. Set it back.
+  9. Edit `savedAt` on an entry in DevTools to fifteen days ago, reload: an audit runs and the
+     old entry is gone.
+
+## Out of scope
+
+- Persisting dismissals, chat tabs, the chosen dataset, or the document itself. This plan
+  persists one thing, a derived read, precisely so it does not become the half-built
+  persistence layer the vision doc warns about. Horizon 3 owns the rest.
+- A service-side cache or any server state. The service stays stateless.
+- Caching ordinary chat replies. Their inputs include history and the user&#39;s words; nothing
+  repeats.
+- A prompt fingerprint on `/api/health` to replace the hand-bumped version (Decision 6).
+- Distinguishing &#34;clean tree&#34; from &#34;model stopped early&#34; in the response schema (Decision 5).
+- Sharing the cache across origins: the dev server on `:5173` and the compose stack on `:8080`
+  are different origins and get different stores. That is how the browser works.
+
+## Risks / rollback
+
+- **Stale findings after a prompt change.** Someone edits the audit block and forgets the
+  version bump; cached trees show last week&#39;s reading for up to fourteen days. Mitigations: the
+  comment at both ends, the Re-run button, and the TTL backstop. If it bites, the health
+  fingerprint follow-up is the fix.
+- **A cached empty result hides a real audit for an hour** when the model stopped early on the
+  first run. Re-run clears it; the one-hour TTL bounds it.
+- **Main-thread hashing.** Canonicalizing Polaris is a ~200 KB string and a few milliseconds,
+  after the 1500 ms debounce, so it is invisible. If a future document is ten times larger,
+  move `digest` into a Worker; the API is already synchronous-in, string-out.
+- **Rollback.** Delete the two `lib/` files, revert the `App.svelte` and `Briefing.svelte`
+  edits. The IndexedDB database is left behind in users&#39; browsers and is harmless; a later
+  version can delete it with `indexedDB.deleteDatabase(&#39;okr-viewer&#39;)`.
+</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T14-53-16-972Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T14-53-16-972Z" class="timestamp-link"><time datetime="2026-09-14T14:53:16.972Z" data-timestamp="2026-09-14T14:53:16.972Z">2026-09-14T14:53:16.972Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>File created successfully at: /Users/tmiv74/OKR-Display/Plans/development/BRIEFING_AUDIT_CACHE.md (file state is current in your context — no need to Read it back)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-53-22-771Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-53-22-771Z" class="timestamp-link"><time datetime="2026-09-14T14:53:22.771Z" data-timestamp="2026-09-14T14:53:22.771Z">2026-09-14T14:53:22.771Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-53-22-777Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-53-22-777Z" class="timestamp-link"><time datetime="2026-09-14T14:53:22.777Z" data-timestamp="2026-09-14T14:53:22.777Z">2026-09-14T14:53:22.777Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-53-26-633Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-53-26-633Z" class="timestamp-link"><time datetime="2026-09-14T14:53:26.633Z" data-timestamp="2026-09-14T14:53:26.633Z">2026-09-14T14:53:26.633Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01M6otSHFxUvnfQrQb8njZvv">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check plan size and update CLAUDE.md current-work line</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">wc -c -l Plans/development/BRIEFING_AUDIT_CACHE.md &amp;&amp; python3 - &lt;&lt;&#39;EOF&#39;
+p=&#39;CLAUDE.md&#39;
+s=open(p).read()
+old=&#34;The September 2026 round shipped in full, TREE_BRIEFING included, and `development/` is empty.\nNew work starts with a new plan in `development/`, not by reopening a completed one.&#34;
+new=&#34;The September 2026 round shipped in full, TREE_BRIEFING included. One plan is open in\n`development/`: [BRIEFING_AUDIT_CACHE](Plans/development/BRIEFING_AUDIT_CACHE.md), which caches\naudit findings in IndexedDB keyed by a hash of the document so a reload does not re-audit.\nOther new work starts with a new plan in `development/`, not by reopening a completed one.&#34;
+assert old in s
+open(p,&#39;w&#39;).write(s.replace(old,new))
+print(&#34;CLAUDE.md updated&#34;)
+EOF
+git status --short</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-14T14-53-28-090Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-14T14-53-28-090Z" class="timestamp-link"><time datetime="2026-09-14T14:53:28.090Z" data-timestamp="2026-09-14T14:53:28.090Z">2026-09-14T14:53:28.090Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     227   14887 Plans/development/BRIEFING_AUDIT_CACHE.md
+CLAUDE.md updated
+ M CLAUDE.md
+ M web/src/Graph.svelte
+?? Plans/development/
+?? transcripts/</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-53-41-367Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-53-41-367Z" class="timestamp-link"><time datetime="2026-09-14T14:53:41.367Z" data-timestamp="2026-09-14T14:53:41.367Z">2026-09-14T14:53:41.367Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-14T14-53-41-707Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-14T14-53-41-707Z" class="timestamp-link"><time datetime="2026-09-14T14:53:41.707Z" data-timestamp="2026-09-14T14:53:41.707Z">2026-09-14T14:53:41.707Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>The plan is written at <a href="Plans/development/BRIEFING_AUDIT_CACHE.md">Plans/development/BRIEFING_AUDIT_CACHE.md</a>, and the "Current work" line in <a href="CLAUDE.md">CLAUDE.md</a> now points at it instead of saying <code>development/</code> is empty.</p>
+<p><strong>One interpretation to confirm.</strong> There is no database anywhere in the repo, and the service is stateless by design, so I read "local db" as the browser's IndexedDB. A reload is a browser event and the browser already owns the document, so that is where a reload cache belongs. If you meant a server-side store, the plan's Decisions section is where that changes.</p>
+<p><strong>What the plan locks in:</strong></p>
+<ul>
+<li><strong>Key</strong> is a hash of the canonical document (<code>tree</code> + <code>company</code>, keys sorted, arrays in order) plus a hand-bumped <code>AUDIT_CACHE_VERSION</code>. History, view context and the selected node are excluded so the same document always hashes the same, whether it came from the bundle, an import, or undo.</li>
+<li><strong>Hash</strong> is pure JavaScript, not <code>crypto.subtle</code>, because the Vite dev server is served on the LAN over plain http where Web Crypto is unavailable.</li>
+<li><strong>Store</strong> is a ~70-line IndexedDB wrapper, no library. Non-empty findings live 14 days, empty ones 1 hour (the service's "model stopped early" fallback also returns empty findings and the response schema can't flag it), errors are never cached. Cap of 40 entries.</li>
+<li><strong>Wiring</strong> is a lookup inside the existing <code>audit()</code> after the debounce, under the same sequence check, so a cached result can't land on a tree that changed. A "From an earlier review" line with a Re-run button appears in the Briefing panel.</li>
+<li><strong>Side benefits</strong> called out: undo after a Fix becomes free, and a reload with the service down still shows real findings.</li>
+</ul>
+<p><strong>Four phases</strong>: canonical form and hash with unit tests, the store, the App.svelte wiring, the panel line. Nine browser verification steps, including checking that the service log shows no audit on reload.</p>
+<p>One thing I noticed: <code>git status</code> shows <code>web/src/Graph.svelte</code> as modified. I did not touch it, so that is an edit of yours from before or during this session.</p></div></div></div>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

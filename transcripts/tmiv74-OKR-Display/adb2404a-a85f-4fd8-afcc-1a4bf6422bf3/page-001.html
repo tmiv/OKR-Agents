@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/1</h1>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+        
+<div class="message user" id="msg-2026-09-12T20-43-48-387Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T20-43-48-387Z" class="timestamp-link"><time datetime="2026-09-12T20:43:48.387Z" data-timestamp="2026-09-12T20:43:48.387Z">2026-09-12T20:43:48.387Z</time></a></div><div class="message-content">
+<div class="user-content"><p>here is a future idea. matrix tables where the okrs are listed on the rows and columns. Each cell shows the fitness of how the okr fits into the matching okr.  Also a similar kind of table that shows team dependency / reliance.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-43-53-137Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-43-53-137Z" class="timestamp-link"><time datetime="2026-09-12T20:43:53.137Z" data-timestamp="2026-09-12T20:43:53.137Z">2026-09-12T20:43:53.137Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-43-54-557Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-43-54-557Z" class="timestamp-link"><time datetime="2026-09-12T20:43:54.557Z" data-timestamp="2026-09-12T20:43:54.557Z">2026-09-12T20:43:54.557Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01AbZEz4CEcrG7Egx2hS7WLU">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List concepts, web src, schema src</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls Concepts/ &amp;&amp; echo &#34;---&#34; &amp;&amp; ls web/src/ &amp;&amp; echo &#34;---&#34; &amp;&amp; ls schema/src/</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-43-54-720Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-43-54-720Z" class="timestamp-link"><time datetime="2026-09-12T20:43:54.720Z" data-timestamp="2026-09-12T20:43:54.720Z">2026-09-12T20:43:54.720Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Agents as Executors - Design.md
+Depth and Focus - Design.md
+OKR Viewer - Product Vision.md
+Teams as Agents - Design.md
+---
+App.svelte
+Briefing.svelte
+Chat.svelte
+Detail.svelte
+Graph.svelte
+NodeCard.svelte
+TeamEditor.svelte
+TeamList.svelte
+app.css
+assets
+lib
+main.js
+---
+action.schema.json
+chat-request.schema.json
+chat-response.schema.json
+company.schema.json
+history.schema.json
+index.schema.json
+okr-document.schema.json
+okr-node.schema.json
+okr-tree.schema.json</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-43-55-567Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-43-55-567Z" class="timestamp-link"><time datetime="2026-09-12T20:43:55.567Z" data-timestamp="2026-09-12T20:43:55.567Z">2026-09-12T20:43:55.567Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01L1gpaWZmTEHt6vqrxF37Jc">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Inspect concept doc sizes and style</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">wc -l Concepts/*.md &amp;&amp; echo &#34;---&#34; &amp;&amp; sed -n &#39;1,60p&#39; &#34;Concepts/Teams as Agents - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-43-55-626Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-43-55-626Z" class="timestamp-link"><time datetime="2026-09-12T20:43:55.626Z" data-timestamp="2026-09-12T20:43:55.626Z">2026-09-12T20:43:55.626Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     111 Concepts/Agents as Executors - Design.md
+      99 Concepts/Depth and Focus - Design.md
+     171 Concepts/OKR Viewer - Product Vision.md
+      93 Concepts/Teams as Agents - Design.md
+     474 total
+---
+---
+tags:
+  - concept
+  - teams
+  - agents
+created: 2026-09-11
+---
+# Teams as Agents - Design
+
+Why teams get a charter now, and what that charter is for later. The near-term plan is
+[TEAM_MODEL_AND_EDITOR](../Plans/completed/TEAM_MODEL_AND_EDITOR.md); the far-term plan does
+not exist yet and would be named `TEAM_AGENT_DISCUSSIONS.md`. Parent vision:
+[OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md).
+
+## The metaphor
+
+A team&#x27;s charter is a **job description for an agent**. If a human read only the charter, they
+should be able to sit in a meeting and argue that team&#x27;s corner: what it is for (mission), how
+it does its work (process), what it is the owner of (ownership domain), and who it needs
+(dependencies). Everything the OKR tree says about the team (its objectives, KRs, alignment
+scores) is the agenda for that meeting; the charter is the person attending.
+
+So the charter is written *for a prompt*, in the same way every schema description is written
+for the model (the schema plan&#x27;s rule). Field descriptions say &quot;in the team&#x27;s own words&quot;, and
+the editor shows placeholder text that reads like a persona, not like a form.
+
+## Charter shape
+
+```
+charter: {
+  mission:   &quot;why the team exists, one or two sentences&quot;,
+  process:   &quot;the business process it runs: inputs, steps, outputs, cadence&quot;,
+  owns:      [&quot;systems, metrics or decisions this team is the accountable owner of&quot;, ...],
+  dependsOn: [&quot;unit-id&quot;, ...]   // teams whose output this team needs
+}
+```
+
+- `mission` and `process` are prose because personas are prose.
+- `owns` is a list because ownership disputes (&quot;who owns activation rate?&quot;) are the most
+  interesting thing two team agents can argue about, and a list is diffable.
+- `dependsOn` is references because reviews (&quot;does Sales&#x27; KR depend on something Engineering has
+  not committed to?&quot;) need to walk a graph, not parse text.
+
+## The four discussion modes (interview answer, 2026-09-11)
+
+All four were chosen. In dependency order:
+
+1. **Chat with one team&#x27;s agent.** A tab with `mode: &#x27;persona&#x27;`, `subject: team`. The system
+   prompt is the coach prompt plus &quot;You are speaking as &lt;team&gt;. Here is your charter. Answer as
+   this team would, from its priorities and constraints.&quot; Cheapest; a direct extension of
+   interview tabs.
+2. **Agents review each other&#x27;s OKRs.** Team A&#x27;s persona is asked to critique Team B&#x27;s subtree
+   for alignment, measurability and unstated dependencies on A. Output is a normal reply +
+   highlight, optionally actions. One call per review.
+3. **Team-vs-team debate the user moderates.** N personas, one shared transcript, the user picks
+   the topic and can interject. Because the service is stateless, the *browser* orchestrates:
+   each turn is one `/api/chat` call with `mode: &#x27;persona&#x27;`, the speaking team as subject, and
+   the shared transcript as history (turns attributed by name in the content). A tab shows the
+   transcript with speaker labels.
+4. **Agents negotiate and propose tree edits.** Mode 3 with a closing turn: a neutral &quot;coach&quot;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-43-59-427Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-43-59-427Z" class="timestamp-link"><time datetime="2026-09-12T20:43:59.427Z" data-timestamp="2026-09-12T20:43:59.427Z">2026-09-12T20:43:59.427Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-00-782Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-00-782Z" class="timestamp-link"><time datetime="2026-09-12T20:44:00.782Z" data-timestamp="2026-09-12T20:44:00.782Z">2026-09-12T20:44:00.782Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01U27FWE6t1hWM6b4uP82tNq">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find alignment vocabulary</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -rn -i &#34;align&#34; Concepts/ schema/src/ --include=* | head -40</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-00-819Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-00-819Z" class="timestamp-link"><time datetime="2026-09-12T20:44:00.819Z" data-timestamp="2026-09-12T20:44:00.819Z">2026-09-12T20:44:00.819Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>(eval):1: no matches found: --include=*</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-01-671Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-01-671Z" class="timestamp-link"><time datetime="2026-09-12T20:44:01.671Z" data-timestamp="2026-09-12T20:44:01.671Z">2026-09-12T20:44:01.671Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_011HAgWk3Vofroz72sgjdMxT">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read vision doc head</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,80p&#39; &#34;Concepts/OKR Viewer - Product Vision.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-01-711Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-01-711Z" class="timestamp-link"><time datetime="2026-09-12T20:44:01.711Z" data-timestamp="2026-09-12T20:44:01.711Z">2026-09-12T20:44:01.711Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---
+tags:
+  - concept
+  - product
+  - web
+  - service
+created: 2026-09-11
+---
+# OKR Viewer - Product Vision
+
+The design rationale behind the September 2026 round of plans. The plans say *what* and *where*;
+this doc says *why* and how the pieces fit. Plans that cite this doc:
+[BUNDLED_DATASETS](../Plans/completed/BUNDLED_DATASETS.md),
+[CAMERA_LEVEL_AUTO_MOVES](../Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md),
+[CLEAR_HIGHLIGHT_ON_SELECT](../Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md),
+[OKR_NODE_EDITOR](../Plans/completed/OKR_NODE_EDITOR.md),
+[TEAM_MODEL_AND_EDITOR](../Plans/completed/TEAM_MODEL_AND_EDITOR.md),
+[CHAT_CONTEXT](../Plans/completed/CHAT_CONTEXT.md),
+[CHAT_TABS_AND_INTERVIEWS](../Plans/completed/CHAT_TABS_AND_INTERVIEWS.md).
+Companions: [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md), and
+[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md) (why the three-level ladder is a
+default, not a doctrine, and why focus is the constraint that replaces it).
+
+## The thesis, restated
+
+The README&#x27;s one-liner still holds: **the model&#x27;s output is the interface, not a chat log next to
+one.** The 3D tree is the shared workspace; the assistant acts on it by moving the camera,
+pulsing nodes, and rewriting them. Everything below extends that thesis in one direction: the
+user gets more ways to *point at* things (select, edit, open a team), and the assistant gets to
+*see* what is being pointed at. Pointing plus seeing is what makes &quot;make this measurable&quot; work
+without the user typing an id.
+
+## Three surfaces, one state
+
+| Surface | Owns | Talks to state via |
+|---|---|---|
+| **Scene** (`Graph.svelte`) | camera, pulse, selection gesture | `onSelect`, `highlight`, `tree` |
+| **Panels** (Detail / TeamEditor / TeamList) | one thing at a time, read or edit | `panel` state, `onEdit(action)` |
+| **Chat tabs** (`Chat.svelte`) | conversations, each with a mode and a subject | `send(chatId, message)`, `recall(ids)` |
+
+All three read and write the same document-shaped state in `App.svelte`: `{ tree, company,
+history }` plus UI state `{ selectedId, highlight, panel, chats }`. There is no second store.
+
+## Invariants (the load-bearing rules)
+
+1. **The service is stateless.** The browser sends the whole document every time. Teams,
+   history and view context all ride in the request; nothing is remembered server-side. This is
+   what keeps tabs, datasets and undo trivially correct: there is nothing to desync.
+2. **One endpoint, one shape, grown additively.** `POST /api/chat` gains optional fields
+   (`company`, `context`, `mode`, `subject`). It never gets a sibling endpoint and never bumps
+   `schemaVersion` for these additions. A client that sends none of the new fields still works.
+3. **Every mutation is an Action through one commit path.** The assistant, the node editor, the
+   team editor and interview outcomes all emit Actions from the same schema, and all go through
+   `commit(actions, { actor, reason })`, which snapshots for undo and appends to
+   `history.changes`. There is no &quot;direct edit&quot; path. Consequence: undo covers everything, history
+   is complete, and the model can do anything the UI can.
+4. **The document is the unit of truth.** Bundled datasets, exports and imports are all
+   `OkrDocument`s. A bundled dataset is just a file someone exported by hand.
+5. **The scene never disorients the user on its own.** Programmatic camera moves level to world
+   up; user gestures (tumble, click) take precedence over assistant pointers (highlights clear on
+   selection). The user always feels in control of the view.
+6. **Teams are data the model can be handed.** A team&#x27;s charter (mission, process, ownership
+   domain, dependencies) is written so it can be dropped into a system prompt verbatim. That is
+   the bridge to agents; see the companion doc.
+
+## Vocabulary
+
+- **Document**: `{ schemaVersion, meta, company?, tree, history? }`. What is exported, imported,
+  bundled.
+- **Tree / Node**: the OKR hierarchy. Flat nodes with `parent` pointers. Levels company →
+  objective → kr.
+- **Team** (schema name: `CompanyUnit`): an org unit with an optional **charter**. Nodes point at
+  a team by `unitId`; `owner` is the display string derived from it.
+- **Action**: one edit. Node ops `edit | relink | add | delete`; team ops
+  `editUnit | addUnit | deleteUnit`.
+- **Commit**: applying a batch of Actions with an actor and a reason. Produces one undo step and
+  one history change.
+- **Selection**: the node the user clicked. **Highlight**: the nodes the assistant pointed at.
+  Selection wins; highlight is transient.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-03-851Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-03-851Z" class="timestamp-link"><time datetime="2026-09-12T20:44:03.851Z" data-timestamp="2026-09-12T20:44:03.851Z">2026-09-12T20:44:03.851Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-04-879Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-04-879Z" class="timestamp-link"><time datetime="2026-09-12T20:44:04.879Z" data-timestamp="2026-09-12T20:44:04.879Z">2026-09-12T20:44:04.879Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Nx8bt5TNno62uXUoezQExF">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Grep alignment, read depth doc</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -rni &#34;align&#34; Concepts/ schema/src/ | head -30; echo &#34;=== depth ===&#34;; sed -n &#39;1,99p&#39; &#34;Concepts/Depth and Focus - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-04-936Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-04-936Z" class="timestamp-link"><time datetime="2026-09-12T20:44:04.936Z" data-timestamp="2026-09-12T20:44:04.936Z">2026-09-12T20:44:04.936Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Concepts/Teams as Agents - Design.md:20:(dependencies). Everything the OKR tree says about the team (its objectives, KRs, alignment
+Concepts/Teams as Agents - Design.md:53:   for alignment, measurability and unstated dependencies on A. Output is a normal reply +
+Concepts/Depth and Focus - Design.md:12:viable when an AI carries the alignment work, and what that does to this product&#x27;s job.
+Concepts/Depth and Focus - Design.md:19:warning was about **alignment fatigue** in a manual system: pushing goals down four or five
+Concepts/Depth and Focus - Design.md:29:- **Vertical alignment on demand.** Given the top-level objectives, a model can draft
+Concepts/Depth and Focus - Design.md:44:thousands of perfectly aligned OKRs; a person can still hold three to five priorities.
+Concepts/Depth and Focus - Design.md:61:   - **Live alignment audit.** Every Action should be able to trigger &quot;what did this break?&quot;
+schema/src/okr-node.schema.json:51:      &quot;description&quot;: &quot;Hand-assessed score (0-1) of how well this node supports its parent. Anything below 0.4 is a misalignment worth calling out.&quot;,
+schema/src/action.schema.json:80:          &quot;description&quot;: &quot;New alignment score (0-1). Raise it when a fix makes the node genuinely support its parent.&quot;,
+=== depth ===
+---
+tags:
+  - concept
+  - product
+  - okr
+  - agents
+created: 2026-09-11
+---
+# Depth and Focus - Design
+
+A point of view on why multi-level OKR hierarchies, long considered an anti-pattern, become
+viable when an AI carries the alignment work, and what that does to this product&#x27;s job.
+Parent: [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md).
+
+## The received wisdom, and what it was protecting
+
+Google and the early OKR practitioners warned against individual OKRs and deep cascades. The
+warning was about **alignment fatigue** in a manual system: pushing goals down four or five
+levels meant endless meetings, spreadsheet formatting, and hand audits to find the links that
+had quietly broken. Three levels was not a law of strategy; it was the most a human
+organisation could keep honest.
+
+## What changes with AI in the loop
+
+The bottleneck moves from **administrative capacity** to **strategic clarity**. Three things
+that used to cost people-hours become cheap:
+
+- **Vertical alignment on demand.** Given the top-level objectives, a model can draft
+  context-aware sub-objectives and key results for a squad, a pod, or a person, and keep each
+  one semantically and numerically tied to the rung above it.
+- **Continuous dependency auditing.** Instead of the end-of-quarter review, the link check runs
+  on every change: &quot;Team B rewrote their key result, and Company Objective 2 is now unvouched
+  for.&quot; In this product that is already the shape of things: `contributes` is the link
+  strength, weak links are surfaced live, and every edit is an Action the assistant can react
+  to.
+- **Context preservation at scale.** A micro-metric owned by one engineer stays anchored to the
+  five-year vision because the model can always re-derive the chain, not because someone
+  remembers it.
+
+## The new bottleneck: human focus
+
+Removing the administrative ceiling exposes a psychological one. A model can draft and track
+thousands of perfectly aligned OKRs; a person can still hold three to five priorities.
+
+| Manual-era constraint | AI-era constraint |
+|---|---|
+| Administrative burden: spreadsheet cells and broken links. | Over-optimisation: too many perfect metrics that dilute focus. |
+| Rigid hierarchy: three levels because humans cannot track more. | Analysis paralysis: an endless stream of automated signals. |
+| Infrequent updates: quarterly, because that is all there was time for. | Noise versus signal: real progress versus AI-generated busywork. |
+
+## What this means for the product
+
+1. **Depth is a data-model decision, not a strategy decision.** The current ladder (company →
+   objective → key result) is enforced in the editor and the prompt and only *warned about* by
+   the schema (`schema/index.js:205`). That is the right posture: the format should tolerate
+   depth today, and a future plan can open the editor and the prompt to sub-objectives, team
+   trees that mirror the org chart, and individual key results, without a migration.
+2. **The product&#x27;s job shifts from *drawing* the tree to *keeping it honest and small*.** Two
+   capabilities matter more than nesting:
+   - **Live alignment audit.** Every Action should be able to trigger &quot;what did this break?&quot;
+     The weak-link count in the topbar is the seed; the mature form is an assistant that
+     highlights the newly orphaned or diluted chain the moment a node changes.
+   - **A focus budget.** Per team (and later per person), the number of active key results is
+     something the UI shows and the assistant pushes back on. &quot;You now have nine KRs; which
+     three matter this quarter?&quot; is a better coaching move than generating a tenth.
+3. **Generation is cheap, so the interface must make *choosing* cheap.** Interview tabs and
+   &quot;interview me about a new OKR&quot; should produce candidates the user picks from, not a finished
+   subtree they must prune. Drafts are proposals; commits are decisions.
+4. **Signal over noise is a first-class concern for executors** (Horizon 2). An agent that can
+   report progress hourly must not; sampling cadence and &quot;what changed that matters&quot; summaries
+   are part of the executor design, not an afterthought.
+5. **Depth in the 3D scene is free.** The DAG layout is level-agnostic. A five-level tree renders
+   today; the scene&#x27;s role becomes showing where focus is concentrated and where links are
+   thin, which is exactly what edge weight and colour already encode.
+
+## Principles to carry into plans
+
+- **AI drafts, humans decide.** No plan may auto-apply generated OKRs. Everything goes through
+  a visible commit the user can undo.
+- **Every rung must vouch for the one above it.** `contributes` stays required in spirit for
+  any node with a parent, at any depth.
+- **Few active priorities per owner.** When counting features, prefer ones that reduce what a
+  person must look at over ones that add what the system can produce.
+- **Audit on change, not on schedule.** Broken links are found at the edit, not at the review.
+
+## Alternatives considered
+
+- **Keep three levels as a hard rule.** Rejected as a principle, kept as today&#x27;s default. The
+  rule protected against a cost the assistant now absorbs; enforcing it forever would encode a
+  workaround as doctrine.
+- **Open depth immediately.** Deferred. Without the focus budget and live audit, deeper trees
+  reintroduce the very fatigue the rule prevented, just with the model doing the typing.
+
+## When a plan should cite this doc
+
+- Any plan that relaxes the level ladder (sub-objectives, individual KRs, org-shaped trees).
+- Any plan that adds generation (bulk OKR drafting, cascade from a company objective).
+- The executor and dashboard plans, for cadence and signal-versus-noise decisions.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-07-307Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-07-307Z" class="timestamp-link"><time datetime="2026-09-12T20:44:07.307Z" data-timestamp="2026-09-12T20:44:07.307Z">2026-09-12T20:44:07.307Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-08-196Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-08-196Z" class="timestamp-link"><time datetime="2026-09-12T20:44:08.196Z" data-timestamp="2026-09-12T20:44:08.196Z">2026-09-12T20:44:08.196Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01NeoS4UErLRWkS2FLHFbRzc">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read node and company schemas</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,80p&#39; schema/src/okr-node.schema.json; echo &#34;=== company ===&#34;; sed -n &#39;1,120p&#39; schema/src/company.schema.json</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-08-250Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-08-250Z" class="timestamp-link"><time datetime="2026-09-12T20:44:08.250Z" data-timestamp="2026-09-12T20:44:08.250Z">2026-09-12T20:44:08.250Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>{
+  &quot;$schema&quot;: &quot;http://json-schema.org/draft-07/schema#&quot;,
+  &quot;$id&quot;: &quot;https://okr-viewer.dev/schema/v1/okr-node.schema.json&quot;,
+  &quot;title&quot;: &quot;OkrNode&quot;,
+  &quot;description&quot;: &quot;One node in the OKR tree. Nodes are flat and carry a parent pointer; the tree is reconstructed from those pointers, never from nesting.&quot;,
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;id&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;Stable unique identifier. New ids should read as \&quot;kr-&lt;short-slug&gt;\&quot; or \&quot;obj-&lt;short-slug&gt;\&quot;.&quot;,
+      &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+    },
+    &quot;level&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;Where the node sits in the ladder: company (the single root), objective (team-level), or kr (key result).&quot;,
+      &quot;enum&quot;: [&quot;company&quot;, &quot;objective&quot;, &quot;kr&quot;]
+    },
+    &quot;parent&quot;: {
+      &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;],
+      &quot;description&quot;: &quot;Id of the parent node, or null for the company root. Exactly one node in a tree has a null parent.&quot;,
+      &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+    },
+    &quot;label&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;What the node is trying to achieve, stated as an outcome rather than an activity. One sentence.&quot;,
+      &quot;minLength&quot;: 1,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;owner&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;Team or person accountable for this node, as display text, for example \&quot;Growth\&quot; or \&quot;Sales Ops\&quot;. When unitId is set this is derived from that team&#x27;s name; set unitId and leave owner alone.&quot;,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;unitId&quot;: {
+      &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;],
+      &quot;description&quot;: &quot;Id of the owning team in company.units, or null when the node is not assigned to a team. owner is the display name derived from it.&quot;,
+      &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+    },
+    &quot;metric&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;The quantity being moved, named precisely enough to be looked up. Empty means the node is not measurable.&quot;,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;target&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;The move being committed to, with a baseline, a goal, and a date, for example \&quot;31% -&gt; 50% by Q4\&quot;.&quot;,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;contributes&quot;: {
+      &quot;type&quot;: &quot;number&quot;,
+      &quot;description&quot;: &quot;Hand-assessed score (0-1) of how well this node supports its parent. Anything below 0.4 is a misalignment worth calling out.&quot;,
+      &quot;minimum&quot;: 0,
+      &quot;maximum&quot;: 1,
+      &quot;default&quot;: 0.5
+    }
+  },
+  &quot;required&quot;: [&quot;id&quot;, &quot;level&quot;, &quot;parent&quot;, &quot;label&quot;],
+  &quot;additionalProperties&quot;: false
+}
+=== company ===
+{
+  &quot;$schema&quot;: &quot;http://json-schema.org/draft-07/schema#&quot;,
+  &quot;$id&quot;: &quot;https://okr-viewer.dev/schema/v1/company.schema.json&quot;,
+  &quot;title&quot;: &quot;Company&quot;,
+  &quot;description&quot;: &quot;The org structure the OKR tree hangs off: units and, optionally, the people in them. A node points at the unit that owns it with unitId; owner is the display name derived from that unit.&quot;,
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;name&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;The company&#x27;s name.&quot;,
+      &quot;minLength&quot;: 1,
+      &quot;maxLength&quot;: 200
+    },
+    &quot;units&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;description&quot;: &quot;Org units, flat with parent pointers in the same style as the OKR tree.&quot;,
+      &quot;items&quot;: {
+        &quot;$ref&quot;: &quot;#/definitions/unit&quot;,
+        &quot;description&quot;: &quot;One org unit.&quot;
+      },
+      &quot;maxItems&quot;: 500
+    },
+    &quot;people&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;description&quot;: &quot;People, each attached to exactly one unit.&quot;,
+      &quot;items&quot;: {
+        &quot;$ref&quot;: &quot;#/definitions/person&quot;,
+        &quot;description&quot;: &quot;One person.&quot;
+      },
+      &quot;maxItems&quot;: 5000
+    }
+  },
+  &quot;required&quot;: [&quot;name&quot;, &quot;units&quot;],
+  &quot;additionalProperties&quot;: false,
+  &quot;definitions&quot;: {
+    &quot;unit&quot;: {
+      &quot;title&quot;: &quot;CompanyUnit&quot;,
+      &quot;description&quot;: &quot;A team, department or division.&quot;,
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;properties&quot;: {
+        &quot;id&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Stable unique identifier for the unit.&quot;,
+          &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Display name, for example \&quot;Field Marketing\&quot;.&quot;,
+          &quot;minLength&quot;: 1,
+          &quot;maxLength&quot;: 200
+        },
+        &quot;parent&quot;: {
+          &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;],
+          &quot;description&quot;: &quot;Id of the parent unit, or null for the top of the org.&quot;,
+          &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+        },
+        &quot;lead&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Id of the person who leads this unit, if known.&quot;,
+          &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+        },
+        &quot;charter&quot;: {
+          &quot;$ref&quot;: &quot;#/definitions/charter&quot;,
+          &quot;description&quot;: &quot;How this team works and what it owns, written so it can be handed to a model as the team&#x27;s own voice.&quot;
+        }
+      },
+      &quot;required&quot;: [&quot;id&quot;, &quot;name&quot;, &quot;parent&quot;],
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;charter&quot;: {
+      &quot;title&quot;: &quot;TeamCharter&quot;,
+      &quot;description&quot;: &quot;A team&#x27;s job description, written for a reader who knows nothing else about it: someone who saw only this charter should be able to sit in a meeting and argue the team&#x27;s corner. Every field is optional; write the ones you actually know.&quot;,
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;properties&quot;: {
+        &quot;mission&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Why this team exists, in the team&#x27;s own words. One or two sentences, stated as the outcome the team is there to produce rather than the activities it performs.&quot;,
+          &quot;maxLength&quot;: 1000
+        },
+        &quot;process&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;The business process this team runs, in the team&#x27;s own words: what comes in, the steps it takes, what it hands off, and on what cadence.&quot;,
+          &quot;maxLength&quot;: 4000
+        },
+        &quot;owns&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;The systems, metrics or decisions this team is the accountable owner of. A list rather than prose, so two teams claiming the same thing is visible at a glance.&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;One system, metric or decision this team is the accountable owner of, for example \&quot;activation rate\&quot; or \&quot;the pricing page\&quot;.&quot;,
+            &quot;minLength&quot;: 1,
+            &quot;maxLength&quot;: 200
+          },
+          &quot;maxItems&quot;: 50
+        },
+        &quot;dependsOn&quot;: {
+          &quot;type&quot;: &quot;array&quot;,
+          &quot;description&quot;: &quot;Ids of the teams in company.units whose output this team needs in order to do its work. References, not prose, so a review can walk the graph.&quot;,
+          &quot;items&quot;: {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;description&quot;: &quot;Id of another unit in company.units.&quot;,
+            &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+          },
+          &quot;maxItems&quot;: 50
+        }
+      },
+      &quot;additionalProperties&quot;: false
+    },
+    &quot;person&quot;: {
+      &quot;title&quot;: &quot;CompanyPerson&quot;,
+      &quot;description&quot;: &quot;Someone who can own or lead something.&quot;,
+      &quot;type&quot;: &quot;object&quot;,
+      &quot;properties&quot;: {
+        &quot;id&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;description&quot;: &quot;Stable unique identifier for the person.&quot;,
+          &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+        },
+        &quot;name&quot;: {
+          &quot;type&quot;: &quot;string&quot;,</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-11-047Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-11-047Z" class="timestamp-link"><time datetime="2026-09-12T20:44:11.047Z" data-timestamp="2026-09-12T20:44:11.047Z">2026-09-12T20:44:11.047Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-12-152Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-12-152Z" class="timestamp-link"><time datetime="2026-09-12T20:44:12.152Z" data-timestamp="2026-09-12T20:44:12.152Z">2026-09-12T20:44:12.152Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01HAo6MrcKzpCsbXGvu1ffcZ">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read findings + mode shape</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;finding&#34; -A 30 schema/src/chat-response.schema.json | sed -n &#39;1,70p&#39;; echo &#34;=== modes ===&#34;; grep -n &#34;mode&#34; -A 12 schema/src/chat-request.schema.json | head -40</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-12-222Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-12-222Z" class="timestamp-link"><time datetime="2026-09-12T20:44:12.222Z" data-timestamp="2026-09-12T20:44:12.222Z">2026-09-12T20:44:12.222Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>33:    &quot;findings&quot;: {
+34-      &quot;type&quot;: &quot;array&quot;,
+35:      &quot;description&quot;: &quot;What most needs a person&#x27;s attention in this tree, ranked by impact, highest first. Only ever sent in an audit — leave it out of an ordinary reply. Group by problem, not by node: one finding may name several nodes.&quot;,
+36-      &quot;items&quot;: {
+37:        &quot;$ref&quot;: &quot;#/definitions/finding&quot;,
+38-        &quot;description&quot;: &quot;One problem with the tree, written for someone who will read it on a card and decide what to do about it.&quot;
+39-      },
+40-      &quot;maxItems&quot;: 8
+41-    }
+42-  },
+43-  &quot;required&quot;: [&quot;reply&quot;, &quot;actions&quot;, &quot;highlight&quot;],
+44-  &quot;additionalProperties&quot;: false,
+45-  &quot;definitions&quot;: {
+46:    &quot;finding&quot;: {
+47-      &quot;title&quot;: &quot;Finding&quot;,
+48-      &quot;description&quot;: &quot;One problem worth a person&#x27;s attention, named in plain language and paired with the nodes it is about and, where the resolution is mechanical, the actions that resolve it.&quot;,
+49-      &quot;type&quot;: &quot;object&quot;,
+50-      &quot;properties&quot;: {
+51-        &quot;title&quot;: {
+52-          &quot;type&quot;: &quot;string&quot;,
+53-          &quot;description&quot;: &quot;The problem in one line, as a person would say it out loud: \&quot;Three Marketing key results describe activities, not outcomes\&quot;. No ids, no JSON.&quot;,
+54-          &quot;minLength&quot;: 1,
+55-          &quot;maxLength&quot;: 80
+56-        },
+57-        &quot;why&quot;: {
+58-          &quot;type&quot;: &quot;string&quot;,
+59-          &quot;description&quot;: &quot;What the user reads on the card under the title: one or two sentences on why this matters and what it costs them. Refer to nodes by their label, never by id.&quot;,
+60-          &quot;minLength&quot;: 1,
+61-          &quot;maxLength&quot;: 300
+62-        },
+63-        &quot;severity&quot;: {
+64-          &quot;type&quot;: &quot;string&quot;,
+65-          &quot;description&quot;: &quot;How much this costs the company objective: \&quot;high\&quot; when it breaks the line from work to outcome, \&quot;medium\&quot; when it blurs it, \&quot;low\&quot; when it is untidy.&quot;,
+66-          &quot;enum&quot;: [&quot;high&quot;, &quot;medium&quot;, &quot;low&quot;]
+67-        },
+68-        &quot;nodeIds&quot;: {
+69-          &quot;type&quot;: &quot;array&quot;,
+70:          &quot;description&quot;: &quot;Ids of the nodes this finding is about. The user hovers the card to see them, and clicks to fly the camera to them, so name every node the finding covers and nothing else.&quot;,
+71-          &quot;items&quot;: {
+72-            &quot;type&quot;: &quot;string&quot;,
+73-            &quot;description&quot;: &quot;Id of a node that exists in the tree.&quot;,
+74-            &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+75-          },
+76-          &quot;minItems&quot;: 1,
+77-          &quot;maxItems&quot;: 20
+78-        },
+79-        &quot;fix&quot;: {
+80-          &quot;type&quot;: &quot;array&quot;,
+81:          &quot;description&quot;: &quot;The actions that resolve this finding on their own, applied as one click. Leave it empty when the resolution is a judgement the user must make — \&quot;which three of these nine matter?\&quot; is a question, not an edit. A fix never deletes anything.&quot;,
+82-          &quot;items&quot;: {
+83-            &quot;$ref&quot;: &quot;action.schema.json&quot;,
+84:            &quot;description&quot;: &quot;One edit that resolves part of this finding.&quot;
+85-          },
+86-          &quot;maxItems&quot;: 20
+87-        }
+88-      },
+89-      &quot;required&quot;: [&quot;title&quot;, &quot;why&quot;, &quot;severity&quot;, &quot;nodeIds&quot;],
+90-      &quot;additionalProperties&quot;: false
+91-    }
+92-  }
+93-}
+=== modes ===
+40:    &quot;mode&quot;: {
+41-      &quot;$ref&quot;: &quot;#/definitions/chatMode&quot;,
+42-      &quot;description&quot;: &quot;What kind of conversation this tab is. Absent means \&quot;free\&quot;.&quot;
+43-    },
+44-    &quot;subject&quot;: {
+45-      &quot;$ref&quot;: &quot;#/definitions/chatSubject&quot;,
+46-      &quot;description&quot;: &quot;The one thing an interview tab is about. Absent or null in a free conversation.&quot;
+47-    }
+48-  },
+49-  &quot;required&quot;: [&quot;tree&quot;, &quot;message&quot;],
+50-  &quot;additionalProperties&quot;: false,
+51-  &quot;definitions&quot;: {
+52-    &quot;chatMode&quot;: {
+--
+54:      &quot;description&quot;: &quot;How this conversation is being held. \&quot;free\&quot; is the default coach conversation: the user asks, you answer. The three interview modes invert that — you ask, one question per turn, and end by proposing actions. \&quot;audit\&quot;: no user question and no conversation at all; read the whole tree and return `findings`. \&quot;persona\&quot;: you are not the coach at all — you speak as one team, out of its charter, and say \&quot;we\&quot;.&quot;,
+55-      &quot;type&quot;: &quot;string&quot;,
+56-      &quot;enum&quot;: [&quot;free&quot;, &quot;interview-node&quot;, &quot;interview-team&quot;, &quot;interview-new&quot;, &quot;audit&quot;, &quot;persona&quot;]
+57-    },
+58-    &quot;chatSubject&quot;: {
+59-      &quot;title&quot;: &quot;ChatSubject&quot;,
+60-      &quot;description&quot;: &quot;The one thing this conversation is about: an existing node, a team (the subject of an interview, or the team a persona conversation speaks as), or the parent a new node will hang under. Null in a free conversation, which is about the whole tree, and in an audit.&quot;,
+61-      &quot;oneOf&quot;: [
+62-        {
+63-          &quot;$ref&quot;: &quot;#/definitions/nodeSubject&quot;,
+64-          &quot;description&quot;: &quot;One existing node in the tree.&quot;
+65-        },
+66-        {
+--
+190:          &quot;description&quot;: &quot;True when the node panel is in edit mode, so the user is changing the node rather than reading it. Team panels are always editable and omit this.&quot;
+191-        },
+192-        &quot;field&quot;: {
+193-          &quot;type&quot;: &quot;string&quot;,
+194-          &quot;description&quot;: &quot;The field the user&#x27;s cursor is in right now, if any. \&quot;this\&quot; in a message like \&quot;what should this be?\&quot; means that field of this node or team.&quot;,
+195-          &quot;enum&quot;: [
+196-            &quot;label&quot;,
+197-            &quot;owner&quot;,
+198-            &quot;metric&quot;,
+199-            &quot;target&quot;,
+200-            &quot;contributes&quot;,
+201-            &quot;parent&quot;,</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-30-170Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-30-170Z" class="timestamp-link"><time datetime="2026-09-12T20:44:30.170Z" data-timestamp="2026-09-12T20:44:30.170Z">2026-09-12T20:44:30.170Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-31-744Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-31-744Z" class="timestamp-link"><time datetime="2026-09-12T20:44:31.744Z" data-timestamp="2026-09-12T20:44:31.744Z">2026-09-12T20:44:31.744Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01EX3mdr1X3j3L2F362tDQ1e">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check bundled dataset sizes</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls web/src/assets web/src/lib 2&gt;/dev/null; echo &#34;=== sizes ===&#34;; for f in web/src/assets/*.json; do echo -n &#34;$f: &#34;; grep -o &#39;&#34;id&#34;&#39; &#34;$f&#34; | wc -l; done 2&gt;/dev/null | head</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-34-256Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-34-256Z" class="timestamp-link"><time datetime="2026-09-12T20:44:34.256Z" data-timestamp="2026-09-12T20:44:34.256Z">2026-09-12T20:44:34.256Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>web/src/assets:
+datasets
+
+web/src/lib:
+apply.js
+briefing.js
+company.js
+datasets.js
+navigate.js
+navigate.test.js
+=== sizes ===</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-36-589Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-36-589Z" class="timestamp-link"><time datetime="2026-09-12T20:44:36.589Z" data-timestamp="2026-09-12T20:44:36.589Z">2026-09-12T20:44:36.589Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01MYvzaKyt2BaJKfkPaRiyha">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Count nodes per dataset</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls web/src/assets/datasets; for f in web/src/assets/datasets/*; do echo -n &#34;$f nodes=&#34;; grep -o &#39;&#34;level&#34;&#39; &#34;$f&#34; | wc -l; echo -n &#34; units=&#34;; grep -o &#39;&#34;parent&#34;&#39; &#34;$f&#34; | wc -l; done</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-38-395Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-38-395Z" class="timestamp-link"><time datetime="2026-09-12T20:44:38.395Z" data-timestamp="2026-09-12T20:44:38.395Z">2026-09-12T20:44:38.395Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>manifest.json
+polaris-group-fy26.json
+regional-clinic-network.json
+starter.json
+workflow-platform-fy26.json
+web/src/assets/datasets/manifest.json nodes=       0
+ units=       0
+web/src/assets/datasets/polaris-group-fy26.json nodes=     135
+ units=     196
+web/src/assets/datasets/regional-clinic-network.json nodes=      30
+ units=      53
+web/src/assets/datasets/starter.json nodes=       9
+ units=      15
+web/src/assets/datasets/workflow-platform-fy26.json nodes=      27
+ units=      44</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-40-127Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-40-127Z" class="timestamp-link"><time datetime="2026-09-12T20:44:40.127Z" data-timestamp="2026-09-12T20:44:40.127Z">2026-09-12T20:44:40.127Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-44-42-215Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-44-42-215Z" class="timestamp-link"><time datetime="2026-09-12T20:44:42.215Z" data-timestamp="2026-09-12T20:44:42.215Z">2026-09-12T20:44:42.215Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01EAEMr7i6SxQ9WnMVL8tqz4">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Count levels and units in largest dataset</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">python3 - &lt;&lt;&#39;EOF&#39;
+import json
+d=json.load(open(&#39;web/src/assets/datasets/polaris-group-fy26.json&#39;))
+from collections import Counter
+print(Counter(n[&#39;level&#39;] for n in d[&#39;tree&#39;][&#39;nodes&#39;]))
+u=d.get(&#39;company&#39;,{}).get(&#39;units&#39;,[])
+print(&#39;units&#39;,len(u),&#39;with charter&#39;,sum(1 for x in u if x.get(&#39;charter&#39;)))
+print(&#39;dependsOn edges&#39;,sum(len(x.get(&#39;charter&#39;,{}).get(&#39;dependsOn&#39;,[])) for x in u))
+EOF</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-44-44-122Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-44-44-122Z" class="timestamp-link"><time datetime="2026-09-12T20:44:44.122Z" data-timestamp="2026-09-12T20:44:44.122Z">2026-09-12T20:44:44.122Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Counter({&#x27;kr&#x27;: 113, &#x27;objective&#x27;: 21, &#x27;company&#x27;: 1})
+units 61 with charter 23
+dependsOn edges 63</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-45-22-527Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-45-22-527Z" class="timestamp-link"><time datetime="2026-09-12T20:45:22.527Z" data-timestamp="2026-09-12T20:45:22.527Z">2026-09-12T20:45:22.527Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-45-23-286Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-45-23-286Z" class="timestamp-link"><time datetime="2026-09-12T20:45:23.286Z" data-timestamp="2026-09-12T20:45:23.286Z">2026-09-12T20:45:23.286Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Grounding is in place. Writing this up as a concept doc, which is where forward-looking ideas live in this workspace.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-01-055Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-01-055Z" class="timestamp-link"><time datetime="2026-09-12T20:46:01.055Z" data-timestamp="2026-09-12T20:46:01.055Z">2026-09-12T20:46:01.055Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01EsokJbiL2pvazNrUXjJbjL">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Write the matrix views concept doc</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat &gt; &#34;Concepts/Matrix Views - Design.md&#34; &lt;&lt;&#39;EOF&#39;
+---
+tags:
+  - concept
+  - product
+  - okr
+  - teams
+created: 2026-09-12
+---
+# Matrix Views - Design
+
+Two tables that show what the tree cannot: OKR-against-OKR fitness, and team-against-team
+reliance. No plan exists yet; the plans this would spawn are named at the bottom. Parent:
+[OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md) and
+[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).
+
+## The idea, as stated
+
+A table whose rows and columns are both the OKRs; each cell scores how well the row OKR fits the
+column OKR. A second table of the same shape whose rows and columns are both teams; each cell
+scores how much one team relies on the other.
+
+## Why a matrix, when there is already a 3D tree
+
+The scene draws exactly one edge per node: the parent link. That is deliberate — the tree is
+legible in 3D *because* it is a tree. Every real relation that is not a parent edge has nowhere
+to live today: a KR that also serves a second objective, two teams both claiming &#34;activation
+rate&#34;, two objectives that pull the same team in opposite directions, an objective that quietly
+waits on another team&#39;s delivery. Drawing those in the scene produces the hairball the 3D view
+exists to avoid.
+
+A matrix is the dense representation of precisely those off-tree edges. Two properties earn it:
+
+- **Every pair gets a slot**, whether or not anything is in it. The tree can only show relations
+  someone already recorded; the matrix shows the ones nobody has considered.
+- **Emptiness is readable.** An empty row is an OKR nothing supports. A hot column is a team
+  everyone is waiting on. Neither is visible in a tree at any zoom level.
+
+The scene answers *where does this sit?* The matrix answers *what does this touch?*
+
+## Matrix 1 — OKR fitness
+
+`contributes` (`schema/src/okr-node.schema.json:51`) is already a fitness score: 0-1, hand
+assessed, &#34;how well this node supports its parent&#34;. One number per node, because there is one
+parent. The matrix is that same idea generalised from *node → its parent* to *row → any column*.
+The tree&#39;s own edges are then a thin diagonal band inside the matrix; the interesting cells are
+all the others.
+
+**The scale must be signed.** `contributes` runs 0-1 because a node cannot support its parent
+negatively. Between arbitrary pairs it can: two objectives can compete for the same team, or one
+can be achievable only by hurting the other. A -1..1 cell says &#34;these two are in tension&#34;, and
+that is the single most valuable cell in the table. A 0-1 scale cannot express it, so the matrix
+does not reuse `contributes`&#39; range even though it descends from it.
+
+Cell vocabulary, then, is roughly: *supports* (positive), *unrelated* (zero, and the common
+case), *redundant with* (positive but flagged — two nodes doing the same work), *in tension with*
+(negative).
+
+## Matrix 2 — Team reliance
+
+`charter.dependsOn` (`schema/src/company.schema.json`, charter definition) is today a list of
+unit ids: directed, unweighted, boolean, and hand-written. On the largest bundled dataset that
+is 63 edges over 61 units, only 23 of which have a charter at all. The matrix keeps the
+direction and adds two things: a weight, and a *derivation*.
+
+Reliance can be derived rather than only asserted. Team A relies on Team B when A&#39;s KR names a
+metric that appears in B&#39;s `charter.owns`, when A&#39;s objective hangs under an objective B owns, or
+when A&#39;s charter says so outright. `dependsOn` then becomes the hand-asserted layer sitting on
+top of a derived one, and **the disagreement between the two layers is the finding**: &#34;Sales
+lists no dependency on Platform, but four of their key results move a metric Platform owns.&#34;
+That is a better artefact than either layer alone.
+
+**Direction is stated once and shown in the UI: the row relies on the column.** With that fixed,
+the table reads at a glance — a dense row is a team that cannot move alone, a dense column is a
+bottleneck everyone waits on, and a symmetric pair is mutual reliance that probably wants a
+shared objective.
+
+## Where a cell value comes from
+
+Three provenances, in the order they should be tried:
+
+1. **Structural.** Free and deterministic: shared parent, same owning unit, a metric string that
+   appears in another team&#39;s `owns`, an existing `dependsOn`. This fills most of the table and
+   costs nothing.
+2. **Model.** The plausible remainder, scored in an audit-shaped call. `mode: &#34;audit&#34;` already
+   exists but returns `findings`; a matrix wants a list of scored pairs, which is a different
+   return shape and therefore a *new mode with its own tool schema*. TREE_BRIEFING&#39;s lesson
+   applies directly: naming a field the mode&#39;s tool schema does not have makes the model emit an
+   empty tool call. Do not try to smuggle cells out through `findings`.
+3. **Human.** Overrides and assertions, exactly like `contributes` today. Edits go through
+   Actions and `commit` like everything else (vision invariant 3), which means a new action op
+   rather than a side door.
+
+## Storage: sparse, never N×N
+
+The full matrix is never stored. 21 objectives is 441 cells; 113 key results is 12,769. A list
+of `{ from, to, score, why }` for the cells someone asserted or the model scored above a
+threshold is a document field; a 12,769-entry array is not. This is a second edge set living
+beside the tree in the `OkrDocument` (vision invariant 4), added additively the way `company`
+and `context` were.
+
+## Scoping: a matrix must be small before it is drawn
+
+The axes are never &#34;all nodes&#34;. Grounded in the bundled datasets: 21 objectives × 21 is a
+readable heatmap, 113 KRs × 113 is wallpaper, and 61 units × 61 is somewhere in between.
+Usable axis pairs:
+
+- **objectives × objectives** — the default OKR view.
+- **one team&#39;s KRs × another team&#39;s objectives** — the pair review, which is exactly mode 2 of
+  the four discussion modes, laid out as a grid.
+- **teams × teams**, scoped to one level of the org or to units that have charters.
+
+Rule for any plan: a matrix view always names its two axes plus a filter, and refuses to render
+above roughly 40 entries per axis rather than drawing something unreadable.
+
+## How it ties into what exists
+
+- **Clicking a cell** highlights both endpoints and frames them, reusing the highlight channel
+  and the neighbourhood framing that already shipped. Selection still wins over highlight
+  (invariant 5).
+- **Findings are the same card.** An empty row, a hot column, a negative cell — each is a
+  `Finding` with `nodeIds`, so the briefing surface renders matrix output with no new UI.
+- **It is the index for team-agent reviews.** Mode 2 (&#34;agents review each other&#39;s OKRs&#34;) costs
+  one model call per pair; 61 teams is 3,721 pairs. The matrix is how you spend twelve calls on
+  the pairs that matter instead.
+- **A dense column is the focus-budget conversation** from Depth and Focus, arriving with
+  evidence attached.
+
+## Alternatives considered
+
+- **Draw cross-links as extra edges in the 3D scene.** Rejected as the primary view: it is the
+  hairball the tree layout exists to prevent. Plausible later for the handful of cells a user
+  pins.
+- **One triangle, symmetric cells.** Rejected. Support and reliance are directed, and the gap
+  between &#34;A relies on B&#34; and &#34;B relies on A&#34; is the whole point of the table.
+- **Score every cell with a model call.** Rejected on cost and noise. Structural first, model
+  only for the plausible remainder.
+- **Reuse `contributes` and its 0-1 range.** Rejected: it cannot express tension, which is the
+  cell worth building the view for.
+
+## When the plans get written
+
+Two plans, not one — they share a component and nothing else.
+
+1. `TEAM_RELIANCE_MATRIX.md` first. Its source data already exists (`dependsOn`, `owns`,
+   `unitId`), the derivation is structural, and it needs no new scoring concept.
+2. `OKR_FITNESS_MATRIX.md` second, once the grid component and the sparse relation storage have
+   been proven by the first.
+EOF
+wc -l &#34;Concepts/Matrix Views - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-46-01-127Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-46-01-127Z" class="timestamp-link"><time datetime="2026-09-12T20:46:01.127Z" data-timestamp="2026-09-12T20:46:01.127Z">2026-09-12T20:46:01.127Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     148 Concepts/Matrix Views - Design.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-03-134Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-03-134Z" class="timestamp-link"><time datetime="2026-09-12T20:46:03.134Z" data-timestamp="2026-09-12T20:46:03.134Z">2026-09-12T20:46:03.134Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-03-814Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-03-814Z" class="timestamp-link"><time datetime="2026-09-12T20:46:03.814Z" data-timestamp="2026-09-12T20:46:03.814Z">2026-09-12T20:46:03.814Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01WT1Bpt9pY5H5VbBNVmZTKj">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Locate the last bullet in What comes next</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;Deeper hierarchies&#34; -A 5 CLAUDE.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-46-03-855Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-46-03-855Z" class="timestamp-link"><time datetime="2026-09-12T20:46:03.855Z" data-timestamp="2026-09-12T20:46:03.855Z">2026-09-12T20:46:03.855Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>205:- **Deeper hierarchies** (sub-objectives, individual KRs, org-shaped trees) once a focus budget
+206-  and live alignment audit exist. Why the three-level ladder is a default, not doctrine, and why
+207-  human focus is the constraint that replaces it:
+208-  [Concepts/Depth and Focus - Design.md](Concepts/Depth%20and%20Focus%20-%20Design.md).</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-07-777Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-07-777Z" class="timestamp-link"><time datetime="2026-09-12T20:46:07.777Z" data-timestamp="2026-09-12T20:46:07.777Z">2026-09-12T20:46:07.777Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01PNMWpZYQPHvcaKYsHEH3pC">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Add matrix views bullet to CLAUDE.md</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat &gt;&gt; CLAUDE.md &lt;&lt;&#39;EOF&#39;
+- **Matrix views** — an OKR-against-OKR fitness table and a team-against-team reliance table, as
+  the place off-tree relations live without turning the 3D scene into a hairball. Two plans when
+  they get written (`TEAM_RELIANCE_MATRIX.md` first, since `dependsOn` and `owns` already carry
+  the source data): [Concepts/Matrix Views - Design.md](Concepts/Matrix%20Views%20-%20Design.md).
+EOF
+tail -6 CLAUDE.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-46-07-822Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-46-07-822Z" class="timestamp-link"><time datetime="2026-09-12T20:46:07.822Z" data-timestamp="2026-09-12T20:46:07.822Z">2026-09-12T20:46:07.822Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>  human focus is the constraint that replaces it:
+  [Concepts/Depth and Focus - Design.md](Concepts/Depth%20and%20Focus%20-%20Design.md).
+- **Matrix views** — an OKR-against-OKR fitness table and a team-against-team reliance table, as
+  the place off-tree relations live without turning the 3D scene into a hairball. Two plans when
+  they get written (`TEAM_RELIANCE_MATRIX.md` first, since `dependsOn` and `owns` already carry
+  the source data): [Concepts/Matrix Views - Design.md](Concepts/Matrix%20Views%20-%20Design.md).</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-10-998Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-10-998Z" class="timestamp-link"><time datetime="2026-09-12T20:46:10.998Z" data-timestamp="2026-09-12T20:46:10.998Z">2026-09-12T20:46:10.998Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-11-813Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-11-813Z" class="timestamp-link"><time datetime="2026-09-12T20:46:11.813Z" data-timestamp="2026-09-12T20:46:11.813Z">2026-09-12T20:46:11.813Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01P48rwtaP1qg6sSW1xqskiT">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Get line numbers for charter fields</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#39;&#34;dependsOn&#34;\|&#34;owns&#34;&#39; schema/src/company.schema.json</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-46-11-844Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-46-11-844Z" class="timestamp-link"><time datetime="2026-09-12T20:46:11.844Z" data-timestamp="2026-09-12T20:46:11.844Z">2026-09-12T20:46:11.844Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>85:        &quot;owns&quot;: {
+96:        &quot;dependsOn&quot;: {</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-15-527Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-15-527Z" class="timestamp-link"><time datetime="2026-09-12T20:46:15.527Z" data-timestamp="2026-09-12T20:46:15.527Z">2026-09-12T20:46:15.527Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01AXGgDJT92S5gzTYheCCEPT">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Add line citations to charter fields</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">python3 - &lt;&lt;&#39;EOF&#39;
+import io
+p=&#34;Concepts/Matrix Views - Design.md&#34;
+s=open(p).read()
+s=s.replace(&#34;`charter.dependsOn` (`schema/src/company.schema.json`, charter definition) is today a list of\nunit ids:&#34;,
+            &#34;`charter.dependsOn` (`schema/src/company.schema.json:96`, with `owns` at `:85`) is today a list\nof unit ids:&#34;)
+open(p,&#34;w&#34;).write(s)
+EOF
+grep -n &#34;company.schema.json&#34; &#34;Concepts/Matrix Views - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T20-46-18-750Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T20-46-18-750Z" class="timestamp-link"><time datetime="2026-09-12T20:46:18.750Z" data-timestamp="2026-09-12T20:46:18.750Z">2026-09-12T20:46:18.750Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>61:`charter.dependsOn` (`schema/src/company.schema.json:96`, with `owns` at `:85`) is today a list</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T20-46-29-215Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T20-46-29-215Z" class="timestamp-link"><time datetime="2026-09-12T20:46:29.215Z" data-timestamp="2026-09-12T20:46:29.215Z">2026-09-12T20:46:29.215Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Captured as a concept doc — <a href="Concepts/Matrix%20Views%20-%20Design.md">Concepts/Matrix Views - Design.md</a>, plus a bullet in CLAUDE.md's "What comes next".</p>
+<p>The core argument I landed on: the scene draws exactly one edge per node (the parent link), which is why it stays legible. Every relation that <em>isn't</em> a parent edge — a KR serving a second objective, two teams both claiming "activation rate", two objectives in tension — has nowhere to live today, and drawing them in 3D makes the hairball the tree layout exists to prevent. A matrix is the dense representation of exactly those off-tree edges, and its real advantage is that <strong>emptiness is readable</strong>: an empty row is an OKR nothing supports, a hot column is a team everyone waits on. Neither is visible in a tree at any zoom.</p>
+<p>Four things I worked out that are worth flagging now:</p>
+<ul>
+<li><strong>The fitness scale has to be signed.</strong> <code>contributes</code> (<a href="schema/src/okr-node.schema.json:51">okr-node.schema.json:51</a>) is 0–1 because a node can't support its <em>parent</em> negatively. Arbitrary pairs can be in tension, and that cell is the most valuable thing in the table — so the matrix descends from <code>contributes</code> but doesn't reuse its range.</li>
+<li><strong>Reliance can be derived, not just asserted.</strong> <code>charter.dependsOn</code> is hand-written and thin (63 edges over 61 units on the Polaris dataset; only 23 units have a charter at all). Deriving reliance from KR metrics matching another team's <code>owns</code> gives a second layer — and the <em>disagreement</em> between derived and asserted is the finding: "Sales lists no dependency on Platform, but four of their KRs move a metric Platform owns."</li>
+<li><strong>Scoping is the whole feasibility question.</strong> 21 objectives × 21 is a readable heatmap; 113 KRs × 113 is 12,769 cells of wallpaper. Axes are never "all nodes", and storage is a sparse <code>{from, to, score, why}</code> list, never N×N.</li>
+<li><strong>It's the index for team-agent reviews.</strong> Mode 2 of the discussion modes costs one call per pair; 61 teams is 3,721 pairs. The matrix is how you spend twelve calls on the ones that matter.</li>
+</ul>
+<p>Recommendation on sequencing: two plans, team reliance first — its source data already exists and the derivation is structural, so it proves the grid component and the sparse storage before the fitness matrix needs a new scoring concept invented.</p></div></div></div>
+<div class="message user" id="msg-2026-09-12T21-42-31-155Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T21-42-31-155Z" class="timestamp-link"><time datetime="2026-09-12T21:42:31.155Z" data-timestamp="2026-09-12T21:42:31.155Z">2026-09-12T21:42:31.155Z</time></a></div><div class="message-content">
+<div class="user-content"><p>ok. as far as the team reliance table. maybe there is also a team communication table that shows the frequency of messages between teams. This works well if the teams are  agents then all comms between the team agents could be accessed and inspected through a message board between those two agents. If the teams are humans then connectors can be built to scan comms between teams like github issues and slack channels, etc.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-42-39-955Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-42-39-955Z" class="timestamp-link"><time datetime="2026-09-12T21:42:39.955Z" data-timestamp="2026-09-12T21:42:39.955Z">2026-09-12T21:42:39.955Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-42-40-694Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-42-40-694Z" class="timestamp-link"><time datetime="2026-09-12T21:42:40.694Z" data-timestamp="2026-09-12T21:42:40.694Z">2026-09-12T21:42:40.694Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_018sytpjrajurs2aA1XGv6zw">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read executors concept doc</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,111p&#39; &#34;Concepts/Agents as Executors - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-42-40-739Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-42-40-739Z" class="timestamp-link"><time datetime="2026-09-12T21:42:40.739Z" data-timestamp="2026-09-12T21:42:40.739Z">2026-09-12T21:42:40.739Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---
+tags:
+  - concept
+  - teams
+  - agents
+  - progress
+created: 2026-09-11
+---
+# Agents as Executors - Design
+
+Horizon 2 of [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md): a team&#x27;s
+agent does not only *talk* about the team&#x27;s OKRs (see
+[Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md)), it *works* on them through
+connected tools and *measures* them, and a dashboard shows progress. No plan exists yet; this
+doc fixes the vocabulary and the seams so Horizon 1 does not close them.
+
+## The example that defines the feature
+
+A team &quot;Widget library maintenance&quot; has the KR &quot;Address 90% of incoming issues on the widget
+GitHub repo, each ranked by priority.&quot; Its agent, running as that team with the team&#x27;s charter,
+should be able to:
+
+1. connect to the repo through a tool connection the user has authorised;
+2. read incoming issues, triage and rank them, reply or label them, on a schedule or on demand;
+3. record how it is doing against the KR (issues addressed / issues received) as metric samples;
+4. leave a trail the user can inspect, undo where the tool allows, and turn off.
+
+The user should be able to do 3 by hand for any KR, agent or not, and a dashboard should read
+the same samples.
+
+## Vocabulary
+
+- **Executor**: a long-running agent process bound to one team and one or more of its nodes,
+  built from the team&#x27;s charter, the node&#x27;s label/metric/target, and a set of **connections**.
+- **Connection**: a named, authorised handle to an external system (a GitHub repo, a tracker,
+  an analytics source), owned by a team. Credentials never enter the document; the document
+  holds a reference.
+- **Run**: one execution of an executor: when, what it read, what it did, what it measured.
+- **Metric sample**: `history.metricSamples[]` `{ nodeId, at, value, note }`, already in the
+  schema. The one shape for progress, whether a person types it or an executor computes it.
+- **Progress**: a derived view over samples against a node&#x27;s `target` (baseline → goal by date).
+- **Dashboard**: a surface that reads progress across the tree; not the 3D scene.
+
+## Shape sketches (all additive to the v1 document)
+
+```
+unit.connections: [{ id, kind: &#x27;github&#x27; | &#x27;jira&#x27; | &#x27;http&#x27; | ..., label, ref: { owner, repo } }]
+unit.executors:   [{ id, nodeIds: [...], connectionIds: [...], cadence: &#x27;manual&#x27; | &#x27;hourly&#x27; | &#x27;daily&#x27;,
+                     enabled: boolean, instructions: &quot;free text the user adds to the charter&quot; }]
+history.runs:     [{ executorId, startedAt, endedAt, status, summary, actions: Action[],
+                     samples: MetricSample[] }]
+history.changes[].actor: &#x27;user&#x27; | &#x27;assistant&#x27; | &#x27;import&#x27; | &#x27;agent&#x27;
+node.target:      stays free text; a parsed { baseline, goal, by } view is derived, not stored,
+                  until a real need forces structure.
+```
+
+## Invariants
+
+- **Everything an executor changes in the document is an Action with `actor: &quot;agent&quot;`**, through
+  the same commit path. The user can undo it in the app exactly like an assistant edit.
+- **External side effects are recorded, not undoable.** A run&#x27;s `summary` and per-action log say
+  what happened in GitHub; the app does not pretend to revert a comment.
+- **Progress has one shape.** User-entered and agent-computed samples are the same thing with a
+  different `note`. The dashboard never asks who wrote a sample to render it.
+- **The charter is the persona; the executor adds instructions, never replaces it.** If a team&#x27;s
+  charter is wrong, its executor is wrong. That is the point: fix the team, not the bot.
+- **Credentials live outside the document.** A connection reference is safe to export.
+
+## Where executors run
+
+The current service is stateless and request-scoped (`service/index.js`). An executor is a
+process that outlives a request and may run on a schedule. Options, to be decided in the plan:
+
+1. **A worker beside the service** (same repo, `service/executors/`), triggered by an endpoint
+   and by cron, writing results back through a `/api/commit`-style endpoint. Simplest; needs
+   Horizon 3&#x27;s store or at least a file-backed document to write to, since the browser will
+   not be open.
+2. **The browser orchestrates** (as the debate design does). Works for on-demand runs while the
+   tab is open; does not work for schedules. Good enough for a first demo of &quot;run it now&quot;.
+3. **Claude Agent SDK sessions** with the team charter as the system prompt and connections
+   exposed as tools. This is what an executor most naturally is; the worker in option 1 would
+   host these.
+
+Option 2 first for the demo, option 1 + 3 once Horizon 3 gives the worker a document to write.
+
+## Dependencies on earlier horizons
+
+- Horizon 1 `TEAM_MODEL_AND_EDITOR`: charters, `unitId`, team Actions. Without those there is
+  no &quot;run as the team&quot;.
+- Horizon 1 `OKR_NODE_EDITOR`: `commit()` with `actor`; the executor is one more actor.
+- Horizon 3 (shared document): scheduled runs need a document that exists when no browser is
+  open. On-demand runs do not.
+
+## Alternatives considered
+
+- **Storing progress on the node** (`node.current`). Rejected: loses history, and the schema
+  already has samples. Progress is a time series.
+- **Structured `target` now.** Deferred: a parser over &quot;31% → 50% by Q4&quot; covers the demo data,
+  and forcing structure before the dashboard exists would be design by guess.
+- **Executors as a separate document type.** Rejected: an executor is a property of a team and
+  travels with it in export/import.
+
+## Open questions for the eventual plan
+
+- How does the user authorise a connection without the app holding secrets? (OAuth with tokens
+  kept server-side, keyed by connection id, is the obvious shape.)
+- What does &quot;undo&quot; mean for a run that commented on twelve issues?
+- Does the dashboard live in this app (a fourth surface) or is it a separate page over the same
+  document?
+- Sampling cadence and who resolves conflicts when a user and an agent both record a sample for
+  the same period.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-42-41-875Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-42-41-875Z" class="timestamp-link"><time datetime="2026-09-12T21:42:41.875Z" data-timestamp="2026-09-12T21:42:41.875Z">2026-09-12T21:42:41.875Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01FyHoccmD3gJ3geb7dcMrZb">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read discussion modes tail and vision horizons</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;60,93p&#39; &#34;Concepts/Teams as Agents - Design.md&#34;; echo &#34;=== vision tail ===&#34;; sed -n &#39;80,171p&#39; &#34;Concepts/OKR Viewer - Product Vision.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-42-41-922Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-42-41-922Z" class="timestamp-link"><time datetime="2026-09-12T21:42:41.922Z" data-timestamp="2026-09-12T21:42:41.922Z">2026-09-12T21:42:41.922Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>4. **Agents negotiate and propose tree edits.** Mode 3 with a closing turn: a neutral &quot;coach&quot;
+   call that reads the transcript and returns `actions`. Actions go through `commit()` like
+   everything else, so the user can undo the whole negotiation in one step.
+
+## Invariants the near-term plan must not break
+
+- **The charter is self-contained.** No field may depend on UI state or on another document.
+  A charter pasted into a prompt with the team&#x27;s subtree must be enough.
+- **Team edits are Actions.** Modes 1 to 4 will propose charter changes; they must be undoable
+  and land in history like node edits.
+- **A team can be handed to the model without its people.** `people` stays optional and out of
+  the persona; personas represent teams, not individuals.
+- **`owner` never disagrees with `unitId`.** The apply layer derives `owner` from the unit name
+  whenever `unitId` changes, so prompts that read `owner` and prompts that read `unitId` agree.
+
+## Alternatives considered
+
+- **Personas as a separate `agents` section in the document.** Rejected: it would drift from the
+  team it describes. The charter *is* the persona source; a future `persona` field on the unit
+  (tone, red lines) can be added additively if needed.
+- **Server-side orchestration of debates** (a `/api/discuss` endpoint that loops). Rejected for
+  now: it breaks the stateless invariant and hides turns from the user. Browser-driven turns
+  keep each call inspectable and interruptible. Revisit if latency of N sequential calls is
+  unacceptable.
+- **Free-text `domain` instead of `owns[]`.** Rejected: ownership overlap detection between two
+  teams is the first useful agent argument, and it needs discrete items.
+
+## Open questions for the future plan
+
+- Should a debate transcript be exportable into `history`? Probably as a `change` with empty
+  actions and the transcript as `reason`, but the 4000-char `reason` cap may be too small.
+- Does mode 3 need a &quot;moderator&quot; persona, or is the user enough?
+- Rate limits: N personas × M turns per debate; a debate of four teams and six rounds is 24
+  calls at ~3 s each.
+=== vision tail ===
+  Selection wins; highlight is transient.
+- **Panel**: the one thing open on the left of the scene: a node (read or edit), a team, or the
+  team list.
+- **Context**: what the user is looking at, sent with a message: selection, panel, focused field,
+  highlights, dataset.
+- **Tab**: one conversation with a **mode** (`free`, `interview-node`, `interview-team`,
+  `interview-new`) and a **subject** (a node, a team, or a parent for a new node).
+- **Interview**: a tab where the assistant asks, one question at a time, and ends by proposing
+  Actions.
+- **Persona** (future): a system prompt built from a team&#x27;s charter so an agent speaks as that
+  team.
+
+## Why these pieces, in this order
+
+```
+BUNDLED_DATASETS ─┐
+CAMERA_LEVEL ─────┼── independent, ship in any order
+CLEAR_HIGHLIGHT ──┘
+        │
+OKR_NODE_EDITOR ── introduces commit() + history
+        │
+TEAM_MODEL_AND_EDITOR ── company in state/request, team actions, team editor, team labels
+        │
+CHAT_CONTEXT ── panel/field/highlight context in the request
+        │
+CHAT_TABS_AND_INTERVIEWS ── modes, subjects, launch buttons
+        │
+(future) TEAM_AGENT_DISCUSSIONS ── personas, debates, reviews
+```
+
+- **Datasets first** because teams need somewhere to live in data, and because every later
+  verification step starts with &quot;load dataset X&quot;.
+- **Editor before teams** because the editor establishes `commit()` and history, which the team
+  editor reuses without inventing a second path.
+- **Teams before context** because &quot;the open team editor&quot; is one of the things context reports,
+  and the request must already carry `company` for the model to name teams.
+- **Context before tabs** because an interview about a team is a tab whose subject is that
+  team; the context machinery is what makes the subject resolvable.
+
+## Alternatives considered
+
+- **A `/api/interview` endpoint.** Rejected: interviews are the same tool call with a different
+  system prompt; a second endpoint would duplicate validation and drift.
+- **Team edits outside the Action system** (a `setCompany()` setter). Rejected: interviews about
+  a team must be able to propose team edits, and those must be undoable and recorded. One action
+  vocabulary or two of everything.
+- **Replacing `owner` with a required team reference** (breaking, `schemaVersion: 2`). Rejected
+  for now: additive `unitId` with `owner` as derived display text keeps every existing file and
+  prompt valid. Revisit when a migration is worth writing.
+- **OrbitControls for the camera.** Rejected: it never rolls, but it also forbids the user from
+  rolling. The ask was &quot;level on auto-moves, free on user moves&quot;.
+- **Persisting tabs or the chosen dataset.** Deferred: nothing persists yet; adding persistence
+  for one thing invites a half-built persistence layer.
+
+## Horizons
+
+Recorded 2026-09-11 so near-term decisions keep the doors open. Only Horizon 1 has plans.
+
+| Horizon | What | Why it waits |
+|---|---|---|
+| **1. Interaction model and value** (now) | The seven plans above: datasets, camera, editor, teams, context, tabs. | Everything later assumes the tree, teams and chat are worth using by one person. |
+| **2. Agents that work and measure** (mid) | An agent runs *as a team* to execute one of its OKRs through connected tools (e.g. triage 90% of incoming issues on a GitHub repo and rank them by priority). Agents and users both record progress. A progress dashboard reads it. Designed in [Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md). | Needs a team charter that is real (Horizon 1), a place to run long jobs, and tool connections with credentials. |
+| **3. Shared, live document** (distant) | The document lives in a realtime JSON-document database so several team members edit and chat against it at once. | Needs the interaction model settled first; a multi-user store hardens whatever shape it is given. |
+
+Seams to keep open now, because they are cheap today and expensive later:
+
+- **The document is the unit of truth** (invariant 4). A JSON-document realtime store
+  (Firestore, Yjs/Automerge, RxDB) can hold an `OkrDocument` as-is; nothing in the app addresses
+  state by anything other than the document and the ids inside it.
+- **Every mutation is an Action with an actor** (invariant 3). Horizon 2 adds `actor: &quot;agent&quot;`
+  and Horizon 3 adds a user identity; both are additive to `history.changes`. Never let a UI
+  path bypass `commit()`.
+- **`history.metricSamples` already exists** (`schema/src/history.schema.json`). Progress
+  tracking by users and agents writes there; the dashboard reads there. Do not invent a second
+  progress shape.
+- **Team charters are self-contained prose plus lists.** An executor agent&#x27;s system prompt is
+  the charter plus the OKR plus its tool descriptions. A future `connections` field on the unit
+  (which repos, which trackers) is additive.
+- **The level ladder is a warning in the schema, a rule only in the editor and prompt.** Keep it
+  that way so depth can be opened later without a migration; see
+  [Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).
+- **The service is stateless** (invariant 1) until Horizon 3 deliberately changes it. An agent
+  that runs for hours cannot live inside a request; that is a new process, not a change to
+  `/api/chat`.
+
+## What this round deliberately leaves out
+
+- Multi-agent discussions (designed in the companion doc, not planned).
+- Agents executing or measuring OKRs, and dashboards (Horizon 2).
+- Shared, persistent, multi-user documents (Horizon 3).
+- Teams as objects in the 3D scene beyond an optional label.
+- Auth, streaming, mobile (README scope boundary stands).</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-43-10-194Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-43-10-194Z" class="timestamp-link"><time datetime="2026-09-12T21:43:10.194Z" data-timestamp="2026-09-12T21:43:10.194Z">2026-09-12T21:43:10.194Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-43-10-945Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-43-10-945Z" class="timestamp-link"><time datetime="2026-09-12T21:43:10.945Z" data-timestamp="2026-09-12T21:43:10.945Z">2026-09-12T21:43:10.945Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01R2E59pJ6A5WnpEf6qi9srq">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Show doc section structure</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;^#\|^##&#34; &#34;Concepts/Matrix Views - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-43-10-989Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-43-10-989Z" class="timestamp-link"><time datetime="2026-09-12T21:43:10.989Z" data-timestamp="2026-09-12T21:43:10.989Z">2026-09-12T21:43:10.989Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>9:# Matrix Views - Design
+17:## The idea, as stated
+23:## Why a matrix, when there is already a 3D tree
+41:## Matrix 1 — OKR fitness
+59:## Matrix 2 — Team reliance
+78:## Where a cell value comes from
+94:## Storage: sparse, never N×N
+102:## Scoping: a matrix must be small before it is drawn
+116:## How it ties into what exists
+129:## Alternatives considered
+141:## When the plans get written</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-43-20-480Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-43-20-480Z" class="timestamp-link"><time datetime="2026-09-12T21:43:20.480Z" data-timestamp="2026-09-12T21:43:20.480Z">2026-09-12T21:43:20.480Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01QRDMriZGhn3AVtMUaCRbJ9">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Update intro for the third matrix</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">python3 - &lt;&lt;&#39;PYEOF&#39;
+p = &#34;Concepts/Matrix Views - Design.md&#34;
+s = open(p).read()
+
+# --- intro ---
+old_intro = &#34;&#34;&#34;# Matrix Views - Design
+
+Two tables that show what the tree cannot: OKR-against-OKR fitness, and team-against-team
+reliance. No plan exists yet; the plans this would spawn are named at the bottom. Parent:
+[OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md) and
+[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).&#34;&#34;&#34;
+new_intro = &#34;&#34;&#34;# Matrix Views - Design
+
+Three tables that show what the tree cannot: OKR-against-OKR fitness, team-against-team
+reliance, and team-against-team communication. No plan exists yet; the plans this would spawn
+are named at the bottom. Parent:
+[OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md) and
+[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).&#34;&#34;&#34;
+assert old_intro in s
+s = s.replace(old_intro, new_intro)
+
+old_stated = &#34;&#34;&#34;A table whose rows and columns are both the OKRs; each cell scores how well the row OKR fits the
+column OKR. A second table of the same shape whose rows and columns are both teams; each cell
+scores how much one team relies on the other.&#34;&#34;&#34;
+new_stated = &#34;&#34;&#34;A table whose rows and columns are both the OKRs; each cell scores how well the row OKR fits the
+column OKR. A second table of the same shape whose rows and columns are both teams; each cell
+scores how much one team relies on the other. A third of the same shape again, counting how
+often those two teams actually talk.
+
+The third one is not a third feature. Reliance is what teams *say*; communication is what teams
+*do*. Laid over each other on identical axes, the gap between them is the product.&#34;&#34;&#34;
+assert old_stated in s
+s = s.replace(old_stated, new_stated)
+
+open(p, &#34;w&#34;).write(s)
+print(&#34;ok&#34;)
+PYEOF</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-43-22-780Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-43-22-780Z" class="timestamp-link"><time datetime="2026-09-12T21:43:22.780Z" data-timestamp="2026-09-12T21:43:22.780Z">2026-09-12T21:43:22.780Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ok</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-43-24-773Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-43-24-773Z" class="timestamp-link"><time datetime="2026-09-12T21:43:24.773Z" data-timestamp="2026-09-12T21:43:24.773Z">2026-09-12T21:43:24.773Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-43-47-495Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-43-47-495Z" class="timestamp-link"><time datetime="2026-09-12T21:43:47.495Z" data-timestamp="2026-09-12T21:43:47.495Z">2026-09-12T21:43:47.495Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01DP1qergq1TsMC6XTe5FCuR">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Insert Matrix 3 section</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">python3 - &lt;&lt;&#39;PYEOF&#39;
+p = &#34;Concepts/Matrix Views - Design.md&#34;
+s = open(p).read()
+
+matrix3 = &#34;&#34;&#34;## Matrix 3 — Team communication
+
+Same axes as the reliance matrix, same grid, a different cell: how often these two teams
+actually talk, over a window. Its value is almost entirely in the overlay.
+
+| Reliance | Communication | What it means |
+|---|---|---|
+| High | Low | A dependency running on hope. The silent handoff that fails at the end of the quarter. |
+| Low | High | An unmodelled dependency, or a coordination tax nobody budgeted for. |
+| High | High | Working as designed. Nothing to say. |
+| Low | Low | Correctly independent. Most of the table. |
+
+Two off-diagonal quadrants and nothing else. That is the whole read, and neither matrix alone
+produces it — which is why the grid component should take **two layers from the first plan**,
+even if the second layer is empty until the comms data exists.
+
+### When teams are agents: the message board is ground truth
+
+If team agents talk to each other, they talk through something we build, so the communication
+matrix is not estimated from telemetry — it is *counted*, and every cell is **inspectable**.
+Click a cell and read the actual thread. No heat map that a person cannot drill into is worth
+much; this one bottoms out in messages.
+
+The shape that falls out: a **board per team pair**, addressable by the two unit ids,
+append-only, every message attributed to a speaking team. That is a small object and it pays for
+itself three times over:
+
+- It is the async counterpart to mode 3 of the discussion modes. A debate is synchronous and
+  user-moderated; a board is asynchronous and agent-driven. Both are transcripts; only the board
+  has an address and a lifetime.
+- Mode 2 (&#34;agents review each other&#39;s OKRs&#34;) writes its review *to the board for that pair*
+  rather than into a chat tab that evaporates, which is what makes the review re-readable later.
+- Horizon 2 executors need exactly this seam to coordinate: Platform&#39;s executor telling Sales&#39;
+  executor that the metric moved is a board post, not a new mechanism.
+
+Caveat worth stating up front: agent chatter is **cheap**, and a matrix that counts it will
+reward agents for talking. Volume is not coordination. The cell should count threads or
+exchanges, not messages, and the board should carry a per-pair budget the way a focus budget
+caps key results.
+
+### When teams are humans: connectors, and counts only
+
+For human teams, the signal already exists in systems the org runs: cross-team review requests
+and mentions on GitHub issues and PRs, shared Slack channels, ticket handoffs, meeting invites.
+Three rules make this buildable and safe:
+
+1. **Count, never content.** A connector returns `{ from, to, period, kind, count }` and the
+   document stores those counts. The cell&#39;s value is frequency and direction; the content buys
+   nothing for this view and is a liability in an exported file. This matches the executors
+   doc&#39;s posture that credentials live outside the document — comms content stays outside it too.
+2. **People are the join key, and the weak link.** Mapping a GitHub comment to a *team pair*
+   means mapping author → person → unit, which `company.people` already supports (each person
+   attached to exactly one unit). Unmapped people mean silently undercounted cells, so the view
+   must show its own coverage: &#34;62% of comms events mapped to a team.&#34;
+3. **Group channels are hyperedges, not pairs.** A Slack channel with nine teams in it is not a
+   relation between two of them. Either project it onto pairs with a stated rule (direct
+   mentions and replies only) or exclude it. Do not let an all-hands channel light up the whole
+   matrix.
+
+Connections reuse the executor design&#39;s `unit.connections` shape (`kind`, `label`, `ref`); a
+comms scan is a read-only connection of a kind that already has to exist. This is not a second
+auth path.
+
+### Normalisation and window
+
+Raw counts lie. A sixty-person team out-messages a three-person team on every axis, so the cell
+is a share — of that row team&#39;s total outbound, or per capita — not a raw count. And frequency
+is meaningless without a window: one quarter, matched to the OKR cadence, so the comms matrix
+and the tree it is compared against describe the same period.
+
+&#34;&#34;&#34;
+
+anchor = &#34;## Where a cell value comes from&#34;
+assert anchor in s
+s = s.replace(anchor, matrix3 + anchor, 1)
+open(p, &#34;w&#34;).write(s)
+print(&#34;ok&#34;)
+PYEOF</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-43-49-361Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-43-49-361Z" class="timestamp-link"><time datetime="2026-09-12T21:43:49.361Z" data-timestamp="2026-09-12T21:43:49.361Z">2026-09-12T21:43:49.361Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ok</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-44-00-756Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-44-00-756Z" class="timestamp-link"><time datetime="2026-09-12T21:44:00.756Z" data-timestamp="2026-09-12T21:44:00.756Z">2026-09-12T21:44:00.756Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01MYaDbaQtcPy7ae6K3DQEoe">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Update provenance and storage sections</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">python3 - &lt;&lt;&#39;PYEOF&#39;
+p = &#34;Concepts/Matrix Views - Design.md&#34;
+s = open(p).read()
+
+# provenance: add the observed source
+old = &#34;&#34;&#34;3. **Human.** Overrides and assertions, exactly like `contributes` today. Edits go through
+   Actions and `commit` like everything else (vision invariant 3), which means a new action op
+   rather than a side door.&#34;&#34;&#34;
+new = &#34;&#34;&#34;3. **Human.** Overrides and assertions, exactly like `contributes` today. Edits go through
+   Actions and `commit` like everything else (vision invariant 3), which means a new action op
+   rather than a side door.
+
+The communication matrix sits outside that ladder: its cells are **observed**, not scored. They
+are counted from boards or returned by a connector, and nobody hand-edits them — an observation
+you can overwrite is not an observation. That difference is why the comms layer is stored
+separately from the scored layers rather than as another `score` on the same cell.&#34;&#34;&#34;
+assert old in s
+s = s.replace(old, new)
+
+# storage
+old = &#34;&#34;&#34;The full matrix is never stored. 21 objectives is 441 cells; 113 key results is 12,769. A list
+of `{ from, to, score, why }` for the cells someone asserted or the model scored above a
+threshold is a document field; a 12,769-entry array is not. This is a second edge set living
+beside the tree in the `OkrDocument` (vision invariant 4), added additively the way `company`
+and `context` were.&#34;&#34;&#34;
+new = &#34;&#34;&#34;The full matrix is never stored. 21 objectives is 441 cells; 113 key results is 12,769. A list
+of `{ from, to, score, why }` for the cells someone asserted or the model scored above a
+threshold is a document field; a 12,769-entry array is not. This is a second edge set living
+beside the tree in the `OkrDocument` (vision invariant 4), added additively the way `company`
+and `context` were.
+
+Observed comms are a third, differently-shaped set: `{ from, to, period, kind, count }`, one row
+per pair per window per source, and they accumulate over time rather than being overwritten.
+Boards themselves are not document data at all — they are a store the agents write to, and the
+document holds only the counts, the way `history.metricSamples` holds samples rather than the
+tool output that produced them.&#34;&#34;&#34;
+assert old in s
+s = s.replace(old, new)
+
+open(p, &#34;w&#34;).write(s)
+print(&#34;ok&#34;)
+PYEOF</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-44-03-018Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-44-03-018Z" class="timestamp-link"><time datetime="2026-09-12T21:44:03.018Z" data-timestamp="2026-09-12T21:44:03.018Z">2026-09-12T21:44:03.018Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ok</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-44-22-865Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-44-22-865Z" class="timestamp-link"><time datetime="2026-09-12T21:44:22.865Z" data-timestamp="2026-09-12T21:44:22.865Z">2026-09-12T21:44:22.865Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01AzvNT2nd84rMaBq3K7hPNU">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Update ties, alternatives, and plan sequencing</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">python3 - &lt;&lt;&#39;PYEOF&#39;
+p = &#34;Concepts/Matrix Views - Design.md&#34;
+s = open(p).read()
+
+# ties
+old = &#34;&#34;&#34;- **A dense column is the focus-budget conversation** from Depth and Focus, arriving with
+  evidence attached.&#34;&#34;&#34;
+new = &#34;&#34;&#34;- **A dense column is the focus-budget conversation** from Depth and Focus, arriving with
+  evidence attached.
+- **A pair board is where a review goes to live.** Mode 2&#39;s output currently has nowhere durable
+  to land; the board gives it an address, and the comms matrix is the index of those addresses.&#34;&#34;&#34;
+assert old in s
+s = s.replace(old, new)
+
+# alternatives
+old = &#34;&#34;&#34;- **Reuse `contributes` and its 0-1 range.** Rejected: it cannot express tension, which is the
+  cell worth building the view for.&#34;&#34;&#34;
+new = &#34;&#34;&#34;- **Reuse `contributes` and its 0-1 range.** Rejected: it cannot express tension, which is the
+  cell worth building the view for.
+- **Store comms messages in the document and count them on the fly.** Rejected twice over:
+  unbounded growth in a file meant to be exported, and content in an artefact that should hold
+  only counts.
+- **Analyse comms content — sentiment, topic, who is blocking whom.** Rejected. It is the fastest
+  way to make people stop trusting the tool, and the frequency signal already answers the
+  question the matrix is asking.
+- **Infer communication from `history.changes` instead** (who edited whose nodes). Kept as a free
+  fourth signal, rejected as *the* signal: it measures editing, not talking, and in a tool one
+  person drives it measures almost nothing.&#34;&#34;&#34;
+assert old in s
+s = s.replace(old, new)
+
+# plans
+old = &#34;&#34;&#34;Two plans, not one — they share a component and nothing else.
+
+1. `TEAM_RELIANCE_MATRIX.md` first. Its source data already exists (`dependsOn`, `owns`,
+   `unitId`), the derivation is structural, and it needs no new scoring concept.
+2. `OKR_FITNESS_MATRIX.md` second, once the grid component and the sparse relation storage have
+   been proven by the first.&#34;&#34;&#34;
+new = &#34;&#34;&#34;Four plans, not one. They share a grid component and little else, and they are in dependency
+order, not value order.
+
+1. `TEAM_RELIANCE_MATRIX.md` first. Its source data already exists (`dependsOn`, `owns`,
+   `unitId`), the derivation is structural, and it needs no new scoring concept. **Its grid takes
+   two layers from day one**, even though only one is populated — retrofitting an overlay onto a
+   single-value heat map is the kind of rework this doc exists to prevent.
+2. `OKR_FITNESS_MATRIX.md` second, once the grid component and the sparse relation storage have
+   been proven by the first.
+3. `TEAM_MESSAGE_BOARD.md` third, and note that it is worth building for its own sake — durable
+   pair transcripts that modes 2 to 4 and Horizon 2 executors all want — with the comms matrix as
+   the view over it rather than the reason for it. It needs somewhere to persist, so it is gated
+   on Horizon 3 or on whatever store the executors get first.
+4. `TEAM_COMMS_CONNECTORS.md` last, and only against a real org&#39;s data. Everything before it can
+   be demonstrated on a bundled dataset; this one cannot, which is why it goes at the end
+   regardless of how interesting it is.&#34;&#34;&#34;
+assert old in s
+s = s.replace(old, new)
+
+open(p, &#34;w&#34;).write(s)
+print(&#34;ok&#34;)
+PYEOF
+wc -l &#34;Concepts/Matrix Views - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-44-24-696Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-44-24-696Z" class="timestamp-link"><time datetime="2026-09-12T21:44:24.696Z" data-timestamp="2026-09-12T21:44:24.696Z">2026-09-12T21:44:24.696Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ok
+     256 Concepts/Matrix Views - Design.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-44-29-580Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-44-29-580Z" class="timestamp-link"><time datetime="2026-09-12T21:44:29.580Z" data-timestamp="2026-09-12T21:44:29.580Z">2026-09-12T21:44:29.580Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-44-35-692Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-44-35-692Z" class="timestamp-link"><time datetime="2026-09-12T21:44:35.692Z" data-timestamp="2026-09-12T21:44:35.692Z">2026-09-12T21:44:35.692Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01B33iVCg7N6NUAijxcSiwMt">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Update CLAUDE.md bullet for comms matrix</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">python3 - &lt;&lt;&#39;PYEOF&#39;
+p = &#34;CLAUDE.md&#34;
+s = open(p).read()
+old = &#34;&#34;&#34;- **Matrix views** — an OKR-against-OKR fitness table and a team-against-team reliance table, as
+  the place off-tree relations live without turning the 3D scene into a hairball. Two plans when
+  they get written (`TEAM_RELIANCE_MATRIX.md` first, since `dependsOn` and `owns` already carry
+  the source data): [Concepts/Matrix Views - Design.md](Concepts/Matrix%20Views%20-%20Design.md).
+&#34;&#34;&#34;
+new = &#34;&#34;&#34;- **Matrix views** — OKR-against-OKR fitness, team-against-team reliance, and team-against-team
+  communication tables, as the place off-tree relations live without turning the 3D scene into a
+  hairball. Reliance is what teams say and comms is what they do; the gap between the two
+  overlaid is the payoff, so the grid takes two layers from the first plan. Four plans when they
+  get written, in dependency order: `TEAM_RELIANCE_MATRIX.md` (its source data already exists),
+  `OKR_FITNESS_MATRIX.md`, `TEAM_MESSAGE_BOARD.md` (pair boards that modes 2–4 and Horizon 2
+  executors want anyway), `TEAM_COMMS_CONNECTORS.md`.
+  [Concepts/Matrix Views - Design.md](Concepts/Matrix%20Views%20-%20Design.md).
+&#34;&#34;&#34;
+assert old in s
+s = s.replace(old, new)
+open(p, &#34;w&#34;).write(s)
+print(&#34;ok&#34;)
+PYEOF
+tail -9 CLAUDE.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T21-44-37-977Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T21-44-37-977Z" class="timestamp-link"><time datetime="2026-09-12T21:44:37.977Z" data-timestamp="2026-09-12T21:44:37.977Z">2026-09-12T21:44:37.977Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ok
+  [Concepts/Depth and Focus - Design.md](Concepts/Depth%20and%20Focus%20-%20Design.md).
+- **Matrix views** — OKR-against-OKR fitness, team-against-team reliance, and team-against-team
+  communication tables, as the place off-tree relations live without turning the 3D scene into a
+  hairball. Reliance is what teams say and comms is what they do; the gap between the two
+  overlaid is the payoff, so the grid takes two layers from the first plan. Four plans when they
+  get written, in dependency order: `TEAM_RELIANCE_MATRIX.md` (its source data already exists),
+  `OKR_FITNESS_MATRIX.md`, `TEAM_MESSAGE_BOARD.md` (pair boards that modes 2–4 and Horizon 2
+  executors want anyway), `TEAM_COMMS_CONNECTORS.md`.
+  [Concepts/Matrix Views - Design.md](Concepts/Matrix%20Views%20-%20Design.md).</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T21-44-52-108Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T21-44-52-108Z" class="timestamp-link"><time datetime="2026-09-12T21:44:52.108Z" data-timestamp="2026-09-12T21:44:52.108Z">2026-09-12T21:44:52.108Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Added as Matrix 3 in <a href="Concepts/Matrix%20Views%20-%20Design.md">Concepts/Matrix Views - Design.md</a>, and it reframed the doc more than it extended it.</p>
+<p>The thing that makes it work: <strong>reliance is what teams say, communication is what teams do</strong>, and on identical axes the two overlay directly. Neither is that interesting alone — the read is entirely in the two off-diagonal quadrants:</p>
+<ul>
+<li><strong>High reliance, low comms</strong> — a dependency running on hope; the silent handoff that fails at quarter end.</li>
+<li><strong>Low reliance, high comms</strong> — an unmodelled dependency, or a coordination tax nobody budgeted for.</li>
+</ul>
+<p>That has a concrete consequence I pushed back into plan 1: the grid component takes two layers from day one, even with the second empty, because retrofitting an overlay onto a single-value heat map is exactly the rework a concept doc is for.</p>
+<p>On your two sources, they're not the same feature at different fidelities — they're different in kind:</p>
+<ul>
+<li><strong>Agent boards are ground truth and inspectable.</strong> Because we build the channel, the cell is counted rather than estimated, and clicking it bottoms out in the actual thread. A board per team pair also pays for itself outside this view: it's the async counterpart to the user-moderated debate (mode 3), it gives mode 2's reviews an address instead of a chat tab that evaporates, and it's the seam Horizon 2 executors need to coordinate. One caveat I wrote in — agent chatter is cheap, so counting it rewards agents for talking; count threads, not messages, and budget the board.</li>
+<li><strong>Human connectors must be counts, never content.</strong> The connector returns <code>{from, to, period, kind, count}</code> and nothing else — content buys nothing for a frequency view and is a liability in an exported document. Two honest weak points named rather than glossed: people→unit is the join key (<code>company.people</code> already has it) so the view has to show its own coverage, and a nine-team Slack channel is a hyperedge, not a pair — project it by a stated rule or exclude it, or an all-hands channel lights up the whole matrix.</li>
+</ul>
+<p>Also flagged: comms cells sit outside the derive→model→human ladder the other two use. They're observed, not scored, and an observation you can hand-edit isn't one — so they store separately, and accumulate per window rather than being overwritten. Normalisation matters too; a sixty-person team out-messages a three-person team on every axis, so the cell is a share, not a raw count.</p>
+<p>Sequencing is now four plans in dependency order, with the board third — worth building for its own sake, with the matrix as the view over it rather than the reason for it — and the human connectors last, since they're the only piece that can't be demonstrated on a bundled dataset.</p></div></div></div>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

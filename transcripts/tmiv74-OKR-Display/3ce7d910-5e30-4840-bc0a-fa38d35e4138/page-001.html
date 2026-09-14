@@ -1,0 +1,2039 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/1</h1>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+        
+<div class="message user" id="msg-2026-09-12T16-01-43-245Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T16-01-43-245Z" class="timestamp-link"><time datetime="2026-09-12T16:01:43.245Z" data-timestamp="2026-09-12T16:01:43.245Z">2026-09-12T16:01:43.245Z</time></a></div><div class="message-content">
+<div class="user-content"><p>please write a plan to make a keyboard shortcut system for the 3d view. Some initial entries to the keyboard shortcuts should be f to frame the whole okr tree. arrow up - go up a level in the tree. arrow down - go down a level in the tree. left and right arrow - previous and next sibling in the tree.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-01-45-873Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-01-45-873Z" class="timestamp-link"><time datetime="2026-09-12T16:01:45.873Z" data-timestamp="2026-09-12T16:01:45.873Z">2026-09-12T16:01:45.873Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-01-46-369Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-01-46-369Z" class="timestamp-link"><time datetime="2026-09-12T16:01:46.369Z" data-timestamp="2026-09-12T16:01:46.369Z">2026-09-12T16:01:46.369Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll read the 3D view, camera, and selection code first, then write the plan into <code>Plans/development/</code>.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-01-48-577Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-01-48-577Z" class="timestamp-link"><time datetime="2026-09-12T16:01:48.577Z" data-timestamp="2026-09-12T16:01:48.577Z">2026-09-12T16:01:48.577Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01GwHdoVQrifxSTLqB75kFH8">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List source files and find existing keyboard handling</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls web/src &amp;&amp; wc -l web/src/*.svelte web/src/*.ts 2&gt;/dev/null &amp;&amp; ls Plans/completed Concepts &amp;&amp; grep -rn &#34;keydown\|addEventListener(&#39;key\|on:keydown\|onkeydown&#34; web/src | head -30</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-01-48-760Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-01-48-760Z" class="timestamp-link"><time datetime="2026-09-12T16:01:48.760Z" data-timestamp="2026-09-12T16:01:48.760Z">2026-09-12T16:01:48.760Z</time></a></div><div class="message-content"><div class="tool-result tool-error"><div class="truncatable"><div class="truncatable-content"><pre>Exit code 1
+App.svelte
+Chat.svelte
+Detail.svelte
+Graph.svelte
+NodeCard.svelte
+TeamEditor.svelte
+TeamList.svelte
+app.css
+assets
+lib
+main.js
+(eval):1: no matches found: web/src/*.ts</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-01-51-830Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-01-51-830Z" class="timestamp-link"><time datetime="2026-09-12T16:01:51.830Z" data-timestamp="2026-09-12T16:01:51.830Z">2026-09-12T16:01:51.830Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01PcKEofpLZQncNz5dmDfmZC">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List sources, plans, and existing keyboard handling</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">wc -l web/src/*.svelte web/src/lib/* web/src/main.js; ls Plans/completed Concepts web/src/lib; grep -rn &#34;keydown\|addEventListener(\&#34;key\|addEventListener(&#39;key\|on:keydown\|onkeydown\|svelte:window&#34; web/src | head -30</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-01-51-908Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-01-51-908Z" class="timestamp-link"><time datetime="2026-09-12T16:01:51.908Z" data-timestamp="2026-09-12T16:01:51.908Z">2026-09-12T16:01:51.908Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     590 web/src/App.svelte
+     148 web/src/Chat.svelte
+     373 web/src/Detail.svelte
+     294 web/src/Graph.svelte
+      47 web/src/NodeCard.svelte
+     286 web/src/TeamEditor.svelte
+      74 web/src/TeamList.svelte
+     161 web/src/lib/apply.js
+     142 web/src/lib/company.js
+      63 web/src/lib/datasets.js
+       5 web/src/main.js
+    2183 total
+Concepts:
+Agents as Executors - Design.md
+Depth and Focus - Design.md
+OKR Viewer - Product Vision.md
+Teams as Agents - Design.md
+
+Plans/completed:
+BUNDLED_DATASETS.md
+CAMERA_LEVEL_AUTO_MOVES.md
+CHAT_CONTEXT.md
+CHAT_TABS_AND_INTERVIEWS.md
+CLEAR_HIGHLIGHT_ON_SELECT.md
+NODE_HOVER_CARD.md
+OKR_NODE_EDITOR.md
+OKR_SCHEMA_PACKAGE.md
+TEAM_MODEL_AND_EDITOR.md
+
+web/src/lib:
+apply.js
+company.js
+datasets.js
+web/src/App.svelte:492:&lt;svelte:window onkeydown={onKey} /&gt;
+web/src/TeamEditor.svelte:186:    onkeydown={onNameKey}
+web/src/TeamEditor.svelte:218:    onkeydown={(e) =&gt; onProseKey(e, &#x27;mission&#x27;)}
+web/src/TeamEditor.svelte:232:    onkeydown={(e) =&gt; onProseKey(e, &#x27;process&#x27;)}
+web/src/TeamEditor.svelte:246:    onkeydown={(e) =&gt; onProseKey(e, &#x27;owns&#x27;)}
+web/src/Chat.svelte:64:&lt;svelte:window onclick={() =&gt; (menuOpen = false)} /&gt;
+web/src/Chat.svelte:141:      onkeydown={onKey}
+web/src/Detail.svelte:238:      onkeydown={(e) =&gt; onFieldKey(e, &#x27;label&#x27;)}
+web/src/Detail.svelte:272:            onkeydown={(e) =&gt; onFieldKey(e, &#x27;owner&#x27;)}
+web/src/Detail.svelte:286:          onkeydown={(e) =&gt; onFieldKey(e, &#x27;metric&#x27;)}
+web/src/Detail.svelte:299:          onkeydown={(e) =&gt; onFieldKey(e, &#x27;target&#x27;)}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-01-53-618Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-01-53-618Z" class="timestamp-link"><time datetime="2026-09-12T16:01:53.618Z" data-timestamp="2026-09-12T16:01:53.618Z">2026-09-12T16:01:53.618Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_014DfqB7ymkMvZybfcnRXL2x">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read Graph.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat -n web/src/Graph.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-01-53-723Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-01-53-723Z" class="timestamp-link"><time datetime="2026-09-12T16:01:53.723Z" data-timestamp="2026-09-12T16:01:53.723Z">2026-09-12T16:01:53.723Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     1	&lt;script&gt;
+     2	  import { onMount } from &#x27;svelte&#x27;;
+     3	  import ForceGraph3D from &#x27;3d-force-graph&#x27;;
+     4	  import * as THREE from &#x27;three&#x27;;
+     5	  import SpriteText from &#x27;three-spritetext&#x27;;
+     6	  import { unitName } from &#x27;./lib/company.js&#x27;;
+     7	  import NodeCard from &#x27;./NodeCard.svelte&#x27;;
+     8	
+     9	  let {
+    10	    tree,
+    11	    company = null,
+    12	    selectedId = null,
+    13	    highlight = [],
+    14	    preview = [],
+    15	    showTeamLabels = false,
+    16	    onSelect
+    17	  } = $props();
+    18	
+    19	  let el;
+    20	  // The graph instance lives outside Svelte&#x27;s reactive system on purpose:
+    21	  // 3d-force-graph mutates its own data and runs its own render loop.
+    22	  let graph;
+    23	  const meshes = new Map(); // node id → THREE.Mesh, for the pulse loop
+    24	  let highlightSet = new Set();
+    25	  // Transient hover pointer from the side panel. Unlike `highlight` it never
+    26	  // moves the camera: the mouse is already where the user is looking.
+    27	  let previewSet = new Set();
+    28	  let raf;
+    29	  // Which node the pointer is over — the only part of the hover card that is
+    30	  // Svelte state. $state.raw because the force layout mutates these node objects
+    31	  // every tick and we only ever swap which one is held, never write through it.
+    32	  let hovered = $state.raw(null);
+    33	  let hoverTimer;
+    34	  let anchorEl = $state(null);
+    35	  const HOVER_DELAY = 150; // long enough that sweeping across the tree does not flash cards
+    36	  const WORLD_UP = new THREE.Vector3(0, 1, 0);
+    37	  // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
+    38	  let upTween = null;
+    39	
+    40	  const LEVEL = {
+    41	    company: { color: &#x27;#f5c542&#x27;, size: 10 },
+    42	    objective: { color: &#x27;#4f9cff&#x27;, size: 6.5 },
+    43	    kr: { color: &#x27;#5ad38a&#x27;, size: 3.6 }
+    44	  };
+    45	  const WHITE = new THREE.Color(&#x27;#ffffff&#x27;);
+    46	  const RED = new THREE.Color(&#x27;#ff3b30&#x27;);
+    47	
+    48	  // contributes 0 → red, 1 → green
+    49	  function linkColor(c) {
+    50	    const t = Math.max(0, Math.min(1, c ?? 0.5));
+    51	    return `hsl(${Math.round(120 * t)}, 75%, ${52 - 10 * t}%)`;
+    52	  }
+    53	
+    54	  function makeNodeObject(node) {
+    55	    const cfg = LEVEL[node.level] ?? LEVEL.kr;
+    56	    const mesh = new THREE.Mesh(
+    57	      new THREE.SphereGeometry(cfg.size, 24, 24),
+    58	      new THREE.MeshLambertMaterial({ color: cfg.color, transparent: true, opacity: 0.95 })
+    59	    );
+    60	    mesh.userData.baseColor = new THREE.Color(cfg.color);
+    61	
+    62	    // The team label hangs under the sphere as a child of the mesh, so it
+    63	    // follows the node without a second layout pass. It is created empty and
+    64	    // hidden; the effect below fills it in, because node objects are reused
+    65	    // across data updates and this function does not run again for them.
+    66	    // (It is seeded here as well, because 3d-force-graph may build the object
+    67	    // after the effect has already walked the meshes it knew about.)
+    68	    const text = unitName(company, node.unitId) ?? node.owner ?? &#x27;&#x27;;
+    69	    const label = new SpriteText(text, 6, &#x27;#e6ebf5&#x27;);
+    70	    label.material.depthWrite = false;
+    71	    // Anchor the sprite&#x27;s left edge just right of the sphere, vertically centred.
+    72	    label.center.set(0, 0.5);
+    73	    label.position.x = cfg.size + 3;
+    74	    label.visible = showTeamLabels &amp;&amp; !!text;
+    75	    mesh.add(label);
+    76	    mesh.userData.label = label;
+    77	
+    78	    meshes.set(node.id, mesh);
+    79	    return mesh;
+    80	  }
+    81	
+    82	  // Reuse existing node objects (they carry x/y/z) so an edit nudges the
+    83	  // layout instead of re-heating the whole simulation.
+    84	  function toGraphData(t, prev) {
+    85	    const prevById = new Map((prev?.nodes ?? []).map((n) =&gt; [n.id, n]));
+    86	    const nodes = t.nodes.map((n) =&gt; {
+    87	      const existing = prevById.get(n.id);
+    88	      return existing ? Object.assign(existing, n) : { ...n };
+    89	    });
+    90	    const ids = new Set(nodes.map((n) =&gt; n.id));
+    91	    const links = t.nodes
+    92	      .filter((n) =&gt; n.parent &amp;&amp; ids.has(n.parent))
+    93	      .map((n) =&gt; ({ source: n.parent, target: n.id, contributes: n.contributes ?? 0.5 }));
+    94	    return { nodes, links };
+    95	  }
+    96	
+    97	  // Trackball lets the user roll `camera.up` freely; every programmatic move
+    98	  // tweens it back to world up over the flight so the view un-rolls smoothly.
+    99	  function levelCamera(ms) {
+   100	    if (!graph) return;
+   101	    const cam = graph.camera();
+   102	    const controls = graph.controls();
+   103	    if (!cam || !controls) return;
+   104	    const from = cam.up.clone().normalize();
+   105	    const view = controls.target.clone().sub(cam.position).normalize();
+   106	    // Looking (almost) straight down the tree makes lookAt with up = +Y undefined.
+   107	    let to = WORLD_UP.clone();
+   108	    if (Math.abs(view.dot(WORLD_UP)) &gt; 0.98) to = new THREE.Vector3(0, 0, -1);
+   109	    if (from.distanceToSquared(to) &lt; 1e-6) { upTween = null; return; }
+   110	    // Upside down: a straight lerp would pass through the origin, so nudge off the antipode.
+   111	    if (from.dot(to) &lt; -0.999) {
+   112	      const nudge = view.clone().cross(to);
+   113	      if (nudge.lengthSq() &lt; 1e-6) nudge.set(1, 0, 0);
+   114	      from.addScaledVector(nudge.normalize(), 0.01).normalize();
+   115	    }
+   116	    upTween = { from, to, start: performance.now(), ms };
+   117	  }
+   118	
+   119	  export function flyTo(ids, ms = 1200) {
+   120	    if (!graph || !ids?.length) return;
+   121	    clearTimeout(hoverTimer);
+   122	    hovered = null;
+   123	    const want = new Set(ids);
+   124	    const nodes = graph.graphData().nodes.filter((n) =&gt; want.has(n.id) &amp;&amp; Number.isFinite(n.x));
+   125	    if (!nodes.length) return;
+   126	    levelCamera(ms);
+   127	    const c = { x: 0, y: 0, z: 0 };
+   128	    for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
+   129	    c.x /= nodes.length; c.y /= nodes.length; c.z /= nodes.length;
+   130	    let radius = 0;
+   131	    for (const n of nodes) radius = Math.max(radius, Math.hypot(n.x - c.x, n.y - c.y, n.z - c.z));
+   132	    const dist = Math.max(140, radius * 2.2 + 120);
+   133	    // Approach along the camera&#x27;s current bearing so the move feels continuous.
+   134	    const cam = graph.cameraPosition();
+   135	    const dir = new THREE.Vector3(cam.x - c.x, cam.y - c.y, cam.z - c.z);
+   136	    if (dir.length() &lt; 1) dir.set(0, 0.3, 1);
+   137	    dir.normalize();
+   138	    graph.cameraPosition({ x: c.x + dir.x * dist, y: c.y + dir.y * dist, z: c.z + dir.z * dist }, c, ms);
+   139	  }
+   140	
+   141	  function animate() {
+   142	    if (upTween) {
+   143	      const cam = graph?.camera();
+   144	      if (!cam) {
+   145	        upTween = null;
+   146	      } else {
+   147	        const t = Math.min(1, (performance.now() - upTween.start) / upTween.ms);
+   148	        if (t &gt;= 1) {
+   149	          cam.up.copy(upTween.to);
+   150	          upTween = null;
+   151	        } else {
+   152	          // Quadratic.Out, matching the library&#x27;s position tween.
+   153	          const e = 1 - (1 - t) ** 2;
+   154	          // Lerp + normalize is fine here: the arc is short and lookAt re-orthogonalises.
+   155	          cam.up.copy(upTween.from).lerp(upTween.to, e).normalize();
+   156	        }
+   157	      }
+   158	    }
+   159	    // The card rides with its node: one style write a frame beats pushing 60
+   160	    // state updates a second through Svelte.
+   161	    if (hovered &amp;&amp; anchorEl &amp;&amp; Number.isFinite(hovered.x)) {
+   162	      const { x, y } = graph.graph2ScreenCoords(hovered.x, hovered.y, hovered.z);
+   163	      const w = anchorEl.offsetWidth;
+   164	      const h = anchorEl.offsetHeight;
+   165	      // Beside the sphere, flipped to its left when that would run off the stage.
+   166	      let left = x + 14;
+   167	      if (left + w &gt; el.clientWidth - 8) left = x - 14 - w;
+   168	      left = Math.max(8, Math.min(left, el.clientWidth - w - 8));
+   169	      const top = Math.max(8, Math.min(y - 10, el.clientHeight - h - 8));
+   170	      anchorEl.style.transform = `translate(${left}px, ${top}px)`;
+   171	    }
+   172	    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
+   173	    for (const [id, mesh] of meshes) {
+   174	      const hi = highlightSet.has(id);
+   175	      const prev = previewSet.has(id);
+   176	      const sel = id === selectedId;
+   177	      const target = hi ? 1.3 + 0.35 * pulse : prev ? 1.5 : sel ? 1.35 : 1;
+   178	      mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.2);
+   179	      const mat = mesh.material;
+   180	      if (hi) {
+   181	        mat.color.copy(RED).lerp(WHITE, 0.25 * pulse);
+   182	        mat.emissive.copy(RED);
+   183	        mat.emissiveIntensity = 0.3 + 0.7 * pulse;
+   184	      } else if (prev) {
+   185	        // Steady white bloom, no pulse — a pointer, not an alarm.
+   186	        mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.85);
+   187	        mat.emissive.copy(WHITE);
+   188	        mat.emissiveIntensity = 0.9;
+   189	      } else if (sel) {
+   190	        mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.5);
+   191	        mat.emissive.copy(mesh.userData.baseColor);
+   192	        mat.emissiveIntensity = 0.5;
+   193	      } else {
+   194	        mat.color.copy(mesh.userData.baseColor);
+   195	        mat.emissiveIntensity = 0;
+   196	      }
+   197	    }
+   198	    raf = requestAnimationFrame(animate);
+   199	  }
+   200	
+   201	  onMount(() =&gt; {
+   202	    graph = ForceGraph3D()(el)
+   203	      .backgroundColor(&#x27;#0b0f17&#x27;)
+   204	      .dagMode(&#x27;td&#x27;)
+   205	      .dagLevelDistance(90)
+   206	      .onDagError((loopIds) =&gt; console.warn(&#x27;DAG cycle, falling back to free layout&#x27;, loopIds))
+   207	      .nodeId(&#x27;id&#x27;)
+   208	      // No library tooltip: the hover card below says the same things the Detail
+   209	      // panel says, as the same component.
+   210	      .nodeLabel(() =&gt; null)
+   211	      .nodeThreeObject(makeNodeObject)
+   212	      .linkWidth((l) =&gt; 0.5 + 2.8 * (l.contributes ?? 0.5))
+   213	      .linkColor((l) =&gt; linkColor(l.contributes))
+   214	      .linkOpacity(0.9)
+   215	      .linkDirectionalParticles((l) =&gt; ((l.contributes ?? 0.5) &gt;= 0.4 ? 2 : 0))
+   216	      .linkDirectionalParticleWidth(1.4)
+   217	      .linkDirectionalParticleSpeed(0.005)
+   218	      .d3VelocityDecay(0.3)
+   219	      .warmupTicks(80)
+   220	      .onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })
+   221	      // Fires with null on every frame the pointer is over empty space, so it
+   222	      // stays cheap: clear a timer, and touch state only on the way in or out.
+   223	      .onNodeHover((n) =&gt; {
+   224	        clearTimeout(hoverTimer);
+   225	        if (n) hoverTimer = setTimeout(() =&gt; (hovered = n), HOVER_DELAY);
+   226	        else if (hovered) hovered = null;
+   227	      })
+   228	      .onBackgroundClick(() =&gt; onSelect?.(null));
+   229	    graph.d3Force(&#x27;charge&#x27;).strength(-160);
+   230	    // Inertia would keep rotating camera.up while we tween it; the tradeoff is
+   231	    // that user tumbling no longer coasts.
+   232	    graph.controls().staticMoving = true;
+   233	    if (import.meta.env.DEV) window.__graph = graph;
+   234	
+   235	    graph.graphData(toGraphData(tree, null));
+   236	    const ro = new ResizeObserver(() =&gt; graph.width(el.clientWidth).height(el.clientHeight));
+   237	    ro.observe(el);
+   238	    setTimeout(() =&gt; { graph.zoomToFit(900, 60); levelCamera(900); }, 700);
+   239	    animate();
+   240	
+   241	    return () =&gt; {
+   242	      cancelAnimationFrame(raf);
+   243	      clearTimeout(hoverTimer);
+   244	      ro.disconnect();
+   245	      graph._destructor?.();
+   246	    };
+   247	  });
+   248	
+   249	  $effect(() =&gt; {
+   250	    const t = tree;
+   251	    if (!graph) return;
+   252	    graph.graphData(toGraphData(t, graph.graphData()));
+   253	    const alive = new Set(t.nodes.map((n) =&gt; n.id));
+   254	    for (const id of [...meshes.keys()]) if (!alive.has(id)) meshes.delete(id);
+   255	    // A hovered node may have been edited away or edited in place; re-point at
+   256	    // whatever the new data holds for it, which also refreshes the card.
+   257	    if (hovered) hovered = graph.graphData().nodes.find((n) =&gt; n.id === hovered.id) ?? null;
+   258	  });
+   259	
+   260	  // Node objects survive data updates (see toGraphData), so makeNodeObject does
+   261	  // not run again for an existing node and the label text has to be rewritten
+   262	  // in place — on a tree edit, a team rename, and a dataset switch alike.
+   263	  $effect(() =&gt; {
+   264	    const t = tree;
+   265	    const c = company;
+   266	    const on = showTeamLabels;
+   267	    for (const n of t.nodes) {
+   268	      const label = meshes.get(n.id)?.userData.label;
+   269	      if (!label) continue;
+   270	      const text = unitName(c, n.unitId) ?? n.owner ?? &#x27;&#x27;;
+   271	      if (label.text !== text) label.text = text;
+   272	      label.visible = on &amp;&amp; !!text;
+   273	    }
+   274	  });
+   275	
+   276	  $effect(() =&gt; {
+   277	    highlightSet = new Set(highlight);
+   278	    if (highlight.length) flyTo(highlight);
+   279	  });
+   280	
+   281	  $effect(() =&gt; {
+   282	    previewSet = new Set(preview);
+   283	  });
+   284	&lt;/script&gt;
+   285	
+   286	&lt;div class=&quot;graph&quot; bind:this={el}&gt;&lt;/div&gt;
+   287	
+   288	&lt;!-- Never for the node whose Detail panel is already open: it would repeat what
+   289	     is on screen. --&gt;
+   290	{#if hovered &amp;&amp; hovered.id !== selectedId}
+   291	  &lt;div class=&quot;hover-card&quot; bind:this={anchorEl}&gt;
+   292	    &lt;NodeCard node={hovered} {company} /&gt;
+   293	  &lt;/div&gt;
+   294	{/if}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-01-57-558Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-01-57-558Z" class="timestamp-link"><time datetime="2026-09-12T16:01:57.558Z" data-timestamp="2026-09-12T16:01:57.558Z">2026-09-12T16:01:57.558Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-01-58-117Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-01-58-117Z" class="timestamp-link"><time datetime="2026-09-12T16:01:58.117Z" data-timestamp="2026-09-12T16:01:58.117Z">2026-09-12T16:01:58.117Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_017oWuaLUjp82mpcyDyQ2T8r">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read App.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat -n web/src/App.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-01-58-150Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-01-58-150Z" class="timestamp-link"><time datetime="2026-09-12T16:01:58.150Z" data-timestamp="2026-09-12T16:01:58.150Z">2026-09-12T16:01:58.150Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>&lt;persisted-output&gt;
+Output too large (30KB). Full output saved to: /Users/tmiv74/.claude/projects/-Users-tmiv74-OKR-Display/3ce7d910-5e30-4840-bc0a-fa38d35e4138/tool-results/bd592rj43.txt
+
+Preview (first 2KB):
+     1	&lt;script&gt;
+     2	  import Graph from &#x27;./Graph.svelte&#x27;;
+     3	  import Chat from &#x27;./Chat.svelte&#x27;;
+     4	  import Detail from &#x27;./Detail.svelte&#x27;;
+     5	  import TeamList from &#x27;./TeamList.svelte&#x27;;
+     6	  import TeamEditor from &#x27;./TeamEditor.svelte&#x27;;
+     7	  import { DATASETS, DEFAULT_DATASET_ID, getDataset } from &#x27;./lib/datasets.js&#x27;;
+     8	  import { applyDocumentActions } from &#x27;./lib/apply.js&#x27;;
+     9	  import { unitName } from &#x27;./lib/company.js&#x27;;
+    10	  import {
+    11	    createDocument,
+    12	    parseDocument,
+    13	    validateAction,
+    14	    validateChatResponse,
+    15	    validateHistory
+    16	  } from &#x27;@okr-viewer/schema&#x27;;
+    17	
+    18	  // datasets.js validates every bundled document at boot in dev.
+    19	  let datasetId = $state(DEFAULT_DATASET_ID);
+    20	
+    21	  // The tree is $state.raw on purpose: apply.js always returns a new tree, so
+    22	  // deep reactivity buys nothing and structuredClone() stays a plain clone.
+    23	  let tree = $state.raw(structuredClone(getDataset(DEFAULT_DATASET_ID).document.tree));
+    24	
+    25	  // The org the tree hangs off, held beside the tree rather than inside it —
+    26	  // the same split the document has. A dataset without one gets an empty org
+    27	  // named after it, so the Teams panel is a place to start rather than a crash:
+    28	  // nodes keep their `owner` text and simply have no team to link to.
+    29	  const companyOf = (id) =&gt; {
+    30	    const dataset = getDataset(id);
+    31	    return structuredClone(dataset.document.company ?? { name: dataset.title, units: [] });
+    32	  };
+    33	
+    34	  let company = $state.raw(companyOf(DEFAULT_DATASET_ID));
+    35	
+    36	  // What has happened to this tree: every commit appends a change. It is state,
+    37	  // not an audit log — undo restores the history alongside the tree, so an
+    38	  // undone edit leaves no trace. Datasets may carry their own history one day;
+    39	  // until then a fresh dataset starts empty.
+...
+&lt;/persisted-output&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-00-364Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-00-364Z" class="timestamp-link"><time datetime="2026-09-12T16:02:00.364Z" data-timestamp="2026-09-12T16:02:00.364Z">2026-09-12T16:02:00.364Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-02-428Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-02-428Z" class="timestamp-link"><time datetime="2026-09-12T16:02:02.428Z" data-timestamp="2026-09-12T16:02:02.428Z">2026-09-12T16:02:02.428Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01BStMz4adNXYZ33yyvHSnz8">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find key handling and graph wiring in App.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;onKey\|selectedId\|flyTo\|graphRef\|&lt;Graph\|highlight\|preview\|bind:this\|function select\|activeTab\|isEditing\|contenteditable\|INPUT\|TEXTAREA&#34; web/src/App.svelte | head -80; echo ----; sed -n 380,500p web/src/App.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-02-02-488Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-02-02-488Z" class="timestamp-link"><time datetime="2026-09-12T16:02:02.488Z" data-timestamp="2026-09-12T16:02:02.488Z">2026-09-12T16:02:02.488Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>49:  let selectedId = $state(null);
+50:  let highlight = $state.raw([]);
+53:  let preview = $state.raw([]);
+63:  // is about. Nothing else is per-tab: undo, selection and the highlight stay
+87:  // Which node is a separate question — `selectedId` also drives the graph.
+90:  // A hover preview belongs to the panel that raised it: swapping or closing
+95:    preview = [];
+141:  const selected = $derived(tree.nodes.find((n) =&gt; n.id === selectedId) ?? null);
+165:      ...(panel.kind === &#x27;node&#x27; ? { ...(selectedId ? { id: selectedId } : {}), editing } : {}),
+169:    highlighted: highlight,
+284:          selectedNodeId: selectedId,
+303:      const { reply, actions, highlight: ids } = checked.value;
+305:      highlight = ids;
+306:      chat.messages.push({ role: &#x27;assistant&#x27;, content: reply, highlight: ids, actions: actions.length });
+359:    highlight = [];
+371:    highlight = [];
+372:    selectedId = null;
+387:    highlight = [];
+388:    selectedId = null;
+431:    highlight = [];
+432:    selectedId = null;
+445:  function select(id, keepEditing = false) {
+446:    selectedId = id;
+451:    if (highlight.length) highlight = []; // a user selection supersedes the assistant&#x27;s pointer
+458:    selectedId = null;
+464:    selectedId = null;
+479:    highlight = [...ids]; // new array so the graph effect re-runs
+482:  function onKey(e) {
+484:    if (tag === &#x27;INPUT&#x27; || tag === &#x27;TEXTAREA&#x27; || tag === &#x27;SELECT&#x27;) return;
+492:&lt;svelte:window onkeydown={onKey} /&gt;
+516:      &lt;input bind:this={fileInput} onchange={importTree} type=&quot;file&quot; accept=&quot;application/json,.json&quot; hidden /&gt;
+522:      &lt;Graph {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} /&gt;
+531:          onPreview={(ids) =&gt; (preview = ids)}
+535:            selectedId = null;
+547:          onPreview={(ids) =&gt; (preview = ids)}
+561:          onPreview={(ids) =&gt; (preview = ids)}
+----
+    if (id === datasetId) return;
+    const dataset = getDataset(id);
+    undoStack = [...undoStack, snapshot()];
+    datasetId = dataset.id;
+    tree = structuredClone(dataset.document.tree);
+    company = companyOf(dataset.id);
+    history = historyOf(dataset.id);
+    highlight = [];
+    selectedId = null;
+    editing = false;
+    panel = null;
+    note(`Loaded &quot;${dataset.title}&quot; (${tree.nodes.length} nodes). Undo to go back.`, { note: true });
+  }
+
+  // ── export / import ───────────────────────────────────────────────────────
+  //
+  // The file is an OkrDocument: the tree plus a schemaVersion the reader checks
+  // before it trusts anything inside. Same package on both sides, so a file
+  // written here is a file the service would accept.
+
+  let fileInput;
+
+  function exportTree() {
+    const doc = createDocument({ tree, company, history, meta: { title: getDataset(datasetId).title } });
+    const url = URL.createObjectURL(new Blob([JSON.stringify(doc, null, 2)], { type: &#x27;application/json&#x27; }));
+    const a = document.createElement(&#x27;a&#x27;);
+    a.href = url;
+    a.download = `okr-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    note(`Exported ${tree.nodes.length} nodes to ${a.download}.`, { note: true });
+  }
+
+  async function importTree(e) {
+    const file = e.target.files?.[0];
+    e.target.value = &#x27;&#x27;; // so re-picking the same file fires change again
+    if (!file) return;
+
+    const out = parseDocument(await file.text());
+    if (!out.ok) {
+      note(`Couldn&#x27;t import ${file.name}: ${out.errors.slice(0, 3).join(&#x27;; &#x27;)}`, { error: true });
+      return;
+    }
+
+    undoStack = [...undoStack, snapshot()]; // same snapshot-then-replace as reset()
+    tree = out.document.tree;
+    // A file written before teams existed has no `company`; it gets an empty
+    // org named after the file rather than keeping ours, which would claim
+    // teams the imported tree never referenced. Its `owner` text still shows.
+    company = structuredClone(out.document.company ?? { name: out.document.meta?.title ?? file.name, units: [] });
+    history = structuredClone(out.document.history ?? emptyHistory());
+    highlight = [];
+    selectedId = null;
+    editing = false;
+    panel = null;
+    // The snapshot above already covers the import, so this commit only writes
+    // the boundary marker: an empty batch saying where the file came from.
+    commit([], { actor: &#x27;import&#x27;, reason: `Imported ${file.name}`, undoable: false });
+    const warned = out.warnings.length ? ` ${out.warnings.length} warning${out.warnings.length === 1 ? &#x27;&#x27; : &#x27;s&#x27;}: ${out.warnings.slice(0, 3).join(&#x27;; &#x27;)}` : &#x27;&#x27;;
+    note(`Imported ${tree.nodes.length} nodes from ${file.name}. Undo to go back.${warned}`, { note: true });
+  }
+
+  // `keepEditing` is for the Detail panel&#x27;s &quot;add a child&quot;: the new node is
+  // selected and stays in edit mode with its label focused. Every other caller
+  // (the graph, a link in the panel) leaves edit mode.
+  function select(id, keepEditing = false) {
+    selectedId = id;
+    if (!keepEditing) editing = false;
+    // One panel slot: selecting a node takes it, and a background click (id
+    // null) empties it, which closes a team panel too. One thing at a time.
+    panel = id ? { kind: &#x27;node&#x27; } : null;
+    if (highlight.length) highlight = []; // a user selection supersedes the assistant&#x27;s pointer
+  }
+
+  // ── teams ─────────────────────────────────────────────────────────────────
+
+  function showTeams() {
+    panel = { kind: &#x27;teams&#x27; };
+    selectedId = null;
+    editing = false;
+  }
+
+  function openTeam(id) {
+    panel = { kind: &#x27;team&#x27;, id };
+    selectedId = null;
+    editing = false;
+  }
+
+  // apply.js turns an addUnit with an id that already exists into an editUnit,
+  // so the id has to be new. Slugged from the name, because a unit id is read
+  // by the model in charters and in `dependsOn`.
+  function freshUnitId(name) {
+    const base = name.toLowerCase().replace(/[^a-z0-9]+/g, &#x27;-&#x27;).replace(/^-|-$/g, &#x27;&#x27;).slice(0, 40) || &#x27;team&#x27;;
+    if (!company.units.some((u) =&gt; u.id === base)) return base;
+    for (let i = 2; i &lt; 100; i++) if (!company.units.some((u) =&gt; u.id === `${base}-${i}`)) return `${base}-${i}`;
+    return `${base}-${Date.now().toString(36)}`;
+  }
+
+  function recall(ids) {
+    highlight = [...ids]; // new array so the graph effect re-runs
+  }
+
+  function onKey(e) {
+    const tag = e.target?.tagName;
+    if (tag === &#x27;INPUT&#x27; || tag === &#x27;TEXTAREA&#x27; || tag === &#x27;SELECT&#x27;) return;
+    if ((e.metaKey || e.ctrlKey) &amp;&amp; e.key === &#x27;z&#x27;) {
+      e.preventDefault();
+      undo();
+    }
+  }
+&lt;/script&gt;
+
+&lt;svelte:window onkeydown={onKey} /&gt;
+
+&lt;div class=&quot;app&quot;&gt;
+  &lt;header class=&quot;topbar&quot;&gt;
+    &lt;div class=&quot;brand&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt; OKR Viewer&lt;/div&gt;
+    &lt;div class=&quot;stats&quot;&gt;
+      {tree.nodes.length} nodes · &lt;span class:warn={weakLinks}&gt;{weakLinks} weak link{weakLinks === 1 ? &#x27;&#x27; : &#x27;s&#x27;}&lt;/span&gt;
+    &lt;/div&gt;
+    &lt;div class=&quot;buttons&quot;&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-09-031Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-09-031Z" class="timestamp-link"><time datetime="2026-09-12T16:02:09.031Z" data-timestamp="2026-09-12T16:02:09.031Z">2026-09-12T16:02:09.031Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-11-829Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-11-829Z" class="timestamp-link"><time datetime="2026-09-12T16:02:11.829Z" data-timestamp="2026-09-12T16:02:11.829Z">2026-09-12T16:02:11.829Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01PPo8NejkWiE41rtdqySbzG">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read App markup, contenteditable usage, and keyboard mentions</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;=== root&#34;; ls; echo &#34;=== App 500-590&#34;; sed -n 500,590p web/src/App.svelte; echo &#34;=== contenteditable&#34;; grep -rn &#34;contenteditable\|onProseKey\|onFieldKey\|onNameKey&#34; web/src | head; echo &#34;=== keyboard mentions&#34;; grep -rln &#34;keyboard\|shortcut\|hotkey&#34; Concepts Plans web/src README* 2&gt;/dev/null; grep -rn &#34;keyboard\|shortcut\|hotkey&#34; Concepts Plans | head -20</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-02-11-938Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-02-11-938Z" class="timestamp-link"><time datetime="2026-09-12T16:02:11.938Z" data-timestamp="2026-09-12T16:02:11.938Z">2026-09-12T16:02:11.938Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== root
+CLAUDE.md
+Concepts
+Plans
+README.md
+node_modules
+package-lock.json
+package.json
+schema
+service
+web
+=== App 500-590
+    &lt;div class=&quot;buttons&quot;&gt;
+      &lt;!-- onchange, not bind:value, so switchDataset() snapshots the old id before it changes --&gt;
+      &lt;select value={datasetId} onchange={(e) =&gt; switchDataset(e.target.value)} title=&quot;Load one of the bundled OKR documents&quot;&gt;
+        {#each DATASETS as dataset (dataset.id)}
+          &lt;option value={dataset.id}&gt;{dataset.title}&lt;/option&gt;
+        {/each}
+      &lt;/select&gt;
+      &lt;button onclick={showTeams} class=&quot;ghost&quot; class:on={panel?.kind === &#x27;teams&#x27; || panel?.kind === &#x27;team&#x27;} title=&quot;The teams the tree hangs off, and what each one is for&quot;&gt;
+        Teams{company.units.length ? ` (${company.units.length})` : &#x27;&#x27;}
+      &lt;/button&gt;
+      &lt;button onclick={undo} disabled={!undoStack.length} title=&quot;⌘Z&quot;&gt;
+        ↶ Undo{undoStack.length ? ` (${undoStack.length})` : &#x27;&#x27;}
+      &lt;/button&gt;
+      &lt;button onclick={exportTree} class=&quot;ghost&quot; title=&quot;Download the tree as a versioned JSON document&quot;&gt;Export&lt;/button&gt;
+      &lt;button onclick={() =&gt; fileInput.click()} class=&quot;ghost&quot; title=&quot;Replace the tree from a JSON document&quot;&gt;Import&lt;/button&gt;
+      &lt;button onclick={reset} class=&quot;ghost&quot;&gt;Reset&lt;/button&gt;
+      &lt;input bind:this={fileInput} onchange={importTree} type=&quot;file&quot; accept=&quot;application/json,.json&quot; hidden /&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;main&gt;
+    &lt;section class=&quot;stage&quot;&gt;
+      &lt;Graph {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} /&gt;
+      {#if panel?.kind === &#x27;node&#x27; &amp;&amp; selected}
+        &lt;Detail
+          node={selected}
+          {tree}
+          {company}
+          {editing}
+          onSelect={select}
+          onOpenTeam={openTeam}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onFocusField={focusField}
+          onNewChat={newChat}
+          onClose={() =&gt; {
+            selectedId = null;
+            editing = false;
+            panel = null;
+          }}
+          onToggleEdit={() =&gt; (editing = !editing)}
+          onEdit={(action) =&gt; commit([action], { actor: &#x27;user&#x27;, reason: describe(action) })}
+        /&gt;
+      {:else if panel?.kind === &#x27;teams&#x27;}
+        &lt;TeamList
+          {company}
+          {tree}
+          onOpen={openTeam}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onClose={() =&gt; (panel = null)}
+          onAdd={() =&gt; {
+            const action = { op: &#x27;addUnit&#x27;, id: freshUnitId(&#x27;New team&#x27;), fields: { name: &#x27;New team&#x27;, parent: null } };
+            commit([action], { actor: &#x27;user&#x27;, reason: describe(action) });
+            openTeam(action.id); // straight into the editor: a new team is all placeholder
+          }}
+        /&gt;
+      {:else if panel?.kind === &#x27;team&#x27; &amp;&amp; selectedUnit}
+        &lt;TeamEditor
+          unit={selectedUnit}
+          {company}
+          {tree}
+          onSelect={select}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onFocusField={focusField}
+          onNewChat={newChat}
+          onBack={showTeams}
+          onClose={() =&gt; (panel = null)}
+          onEdit={(action) =&gt; commit([action], { actor: &#x27;user&#x27;, reason: describe(action) })}
+        /&gt;
+      {/if}
+      &lt;div class=&quot;legend&quot;&gt;
+        &lt;span&gt;&lt;i class=&quot;sw company&quot;&gt;&lt;/i&gt; Company&lt;/span&gt;
+        &lt;span&gt;&lt;i class=&quot;sw objective&quot;&gt;&lt;/i&gt; Objective&lt;/span&gt;
+        &lt;span&gt;&lt;i class=&quot;sw kr&quot;&gt;&lt;/i&gt; Key result&lt;/span&gt;
+        &lt;span class=&quot;edge&quot;&gt;&lt;i class=&quot;sw line&quot;&gt;&lt;/i&gt; edge = how well it supports its parent&lt;/span&gt;
+        &lt;!-- the legend is pointer-events: none, so this control opts back in --&gt;
+        &lt;label class=&quot;toggle&quot;&gt;&lt;input type=&quot;checkbox&quot; bind:checked={showTeamLabels} /&gt; Team labels&lt;/label&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+    &lt;Chat
+      {chats}
+      {activeChatId}
+      onSelectChat={(id) =&gt; (activeChatId = id)}
+      onCloseChat={closeChat}
+      onNewChat={newChat}
+      onSend={send}
+      onRecall={recall}
+      onUndo={undo}
+      canUndo={!!undoStack.length}
+    /&gt;
+  &lt;/main&gt;
+&lt;/div&gt;
+=== contenteditable
+web/src/Detail.svelte:85:  function onFieldKey(e, field) {
+web/src/Detail.svelte:238:      onkeydown={(e) =&gt; onFieldKey(e, &#x27;label&#x27;)}
+web/src/Detail.svelte:272:            onkeydown={(e) =&gt; onFieldKey(e, &#x27;owner&#x27;)}
+web/src/Detail.svelte:286:          onkeydown={(e) =&gt; onFieldKey(e, &#x27;metric&#x27;)}
+web/src/Detail.svelte:299:          onkeydown={(e) =&gt; onFieldKey(e, &#x27;target&#x27;)}
+web/src/TeamEditor.svelte:89:  function onProseKey(e, field, commit) {
+web/src/TeamEditor.svelte:96:  function onNameKey(e) {
+web/src/TeamEditor.svelte:186:    onkeydown={onNameKey}
+web/src/TeamEditor.svelte:218:    onkeydown={(e) =&gt; onProseKey(e, &#x27;mission&#x27;)}
+web/src/TeamEditor.svelte:232:    onkeydown={(e) =&gt; onProseKey(e, &#x27;process&#x27;)}
+=== keyboard mentions</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-14-464Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-14-464Z" class="timestamp-link"><time datetime="2026-09-12T16:02:14.464Z" data-timestamp="2026-09-12T16:02:14.464Z">2026-09-12T16:02:14.464Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-17-487Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-17-487Z" class="timestamp-link"><time datetime="2026-09-12T16:02:17.487Z" data-timestamp="2026-09-12T16:02:17.487Z">2026-09-12T16:02:17.487Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01HqsLZfm3QYpQqydRCPVBWS">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read schema node shape, Detail field handlers, and chat key handling</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;=== schema&#34;; ls schema schema/src 2&gt;/dev/null; grep -n &#34;parent\|order\|level\|children&#34; schema/src/*.js schema/src/*.ts 2&gt;/dev/null | head -40; echo &#34;=== Detail 60-130&#34;; sed -n 60,130p web/src/Detail.svelte; echo &#34;=== Detail children/parent links&#34;; grep -n &#34;children\|parent\|onSelect&#34; web/src/Detail.svelte | head -30; echo &#34;=== TeamEditor 85-105&#34;; sed -n 85,105p web/src/TeamEditor.svelte; echo &#34;=== Chat 120-148&#34;; sed -n 120,148p web/src/Chat.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-02-17-575Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-02-17-575Z" class="timestamp-link"><time datetime="2026-09-12T16:02:17.575Z" data-timestamp="2026-09-12T16:02:17.575Z">2026-09-12T16:02:17.575Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== schema
+schema:
+dist
+index.d.ts
+index.js
+migrations
+package.json
+scripts
+src
+test
+tsconfig.check.json
+version.js
+
+schema/src:
+action.schema.json
+chat-request.schema.json
+chat-response.schema.json
+company.schema.json
+history.schema.json
+index.schema.json
+okr-document.schema.json
+okr-node.schema.json
+okr-tree.schema.json
+(eval):1: no matches found: schema/src/*.js
+=== Detail 60-130
+      label: n.label ?? &#x27;&#x27;,
+      owner: n.owner ?? &#x27;&#x27;,
+      metric: n.metric ?? &#x27;&#x27;,
+      target: n.target ?? &#x27;&#x27;,
+      contributes: n.contributes ?? 0.5
+    };
+    invalidLabel = false;
+    sent = {};
+  });
+
+  function commitText(field) {
+    const value = String(draft[field] ?? &#x27;&#x27;).trim();
+    if (field === &#x27;label&#x27; &amp;&amp; !value) {
+      // schema: minLength 1. Put the old label back and mark the field; the
+      // mark clears on the next keystroke, not on the blur that follows here.
+      invalidLabel = true;
+      draft.label = node.label ?? &#x27;&#x27;;
+      return;
+    }
+    draft[field] = value;
+    if (value === (node[field] ?? &#x27;&#x27;) || value === sent[field]) return;
+    sent[field] = value;
+    onEdit({ op: &#x27;edit&#x27;, id: node.id, fields: { [field]: value } });
+  }
+
+  function onFieldKey(e, field) {
+    if (e.key === &#x27;Escape&#x27;) {
+      e.preventDefault();
+      draft[field] = node[field] ?? &#x27;&#x27;; // abandon this field, commit nothing
+      if (field === &#x27;label&#x27;) invalidLabel = false;
+      e.currentTarget.blur();
+      return;
+    }
+    if (e.key === &#x27;Enter&#x27; &amp;&amp; !e.shiftKey) {
+      e.preventDefault();
+      commitText(field);
+      e.currentTarget.blur();
+    }
+  }
+
+  // On `change`, not `input`: one undo step per slider release.
+  function commitFit() {
+    const value = Math.round(Number(draft.contributes) * 100) / 100;
+    if (!Number.isFinite(value) || value === (node.contributes ?? 0.5)) return;
+    onEdit({ op: &#x27;edit&#x27;, id: node.id, fields: { contributes: value } });
+  }
+
+  // Level is never editable, so the parent choices are the rung above this one
+  // (objectives for a key result, the company root for an objective), minus
+  // anything that would make a cycle.
+  const parentChoices = $derived.by(() =&gt; {
+    if (!node.parent) return [];
+    const wanted = node.level === &#x27;kr&#x27; ? &#x27;objective&#x27; : &#x27;company&#x27;;
+    const below = descendants(tree, node.id);
+    const list = tree.nodes.filter((n) =&gt; n.level === wanted &amp;&amp; n.id !== node.id &amp;&amp; !below.has(n.id));
+    if (parent &amp;&amp; !list.some((n) =&gt; n.id === parent.id)) list.unshift(parent); // keep the current one
+    return list;
+  });
+
+  function commitParent(e) {
+    const id = e.currentTarget.value;
+    if (id === node.parent) return;
+    onEdit({ op: &#x27;relink&#x27;, id: node.id, fields: { parent: id } });
+  }
+
+  // Only unitId is sent; applyDocumentActions fills `owner` in from the team&#x27;s
+  // name, so the two can never disagree.
+  function commitTeam(e) {
+    const value = e.currentTarget.value;
+    const unitId = value === &#x27;&#x27; ? null : value;
+    if (unitId === (node.unitId ?? null)) return;
+=== Detail children/parent links
+11:    onSelect,
+28:  const parent = $derived(node.parent ? tree.nodes.find((n) =&gt; n.id === node.parent) ?? null : null);
+29:  const children = $derived(tree.nodes.filter((n) =&gt; n.parent === node.id));
+107:  // Level is never editable, so the parent choices are the rung above this one
+110:  const parentChoices = $derived.by(() =&gt; {
+111:    if (!node.parent) return [];
+115:    if (parent &amp;&amp; !list.some((n) =&gt; n.id === parent.id)) list.unshift(parent); // keep the current one
+121:    if (id === node.parent) return;
+122:    onEdit({ op: &#x27;relink&#x27;, id: node.id, fields: { parent: id } });
+154:      // A new child inherits its parent&#x27;s team. Where there is one, only
+159:        parent: node.id,
+165:    onSelect(id, true); // stay in edit mode on the new node
+177:    const parentId = node.parent;
+179:    onSelect(parentId);
+215:              subject: { kind: &#x27;new&#x27;, parentId: node.id },
+304:    {#if parent}
+309:            value={node.parent}
+311:            onfocus={() =&gt; onFocusField(&#x27;parent&#x27;)}
+315:            {#each parentChoices as choice (choice.id)}
+320:          &lt;button class=&quot;link&quot; {...hover([parent.id])} onclick={() =&gt; onSelect(parent.id)}&gt;{parent.label}&lt;/button&gt;
+347:  {#if children.length}
+348:    &lt;h3&gt;{children.length} beneath it&lt;/h3&gt;
+350:      {#each children as c (c.id)}
+352:          &lt;button class=&quot;link&quot; {...hover([c.id])} onclick={() =&gt; onSelect(c.id)}&gt;{c.label}&lt;/button&gt;
+366:      {#if node.parent}
+=== TeamEditor 85-105
+    sent.owns = text;
+    edit({ charter: { owns: items } });
+  }
+
+  function onProseKey(e, field, commit) {
+    if (e.key !== &#x27;Escape&#x27;) return;
+    e.preventDefault();
+    draft[field] = field === &#x27;owns&#x27; ? ownsText(unit) : unit.charter?.[field] ?? &#x27;&#x27;;
+    e.currentTarget.blur();
+  }
+
+  function onNameKey(e) {
+    if (e.key === &#x27;Escape&#x27;) {
+      e.preventDefault();
+      draft.name = unit.name ?? &#x27;&#x27;;
+      invalidName = false;
+      e.currentTarget.blur();
+      return;
+    }
+    if (e.key === &#x27;Enter&#x27;) {
+      e.preventDefault();
+=== Chat 120-148
+                  &lt;button class=&quot;pill&quot; onclick={onUndo} disabled={!canUndo}&gt;Undo&lt;/button&gt;
+                {/if}
+              {/if}
+              {#if m.highlight?.length}
+                &lt;button class=&quot;pill&quot; onclick={() =&gt; onRecall(m.highlight)}&gt;
+                  show {m.highlight.length} node{m.highlight.length === 1 ? &#x27;&#x27; : &#x27;s&#x27;}
+                &lt;/button&gt;
+              {/if}
+            &lt;/div&gt;
+          {/if}
+        &lt;/div&gt;
+      {/if}
+    {/each}
+    {#if loading}
+      &lt;div class=&quot;msg assistant&quot;&gt;&lt;div class=&quot;bubble thinking&quot;&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;span&gt;&lt;/span&gt;&lt;/div&gt;&lt;/div&gt;
+    {/if}
+  &lt;/div&gt;
+  &lt;form onsubmit={submit}&gt;
+    &lt;textarea
+      value={draft}
+      oninput={(e) =&gt; (drafts[activeChatId] = e.currentTarget.value)}
+      onkeydown={onKey}
+      rows=&quot;2&quot;
+      placeholder={isInterview ? &#x27;Answer, or say “that’s enough”…&#x27; : &#x27;Ask about the tree, or tell me what to change…&#x27;}
+      disabled={loading}
+    &gt;&lt;/textarea&gt;
+    &lt;button type=&quot;submit&quot; disabled={loading || !draft.trim()}&gt;Send&lt;/button&gt;
+  &lt;/form&gt;
+&lt;/aside&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-21-649Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-21-649Z" class="timestamp-link"><time datetime="2026-09-12T16:02:21.649Z" data-timestamp="2026-09-12T16:02:21.649Z">2026-09-12T16:02:21.649Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-02-25-138Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-02-25-138Z" class="timestamp-link"><time datetime="2026-09-12T16:02:25.138Z" data-timestamp="2026-09-12T16:02:25.138Z">2026-09-12T16:02:25.138Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01JLt8PM94bLKWW4HfiRELhF">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read schema, two completed plans, package scripts, and README</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;=== node schema&#34;; cat schema/src/okr-node.schema.json; echo &#34;=== tree schema&#34;; cat schema/src/okr-tree.schema.json; echo &#34;=== spike plan&#34;; cat Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md; echo &#34;=== camera plan&#34;; cat Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md; echo &#34;=== TeamEditor 210-235&#34;; sed -n 210,235p web/src/TeamEditor.svelte; echo &#34;=== web pkg&#34;; cat web/package.json; ls web web/test 2&gt;/dev/null; echo &#34;=== legend css&#34;; grep -n &#34;legend\|\.stage\|\.graph&#34; web/src/App.svelte web/src/app.css | head -20; echo &#34;=== README&#34;; head -60 README.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-02-25-243Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-02-25-243Z" class="timestamp-link"><time datetime="2026-09-12T16:02:25.243Z" data-timestamp="2026-09-12T16:02:25.243Z">2026-09-12T16:02:25.243Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== node schema
+{
+  &quot;$schema&quot;: &quot;http://json-schema.org/draft-07/schema#&quot;,
+  &quot;$id&quot;: &quot;https://okr-viewer.dev/schema/v1/okr-node.schema.json&quot;,
+  &quot;title&quot;: &quot;OkrNode&quot;,
+  &quot;description&quot;: &quot;One node in the OKR tree. Nodes are flat and carry a parent pointer; the tree is reconstructed from those pointers, never from nesting.&quot;,
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;id&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;Stable unique identifier. New ids should read as \&quot;kr-&lt;short-slug&gt;\&quot; or \&quot;obj-&lt;short-slug&gt;\&quot;.&quot;,
+      &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+    },
+    &quot;level&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;Where the node sits in the ladder: company (the single root), objective (team-level), or kr (key result).&quot;,
+      &quot;enum&quot;: [&quot;company&quot;, &quot;objective&quot;, &quot;kr&quot;]
+    },
+    &quot;parent&quot;: {
+      &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;],
+      &quot;description&quot;: &quot;Id of the parent node, or null for the company root. Exactly one node in a tree has a null parent.&quot;,
+      &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+    },
+    &quot;label&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;What the node is trying to achieve, stated as an outcome rather than an activity. One sentence.&quot;,
+      &quot;minLength&quot;: 1,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;owner&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;Team or person accountable for this node, as display text, for example \&quot;Growth\&quot; or \&quot;Sales Ops\&quot;. When unitId is set this is derived from that team&#x27;s name; set unitId and leave owner alone.&quot;,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;unitId&quot;: {
+      &quot;type&quot;: [&quot;string&quot;, &quot;null&quot;],
+      &quot;description&quot;: &quot;Id of the owning team in company.units, or null when the node is not assigned to a team. owner is the display name derived from it.&quot;,
+      &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$&quot;
+    },
+    &quot;metric&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;The quantity being moved, named precisely enough to be looked up. Empty means the node is not measurable.&quot;,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;target&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;description&quot;: &quot;The move being committed to, with a baseline, a goal, and a date, for example \&quot;31% -&gt; 50% by Q4\&quot;.&quot;,
+      &quot;maxLength&quot;: 400
+    },
+    &quot;contributes&quot;: {
+      &quot;type&quot;: &quot;number&quot;,
+      &quot;description&quot;: &quot;Hand-assessed score (0-1) of how well this node supports its parent. Anything below 0.4 is a misalignment worth calling out.&quot;,
+      &quot;minimum&quot;: 0,
+      &quot;maximum&quot;: 1,
+      &quot;default&quot;: 0.5
+    }
+  },
+  &quot;required&quot;: [&quot;id&quot;, &quot;level&quot;, &quot;parent&quot;, &quot;label&quot;],
+  &quot;additionalProperties&quot;: false
+}
+=== tree schema
+{
+  &quot;$schema&quot;: &quot;http://json-schema.org/draft-07/schema#&quot;,
+  &quot;$id&quot;: &quot;https://okr-viewer.dev/schema/v1/okr-tree.schema.json&quot;,
+  &quot;title&quot;: &quot;OkrTree&quot;,
+  &quot;description&quot;: &quot;The whole OKR tree as a flat node list. Structure lives in the parent pointers; uniqueness, parent existence and acyclicity are checked separately by checkTreeSemantics().&quot;,
+  &quot;type&quot;: &quot;object&quot;,
+  &quot;properties&quot;: {
+    &quot;nodes&quot;: {
+      &quot;type&quot;: &quot;array&quot;,
+      &quot;description&quot;: &quot;Every node in the tree, in no particular order.&quot;,
+      &quot;items&quot;: {
+        &quot;$ref&quot;: &quot;okr-node.schema.json&quot;,
+        &quot;description&quot;: &quot;One OKR node.&quot;
+      },
+      &quot;maxItems&quot;: 500
+    }
+  },
+  &quot;required&quot;: [&quot;nodes&quot;],
+  &quot;additionalProperties&quot;: false
+}
+=== spike plan
+---
+tags:
+  - plan
+  - web
+  - graph
+status: completed
+created: 2026-09-11
+completed_on: 2026-09-11
+---
+# Plan: Clear chat highlights on any user selection in the 3D view
+
+Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(invariant 5: user gestures take precedence over assistant pointers). Spike plan.
+
+## Context
+
+`highlight` (`web/src/App.svelte:24`) holds the node ids from the last assistant reply;
+`web/src/Graph.svelte:143-146` pulses them red and flies the camera. Nothing clears them except
+Undo (`App.svelte:74`), Reset (`:81`), Import (`:121`) or the next reply. Once the user starts
+clicking around, the red pulse is stale: it still says &quot;this is what the assistant meant&quot; over a
+selection the user made.
+
+Selection flows through `select(id)` at `App.svelte:131-133`, called from `Graph.svelte:118`
+(node click), `:119` (background click → `null`), and the parent/child link buttons in
+`web/src/Detail.svelte:27` and `:40`.
+
+Drag vs click: `three-render-objects` already suppresses the click callback after a drag. A
+`pointermove` past 1px while pressed sets `isPointerDragging`
+(`web/node_modules/three-render-objects/dist/three-render-objects.mjs:520-530`), and
+`pointerup` returns early when dragging unless `clickAfterDrag` is set (`:552-559`);
+`clickAfterDrag` defaults to false (`:245`). So `onBackgroundClick` fires only for a true
+click, not for the release of a tumble.
+
+## Goal
+
+Any user selection change in the scene (node click, background click to deselect, Detail link
+click) clears the chat highlight; a tumble does not.
+
+## Decisions (locked in)
+
+1. **Clear in `select()`**, not in Graph. Every selection path already funnels through it, and
+   Graph stays free of highlight policy.
+2. **Background click clears too.** Interview answer 2026-09-11: clear on node clicks and
+   background clicks, with the drag/click distinction preserved. The library already makes that
+   distinction; this plan verifies it rather than re-implementing it.
+3. **Chat recall stays.** The &quot;show N nodes&quot; pill (`web/src/Chat.svelte:51`) re-highlights on
+   demand via `recall()` (`App.svelte:135-137`), so nothing is lost.
+
+## Phase 1 — The change
+
+1. `App.svelte:131-133`:
+   ```js
+   function select(id) {
+     selectedId = id;
+     if (highlight.length) highlight = []; // a user selection supersedes the assistant&#x27;s pointer
+   }
+   ```
+   The guard avoids re-running the Graph effect at `:143` when there is nothing to clear.
+2. Dead zone, only if verification step 3 fails: in `Graph.svelte` `onMount`, record the
+   `pointerdown` position on `el` and ignore `onBackgroundClick` when the pointer moved more
+   than 4px before `pointerup`. Do not ship this pre-emptively.
+
+## Verification
+
+1. Ask &quot;Which key results don&#x27;t clearly support a company objective?&quot;, wait for the pulse,
+   click a different node: pulse stops, the clicked node is selected, the camera flies to it.
+2. Same, then click empty background: pulse stops, Detail closes, the camera does not move.
+3. Same, then press on the background and drag to tumble: pulse continues, selection unchanged.
+   Try short drags (5–10px) and touchpad drags. If any of these clear the highlight, implement
+   Phase 1 step 2.
+4. Click &quot;show N nodes&quot; on an earlier reply: pulse returns.
+5. Click a parent link in Detail: pulse stops.
+
+## Out of scope
+
+- An explicit &quot;clear highlights&quot; button. Selection is the gesture.
+- Clearing on hover or on typing in chat.
+
+## Completion notes
+
+- **Planned vs. actual:** Phase 1 step 1 shipped exactly as written — three lines in `select()`
+  (`web/src/App.svelte:131-134`). No other file changed. `Graph.svelte` stayed untouched, so the
+  highlight policy really does live in one place.
+- **Mid-flight adjustments:** none. Phase 1 step 2 (the 4px dead zone) was deliberately not
+  shipped: verification step 3 passed, so there was nothing to fix.
+- **Surprises / residual risks:** `three-render-objects` is stricter than the plan assumed — for
+  `pointerType === &#x27;mouse&#x27;` *any* `pointermove` while pressed sets `isPointerDragging`
+  (`web/node_modules/three-render-objects/dist/three-render-objects.mjs:519-530`), not just moves
+  past 1px; the 1px relaxation applies to touch/pen only. So a tumble can never leak a click on a
+  mouse or touchpad. Residual risk: a real touchscreen tap that wobbles ≤1px is still a click,
+  which is the intended behaviour. Verification was run against a stubbed `/api/chat` (no API key
+  in this environment) returning a fixed three-id highlight; the highlight path exercised is the
+  same one a real reply takes.
+=== camera plan
+---
+tags:
+  - plan
+  - web
+  - graph
+status: completed
+created: 2026-09-11
+completed_on: 2026-09-11
+---
+# Plan: Level the camera to world up during programmatic moves
+
+Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(invariant 5: &quot;the scene never disorients the user on its own&quot;). Spike plan, one file.
+
+## Context
+
+`3d-force-graph` defaults to `TrackballControls`
+(`web/node_modules/three-render-objects/dist/three-render-objects.mjs:486` and `:603-607`).
+Trackball rotates `camera.up` freely (`web/node_modules/three/examples/jsm/controls/TrackballControls.js:510`),
+so after the user tumbles, the camera carries a roll. Every programmatic move (`flyTo` at
+`web/src/Graph.svelte:58-75`, `zoomToFit` at `:125`) goes through `cameraPosition()`
+(`three-render-objects.mjs:306-340`), which tweens position and `controls.target` but never
+touches `camera.up`. `TrackballControls.update()` then calls `object.lookAt(target)`
+(`TrackballControls.js:381`) with the rolled up vector, so the whole flight is tilted, and the
+roll about the view axis visibly changes as the lookAt target moves.
+
+The layout is `dagMode(&#x27;td&#x27;)` (`Graph.svelte:104`): world +Y is the tree&#x27;s top, so &quot;level&quot; has
+a real meaning.
+
+## Goal
+
+Every programmatic camera move ends with screen-up equal to world +Y, the roll is removed
+smoothly over the flight, and user tumbling stays free (trackball, may roll).
+
+## Decisions (locked in)
+
+1. **Keep trackball.** Users can still roll. Only programmatic moves re-level. (Interview,
+   2026-09-11.)
+2. **Re-level, don&#x27;t just preserve.** The move tweens `camera.up` from its current value to
+   world +Y over the same duration as the position tween with the same `Quadratic.Out` easing,
+   so a rolled camera un-rolls during the flight rather than snapping.
+3. **Implemented in `Graph.svelte`, no library patch.** `graph.camera()`
+   (`web/node_modules/3d-force-graph/dist/3d-force-graph.mjs:276`) exposes the THREE camera and
+   `graph.controls()` (`:285`) the trackball. `camera.up` is read by trackball&#x27;s `lookAt` every
+   frame, so driving it from our own `animate()` loop (`Graph.svelte:77-99`) is enough.
+4. **Degenerate view guarded.** If the view direction is within ~11° of world ±Y (looking
+   straight down the tree), `lookAt` with up = +Y is undefined. Level toward world −Z instead.
+5. **Trackball inertia off.** `staticMoving` defaults to `false` (`TrackballControls.js:147`),
+   so a flick before a fly-to keeps rotating `camera.up` while we tween it. Set
+   `staticMoving = true`. This also removes inertia from user tumbling; that is the tradeoff
+   that makes programmatic moves deterministic. The alternative (zeroing the private
+   `_lastAngle`) is version-fragile.
+
+## Phase 1 — `levelCamera(ms)` in Graph.svelte
+
+1. Next to `Graph.svelte:12-14` add `const WORLD_UP = new THREE.Vector3(0, 1, 0);` and
+   `let upTween = null;`.
+2. Add `function levelCamera(ms)`:
+   - `const cam = graph.camera(); const from = cam.up.clone().normalize();`
+   - `const view = graph.controls().target.clone().sub(cam.position).normalize();`
+   - `let to = WORLD_UP; if (Math.abs(view.dot(WORLD_UP)) &gt; 0.98) to = new THREE.Vector3(0, 0, -1);`
+     (Decision 4).
+   - Return early if `from.distanceToSquared(to) &lt; 1e-6`.
+   - If `from.dot(to) &lt; -0.999` (upside down), nudge `from` by `0.01` along
+     `view.clone().cross(to)` so the interpolation has a direction.
+   - `upTween = { from, to, start: performance.now(), ms };`
+3. In `animate()` (`Graph.svelte:77`), before the mesh loop: if `upTween`,
+   `t = Math.min(1, (performance.now() - start) / ms)`, `e = 1 - (1 - t) ** 2` (Quadratic.Out,
+   matching the library&#x27;s position tween), then
+   `cam.up.copy(from).lerp(to, e).normalize()`; at `t &gt;= 1` set `cam.up.copy(to)` and
+   `upTween = null`. Lerp plus normalize on unit vectors is adequate here; the arc is short and
+   `lookAt` re-orthogonalises each frame.
+4. Call `levelCamera(ms)` in `flyTo` after the early returns (`Graph.svelte:62`), and
+   `levelCamera(900)` immediately after `graph.zoomToFit(900, 60)` at `:125`.
+5. In `onMount` after `Graph.svelte:120`: `graph.controls().staticMoving = true;` (Decision 5).
+6. Dev only: `if (import.meta.env.DEV) window.__graph = graph;` for the console check below.
+
+## Verification
+
+- Tumble until the horizon is visibly tilted, then click a &quot;show N nodes&quot; pill in chat: the
+  flight ends level and the un-roll is smooth, not a snap. Repeat via a node click
+  (`Graph.svelte:118`) and via Reset → `zoomToFit`.
+- Look straight down the tree from above (drag until the company node is centred and the tree
+  recedes), then trigger a fly-to: no NaN camera, no flip; the view levels toward −Z.
+- After any programmatic move, `__graph.camera().up` in the dev console reads `(0, 1, 0)` to
+  three decimals (or `(0, 0, -1)` in the degenerate case).
+- User tumble after the flight still rolls freely.
+- Tumble, release mid-drag, and immediately click a node: no fight between inertia and the
+  level tween (Decision 5).
+
+## Out of scope
+
+- Switching to OrbitControls (ruled out: users keep free tumble).
+- Levelling on user-driven moves or when idle.
+- The `dist` / `radius` heuristics in `flyTo` (`Graph.svelte:66-68`).
+
+## Completion notes
+
+- **Planned vs. actual:** every phase landed as written, in one file
+  (`web/src/Graph.svelte`). All `file:line` citations — `flyTo` at `:58-75`, `animate()` at
+  `:77-99`, `zoomToFit` at `:125`, `d3Force` at `:120`, and the four library references under
+  `web/node_modules/` — were re-verified against `main` before editing and were all accurate.
+  `graph.controls()` and `graph.camera()` are both populated synchronously by
+  `ForceGraph3D()(el)` (`3d-force-graph.mjs:325-328`), so the `staticMoving` assignment is safe
+  where the plan put it.
+- **Mid-flight adjustments:** two small hardenings beyond the plan text. The antipodal nudge
+  normalises `view × to` before scaling and falls back to `(1,0,0)` when that cross product is
+  degenerate (view parallel to `to`), otherwise the nudge magnitude would depend on the angle
+  between them and could be zero. `levelCamera` also returns early if `graph.camera()` or
+  `graph.controls()` is missing, and the `animate()` block drops a stale tween if the graph has
+  been torn down.
+- **Surprises / residual risks:** none in the math — a headless harness replaying the exact
+  `levelCamera` + tween code against real `three` confirmed a rolled view converges to
+  `(0.000, 1.000, 0.000)`, the straight-down case to `(0.000, 0.000, -1.000)`, the upside-down
+  case to `(0.000, 1.000, 0.000)`, and an already-level camera creates no tween, with no NaN or
+  denormalised `up` and a finite `lookAt` matrix on every frame. The remaining risk is purely
+  perceptual and was **not** verified in a browser: that the un-roll *looks* smooth rather than
+  abrupt, and that losing trackball inertia (Decision 5) is an acceptable tradeoff in the hand.
+  Both need a human at the app.
+=== TeamEditor 210-235
+    rows=&quot;3&quot;
+    placeholder=&quot;Why this team exists, in its own words&quot;
+    bind:value={draft.mission}
+    onfocus={() =&gt; onFocusField(&#x27;charter.mission&#x27;)}
+    onblur={() =&gt; {
+      commitProse(&#x27;mission&#x27;);
+      onFocusField(null);
+    }}
+    onkeydown={(e) =&gt; onProseKey(e, &#x27;mission&#x27;)}
+    aria-label=&quot;Mission&quot;
+  &gt;&lt;/textarea&gt;
+
+  &lt;h3&gt;Process&lt;/h3&gt;
+  &lt;textarea
+    rows=&quot;4&quot;
+    placeholder=&quot;The process it runs: inputs, steps, outputs, cadence&quot;
+    bind:value={draft.process}
+    onfocus={() =&gt; onFocusField(&#x27;charter.process&#x27;)}
+    onblur={() =&gt; {
+      commitProse(&#x27;process&#x27;);
+      onFocusField(null);
+    }}
+    onkeydown={(e) =&gt; onProseKey(e, &#x27;process&#x27;)}
+    aria-label=&quot;Process&quot;
+  &gt;&lt;/textarea&gt;
+
+=== web pkg
+{
+  &quot;name&quot;: &quot;okr-viewer-web&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;,
+    &quot;preview&quot;: &quot;vite preview&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@okr-viewer/schema&quot;: &quot;^0.1.0&quot;,
+    &quot;3d-force-graph&quot;: &quot;^1.80.0&quot;,
+    &quot;three&quot;: &quot;&gt;=0.179 &lt;1&quot;,
+    &quot;three-spritetext&quot;: &quot;^1.10.0&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@sveltejs/vite-plugin-svelte&quot;: &quot;^7.3.0&quot;,
+    &quot;svelte&quot;: &quot;^5.57.0&quot;,
+    &quot;vite&quot;: &quot;^8.3.0&quot;
+  }
+}
+web:
+dist
+index.html
+node_modules
+package.json
+src
+vite.config.js
+=== legend css
+web/src/App.svelte:569:      &lt;div class=&quot;legend&quot;&gt;
+web/src/App.svelte:574:        &lt;!-- the legend is pointer-events: none, so this control opts back in --&gt;
+web/src/app.css:77:.stage { position: relative; flex: 1; min-width: 0; }
+web/src/app.css:78:.graph { position: absolute; inset: 0; }
+web/src/app.css:80:.legend {
+web/src/app.css:86:.legend span { display: flex; align-items: center; gap: 6px; }
+web/src/app.css:87:.legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+web/src/app.css:88:.legend .sw.company { background: var(--company); }
+web/src/app.css:89:.legend .sw.objective { background: var(--objective); }
+web/src/app.css:90:.legend .sw.kr { background: var(--kr); }
+web/src/app.css:91:.legend .sw.line { width: 22px; height: 3px; border-radius: 2px; background: linear-gradient(90deg, var(--bad), var(--good)); }
+web/src/app.css:194:/* the legend is pointer-events: none, so its one control opts back in */
+web/src/app.css:195:.legend .toggle { display: flex; align-items: center; gap: 6px; cursor: pointer; pointer-events: auto; }
+web/src/app.css:196:.legend .toggle input { margin: 0; accent-color: var(--accent); }
+=== README
+# OKR Viewer
+
+A 3D OKR tree you can interrogate and edit by talking to it.
+
+Load an org&#x27;s objectives and key results as a navigable 3D graph, then ask questions in plain language — &quot;which KRs don&#x27;t ladder up to anything?&quot;, &quot;make the marketing KRs measurable&quot; — and watch Claude answer *by moving the visualization*: flying the camera to the nodes it&#x27;s talking about, and rewriting them in place when you ask it to.
+
+The pitch in one line: **the model&#x27;s output is the interface, not a chat log next to one.**
+
+---
+
+## Demo script
+
+This is the thing to build toward. Everything below serves these 90 seconds.
+
+1. **Open on the full tree.** One company objective at the top, team objectives beneath it, KRs at the leaves. Rotate it. It&#x27;s obviously a hierarchy and you can see all of it at once.
+2. **Ask a question.** &quot;Which key results don&#x27;t clearly support a company objective?&quot; → Claude answers in the panel *and* three nodes pulse red while the camera flies to them.
+3. **Ask for a fix.** &quot;Rewrite those so they&#x27;re measurable and tie them to the right objective.&quot; → the nodes&#x27; text changes, edges re-link, the graph settles into a new shape.
+4. **Undo it.** One click, tree snaps back. (This also saves you if the model does something dumb on stage.)
+
+---
+
+## Architecture
+
+```
+┌──────────────────────┐         ┌─────────────────────┐         ┌────────┐
+│  web/  (Vite+Svelte) │  POST   │  service/ (Express) │  HTTPS  │ Claude │
+│                      │ /api/   │                     │         │  API   │
+│  owns the tree ──────┼─ chat ──┼─&gt; owns the prompt    ├────────&gt;│        │
+│  renders the graph   │&lt;────────┼── + tool schema      │&lt;────────┤        │
+│  applies actions     │ {reply, │   validates IDs      │         └────────┘
+│  keeps undo stack    │  actions│                      │
+└──────────────────────┘  highlight}────────────────────┘
+```
+
+**The service is stateless.** The browser owns the tree and sends it along with every message. No session store, no database, no drift between what the service thinks the tree is and what&#x27;s on screen.
+
+**The service owns the system prompt and the tool schema.** The frontend never constructs a prompt. This means prompt iteration — which is most of your tuning time — is a service-only change.
+
+---
+
+## The contract
+
+One endpoint. One shape. Don&#x27;t add a second one.
+
+```
+POST /api/chat
+{
+  &quot;tree&quot;:           { &quot;nodes&quot;: [...] },     // the whole thing, every time
+  &quot;message&quot;:        &quot;make the marketing KRs measurable&quot;,
+  &quot;selectedNodeId&quot;: &quot;kr-7&quot; | null,          // what the user clicked, for context
+  &quot;history&quot;:        [{ &quot;role&quot;: &quot;user&quot;|&quot;assistant&quot;, &quot;content&quot;: &quot;...&quot; }]
+}
+
+→ 200
+{
+  &quot;reply&quot;:     &quot;I tightened three KRs under Marketing…&quot;,
+  &quot;actions&quot;:   [{ &quot;op&quot;: &quot;edit&quot;, &quot;id&quot;: &quot;kr-7&quot;, &quot;fields&quot;: { &quot;label&quot;: &quot;…&quot; } }],
+  &quot;highlight&quot;: [&quot;kr-7&quot;, &quot;kr-8&quot;, &quot;kr-9&quot;]
+}
+```</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-03-00-272Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-03-00-272Z" class="timestamp-link"><time datetime="2026-09-12T16:03:00.272Z" data-timestamp="2026-09-12T16:03:00.272Z">2026-09-12T16:03:00.272Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-03-04-969Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-03-04-969Z" class="timestamp-link"><time datetime="2026-09-12T16:03:04.969Z" data-timestamp="2026-09-12T16:03:04.969Z">2026-09-12T16:03:04.969Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01LZhY3cWarFWnZ5NeK1AZcT">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check scripts, lib helpers, trackball key bindings, and vision invariants</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;=== pkg scripts&#34;; cat package.json; grep -n &#39;&#34;scripts&#34;&#39; -A6 schema/package.json; echo &#34;=== lib exports&#34;; grep -n &#34;^export&#34; web/src/lib/*.js; grep -n &#34;descendants&#34; web/src/Detail.svelte | head -3; echo &#34;=== Detail 170-185&#34;; sed -n 170,185p web/src/Detail.svelte; echo &#34;=== trackball keys&#34;; grep -n &#34;keys\b\|KeyA\|keydown&#34; web/node_modules/three/examples/jsm/controls/TrackballControls.js | head; echo &#34;=== vision invariants&#34;; grep -n -i &#34;invariant&#34; &#34;Concepts/OKR Viewer - Product Vision.md&#34; | head -20; echo &#34;=== depth doc focus&#34;; grep -n -i &#34;keyboard\|navigate\|sibling&#34; &#34;Concepts/Depth and Focus - Design.md&#34; | head; echo &#34;=== memory&#34;; cat /Users/tmiv74/.claude/projects/-Users-tmiv74-OKR-Display/memory/dev-container-for-node.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-03-05-105Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-03-05-105Z" class="timestamp-link"><time datetime="2026-09-12T16:03:05.105Z" data-timestamp="2026-09-12T16:03:05.105Z">2026-09-12T16:03:05.105Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== pkg scripts
+{
+  &quot;name&quot;: &quot;okr-viewer&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;workspaces&quot;: [
+    &quot;schema&quot;,
+    &quot;web&quot;,
+    &quot;service&quot;
+  ],
+  &quot;scripts&quot;: {
+    &quot;build:schema&quot;: &quot;npm run build -w schema&quot;,
+    &quot;test:schema&quot;: &quot;npm test -w schema&quot;,
+    &quot;dev:web&quot;: &quot;npm run dev -w web&quot;,
+    &quot;dev:service&quot;: &quot;npm run dev -w service&quot;
+  }
+}
+22:  &quot;scripts&quot;: {
+23-    &quot;build&quot;: &quot;node scripts/build.mjs&quot;,
+24-    &quot;prepare&quot;: &quot;node scripts/build.mjs&quot;,
+25-    &quot;test&quot;: &quot;node --test \&quot;test/**/*.test.js\&quot;&quot;,
+26-    &quot;clean&quot;: &quot;node scripts/clean.mjs&quot;
+27-  },
+28-  &quot;dependencies&quot;: {
+=== lib exports
+web/src/lib/datasets.js:33:export const DATASETS = ordered.map((id) =&gt; ({
+web/src/lib/datasets.js:48:export const DEFAULT_DATASET_ID = manifest.default;
+web/src/lib/datasets.js:51:export function getDataset(id) {
+web/src/lib/apply.js:38:export function descendants(tree, id) {
+web/src/lib/apply.js:63:export function applyAction(tree, action) {
+web/src/lib/apply.js:123:export function applyDocumentActions({ tree, company = null }, actions = []) {
+web/src/lib/apply.js:159:export function applyActions(tree, actions = []) {
+web/src/lib/company.js:20:export const emptyCompany = (name = &#x27;Untitled&#x27;) =&gt; ({ name, units: [] });
+web/src/lib/company.js:31:export function unitName(company, id) {
+web/src/lib/company.js:42:export function unitDescendants(company, id) {
+web/src/lib/company.js:89:export function applyUnitAction(company, action) {
+3:  import { descendants } from &#x27;./lib/apply.js&#x27;;
+113:    const below = descendants(tree, node.id);
+172:    const below = descendants(tree, node.id).size;
+=== Detail 170-185
+
+  function removeNode() {
+    const below = descendants(tree, node.id).size;
+    const what = below
+      ? `&quot;${node.label}&quot; and the ${below} node${below === 1 ? &#x27;&#x27; : &#x27;s&#x27;} under it`
+      : `&quot;${node.label}&quot;`;
+    if (!confirm(`Delete ${what}?`)) return;
+    const parentId = node.parent;
+    onEdit({ op: &#x27;delete&#x27;, id: node.id });
+    onSelect(parentId);
+  }
+&lt;/script&gt;
+
+&lt;aside class=&quot;detail&quot; class:editing&gt;
+  &lt;header&gt;
+    &lt;span class=&quot;level {node.level}&quot;&gt;{LEVEL_NAME[node.level] ?? node.level}&lt;/span&gt;
+=== trackball keys
+ugrep: warning: web/node_modules/three/examples/jsm/controls/TrackballControls.js: No such file or directory
+=== vision invariants
+45:## Invariants (the load-bearing rules)
+146:- **The document is the unit of truth** (invariant 4). A JSON-document realtime store
+149:- **Every mutation is an Action with an actor** (invariant 3). Horizon 2 adds `actor: &quot;agent&quot;`
+161:- **The service is stateless** (invariant 1) until Horizon 3 deliberately changes it. An agent
+=== depth doc focus
+=== memory
+---
+name: dev-container-for-node
+description: &quot;Host Node is 12; run npm/node for this project inside the `dev` Docker container where /src maps to the project root&quot;
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 8fed4af5-d6b5-4f45-b459-38c2c0b7531e
+  modified: 2026-09-11T02:16:03.029Z
+---
+
+The host Mac only has Node 12 (no nvm/brew). The user runs a Docker container named `dev` (image `node-dev`, Node 24, npm 11) with the project root mounted at `/src`. The container has no port mappings to the host and no `pkill`/`procps`.
+
+**Why:** Vite 8, Svelte 5, and Express 5 all need Node 20+, so nothing builds on the host. The user asked (2026-09-10) to use the container for testing.
+
+**How to apply:** Run installs, builds, and tests as `docker exec -w /src/&lt;dir&gt; dev &lt;cmd&gt;`. For anything the host browser must see, serve the built `web/dist` from the host (python3 http.server works) since container ports aren&#x27;t exposed. Kill container processes by scanning `/proc/*/cmdline`.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-03-09-204Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-03-09-204Z" class="timestamp-link"><time datetime="2026-09-12T16:03:09.204Z" data-timestamp="2026-09-12T16:03:09.204Z">2026-09-12T16:03:09.204Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01HoXRVTBLR9JtYgKpWi6JUj">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read vision invariants, trackball key handling, zoomToFit, and descendants helper</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; sed -n 45,75p &#34;Concepts/OKR Viewer - Product Vision.md&#34;; echo &#34;=== trackball&#34;; f=$(find node_modules web/node_modules -path &#34;*controls/TrackballControls.js&#34; 2&gt;/dev/null | head -1); echo $f; grep -n &#34;keys\b\|KeyA\|keydown&#34; &#34;$f&#34; | head -8; echo &#34;=== zoomToFit sig&#34;; grep -n &#34;zoomToFit&#34; $(find node_modules web/node_modules -name &#34;3d-force-graph.mjs&#34; 2&gt;/dev/null | head -1) | head -5; echo &#34;=== descendants&#34;; sed -n 30,62p web/src/lib/apply.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-03-15-083Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-03-15-083Z" class="timestamp-link"><time datetime="2026-09-12T16:03:15.083Z" data-timestamp="2026-09-12T16:03:15.083Z">2026-09-12T16:03:15.083Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>## Invariants (the load-bearing rules)
+
+1. **The service is stateless.** The browser sends the whole document every time. Teams,
+   history and view context all ride in the request; nothing is remembered server-side. This is
+   what keeps tabs, datasets and undo trivially correct: there is nothing to desync.
+2. **One endpoint, one shape, grown additively.** `POST /api/chat` gains optional fields
+   (`company`, `context`, `mode`, `subject`). It never gets a sibling endpoint and never bumps
+   `schemaVersion` for these additions. A client that sends none of the new fields still works.
+3. **Every mutation is an Action through one commit path.** The assistant, the node editor, the
+   team editor and interview outcomes all emit Actions from the same schema, and all go through
+   `commit(actions, { actor, reason })`, which snapshots for undo and appends to
+   `history.changes`. There is no &quot;direct edit&quot; path. Consequence: undo covers everything, history
+   is complete, and the model can do anything the UI can.
+4. **The document is the unit of truth.** Bundled datasets, exports and imports are all
+   `OkrDocument`s. A bundled dataset is just a file someone exported by hand.
+5. **The scene never disorients the user on its own.** Programmatic camera moves level to world
+   up; user gestures (tumble, click) take precedence over assistant pointers (highlights clear on
+   selection). The user always feels in control of the view.
+6. **Teams are data the model can be handed.** A team&#x27;s charter (mission, process, ownership
+   domain, dependencies) is written so it can be dropped into a system prompt verbatim. That is
+   the bridge to agents; see the companion doc.
+
+## Vocabulary
+
+- **Document**: `{ schemaVersion, meta, company?, tree, history? }`. What is exported, imported,
+  bundled.
+- **Tree / Node**: the OKR hierarchy. Flat nodes with `parent` pointers. Levels company →
+  objective → kr.
+- **Team** (schema name: `CompanyUnit`): an org unit with an optional **charter**. Nodes point at
+  a team by `unitId`; `owner` is the display string derived from it.
+- **Action**: one edit. Node ops `edit | relink | add | delete`; team ops
+=== trackball
+node_modules/three/examples/jsm/controls/TrackballControls.js
+196:		 * Default is *KeyA, KeyS, KeyD* which represents A, S, D.
+200:		this.keys = [ &#x27;KeyA&#x27; /*A*/, &#x27;KeyS&#x27; /*S*/, &#x27;KeyD&#x27; /*D*/ ];
+297:		window.addEventListener( &#x27;keydown&#x27;, this._onKeyDown );
+311:		window.removeEventListener( &#x27;keydown&#x27;, this._onKeyDown );
+848:	window.addEventListener( &#x27;keydown&#x27;, this._onKeyDown );
+856:	window.removeEventListener( &#x27;keydown&#x27;, this._onKeyDown );
+862:	} else if ( event.code === this.keys[ _STATE.ROTATE ] &amp;&amp; ! this.noRotate ) {
+866:	} else if ( event.code === this.keys[ _STATE.ZOOM ] &amp;&amp; ! this.noZoom ) {
+=== zoomToFit sig
+240:    zoomToFit: function zoomToFit(state, transitionDuration, padding) {
+=== descendants
+}
+
+/**
+ * Every node below `id`, transitively.
+ * @param {OkrTree} tree
+ * @param {string} id
+ * @returns {Set&lt;string&gt;}
+ */
+export function descendants(tree, id) {
+  const out = new Set();
+  let frontier = [id];
+  while (frontier.length) {
+    const next = tree.nodes.filter((n) =&gt; frontier.includes(n.parent)).map((n) =&gt; n.id);
+    frontier = next.filter((x) =&gt; !out.has(x));
+    frontier.forEach((x) =&gt; out.add(x));
+  }
+  return out;
+}
+
+function wouldCycle(tree, id, newParent) {
+  if (!newParent) return false;
+  if (newParent === id) return true;
+  return descendants(tree, id).has(newParent);
+}
+
+/**
+ * Apply one action, returning a new tree. Anything that does not fit the tree
+ * (an unknown id, a parent that would make a cycle) is ignored rather than
+ * thrown — the service has already filtered the model&#x27;s output.
+ * @param {OkrTree} tree
+ * @param {Action} action
+ * @returns {OkrTree}
+ */</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-03-44-316Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-03-44-316Z" class="timestamp-link"><time datetime="2026-09-12T16:03:44.316Z" data-timestamp="2026-09-12T16:03:44.316Z">2026-09-12T16:03:44.316Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-03-44-320Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-03-44-320Z" class="timestamp-link"><time datetime="2026-09-12T16:03:44.320Z" data-timestamp="2026-09-12T16:03:44.320Z">2026-09-12T16:03:44.320Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-04-45-443Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-04-45-443Z" class="timestamp-link"><time datetime="2026-09-12T16:04:45.443Z" data-timestamp="2026-09-12T16:04:45.443Z">2026-09-12T16:04:45.443Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01AsZD2bAJbDYY5XXABFUwg9">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Write the keyboard shortcuts plan</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; cat &gt; Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md &lt;&lt;&#39;EOF&#39;
+---
+tags:
+  - plan
+  - web
+  - graph
+  - keyboard
+status: development
+created: 2026-09-12
+---
+# Plan: Add a keyboard shortcut system to the 3D view
+
+Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(invariant 5: the user always feels in control of the view). Standard plan, one repo (`web/`).
+
+## Context
+
+The 3D view is mouse-only. Selection happens by clicking a sphere
+(`web/src/Graph.svelte:220`, `onNodeClick` → `onSelect` + `flyTo`), and the only way to walk the
+tree is the parent link (`web/src/Detail.svelte:320`) and child links (`:350-352`) in the Detail
+panel. Framing the whole tree happens once, 700 ms after mount
+(`Graph.svelte:238`: `zoomToFit(900, 60)` then `levelCamera(900)`), and never again; after a
+tumble or a fly-to there is no way back to the overview except Reset, which also throws away the
+tree.
+
+There is already one keyboard shortcut. `App.svelte:482-490` handles `⌘Z`/`Ctrl+Z` → `undo()`
+on a `&lt;svelte:window onkeydown&gt;` (`:492`), guarded so keys typed into an `INPUT`, `TEXTAREA` or
+`SELECT` are left alone. It is a single `if`, not a table, so a second shortcut would be a
+second `if`.
+
+Everything the shortcuts need is already reachable from `App.svelte`:
+
+- `selectedId` (`App.svelte:49`) and `select(id)` (`:445-452`), which every selection path funnels
+  through: it opens the node panel, leaves edit mode and clears the assistant&#39;s highlight.
+- The tree, flat with `parent` pointers (`schema/src/okr-node.schema.json`), so &#34;up&#34; is
+  `node.parent`, &#34;down&#34; is the first node whose parent is this one, and siblings are the nodes
+  that share a parent. Nodes are &#34;in no particular order&#34; (`okr-tree.schema.json`), so sibling
+  order has to be chosen (Decision 3).
+- `Graph.svelte` already exports `flyTo(ids, ms)` (`:119-139`), and the camera-levelling
+  `levelCamera(ms)` (`:99-117`) is what `zoomToFit` needs beside it. The `Graph` component is
+  mounted at `App.svelte:522` without a `bind:this`.
+
+`TrackballControls` also listens for `keydown` on `window`
+(`node_modules/three/examples/jsm/controls/TrackballControls.js:297`), but only for `KeyA`,
+`KeyS`, `KeyD` (`:200`) as rotate/zoom/pan modifiers. `f` and the arrow keys are free.
+
+## Goal
+
+A single, table-driven shortcut registry in the web app, with `f` framing the whole tree and the
+arrow keys walking the tree (up = parent, down = first child, left/right = previous/next
+sibling), where each step selects the node and flies the camera to it exactly as a click would.
+
+## Decisions (locked in)
+
+1. **One registry, in `App.svelte`, replacing the `⌘Z` `if`.** Bindings are entries in a
+   `SHORTCUTS` array (`keys`, `hint`, `run`, optional `mod`), and `onKey` becomes a lookup. The
+   existing undo shortcut becomes the first entry so there is one path, not two. The pure tree
+   walking lives in a new `web/src/lib/navigate.js` so it can be tested without Svelte.
+2. **Arrows select through `select()`, then fly.** Same effect as a sphere click
+   (`Graph.svelte:220`): the panel opens on the node, edit mode ends, the highlight clears
+   (per `CLEAR_HIGHLIGHT_ON_SELECT`). The camera flies at 600 ms, a little shorter than the
+   800 ms click flight, because arrow hops are short and may be repeated quickly.
+3. **Sibling order is `tree.nodes` order.** That is the order the Detail panel lists children
+   (`Detail.svelte:29`, `tree.nodes.filter(n =&gt; n.parent === node.id)`), so left/right walk the
+   same list the panel shows, and &#34;down&#34; lands on the first entry of that list.
+4. **No wrap-around, no-ops at the edges.** Right on the last sibling, left on the first, up on
+   the root and down on a leaf do nothing. Predictable beats clever; wrap-around in a
+   three-item list is disorienting.
+5. **With nothing selected, any arrow selects the root** (the one node with `parent: null`).
+   This is also the way in from a Teams panel: `select()` swaps the panel slot to the node.
+6. **`f` moves the camera only.** It does not change selection and does not clear a highlight:
+   framing is a view gesture, not a pointer, and invariant 5 asks only that programmatic moves
+   level to world up, which `levelCamera` provides.
+7. **Plain keys only, no modifiers, and never while typing.** The existing tag guard stays and
+   gains `isContentEditable`. A plain binding does not fire when `meta`, `ctrl` or `alt` is
+   held, so `⌘←` (browser back) and `⌘F` (find) keep working. `preventDefault` runs only when a
+   binding actually ran, so arrows stop scrolling the page but nothing else is swallowed.
+8. **Key repeat is allowed for arrows and ignored for `f`.** Holding right walks the siblings;
+   holding `f` should not restart the frame flight every 30 ms.
+
+## Phase 1 — Pure navigation helpers
+
+New file `web/src/lib/navigate.js`, no imports from Svelte or three:
+
+```js
+export const rootOf = (tree) =&gt; tree.nodes.find((n) =&gt; n.parent === null) ?? null;
+export const parentOf = (tree, id) =&gt; { const n = byId(tree, id); return n?.parent ? byId(tree, n.parent) : null; };
+export const firstChildOf = (tree, id) =&gt; tree.nodes.find((n) =&gt; n.parent === id) ?? null;
+export function siblingOf(tree, id, step) {      // step: -1 | +1; null at either end
+  const n = byId(tree, id);
+  if (!n) return null;
+  const sibs = tree.nodes.filter((s) =&gt; s.parent === n.parent);
+  const i = sibs.findIndex((s) =&gt; s.id === id);
+  return sibs[i + step] ?? null;
+}
+// One entry point for the four arrows, so App.svelte holds no tree logic.
+export function step(tree, selectedId, dir) {    // dir: &#39;up&#39; | &#39;down&#39; | &#39;left&#39; | &#39;right&#39;
+  if (!selectedId) return rootOf(tree);
+  ...
+}
+```
+
+The root is `parent === null`, matching the schema&#39;s &#34;exactly one node in a tree has a null
+parent&#34;. Siblings of the root are just the root, so left/right at the root are no-ops for free.
+
+Tests in `web/src/lib/navigate.test.js` with `node:test`, on a six-node fixture (root, two
+objectives, three KRs under the first): parent of a KR is its objective; first child of the root
+is the first objective in array order; right on the last KR is `null`; left on the first is
+`null`; up on the root is `null`; `step` with no selection returns the root; `step(&#39;down&#39;)` on a
+leaf returns `null`. Add `&#34;test&#34;: &#34;node --test \&#34;src/**/*.test.js\&#34;&#34;` to `web/package.json:6-10`,
+mirroring `schema/package.json:25`.
+
+## Phase 2 — Registry and wiring
+
+1. `Graph.svelte`, after `flyTo` (`:139`): export the framing move so the mount-time call and the
+   shortcut share it.
+   ```js
+   export function frameAll(ms = 900) {
+     if (!graph) return;
+     clearTimeout(hoverTimer);
+     hovered = null;
+     graph.zoomToFit(ms, 60);
+     levelCamera(ms);
+   }
+   ```
+   Replace the body of the `setTimeout` at `:238` with `frameAll(900)`.
+2. `App.svelte:522`: `&lt;Graph bind:this={graph} ... /&gt;`, with `let graph;` beside `fileInput`
+   (`:400`). Svelte 5 exposes a component&#39;s `export function`s on the bound instance.
+3. `App.svelte`, above `onKey`: a `go(dir)` that does the arrow work in one place.
+   ```js
+   function go(dir) {
+     const next = step(tree, selectedId, dir);
+     if (!next) return;
+     select(next.id);
+     graph?.flyTo([next.id], 600);
+   }
+   ```
+4. `App.svelte`, replacing `:482-490`: the registry and the lookup.
+   ```js
+   const SHORTCUTS = [
+     { keys: [&#39;z&#39;], mod: true, hint: &#39;⌘Z undo&#39;, run: undo },
+     { keys: [&#39;f&#39;], hint: &#39;F frame tree&#39;, run: () =&gt; graph?.frameAll(), repeat: false },
+     { keys: [&#39;ArrowUp&#39;], hint: &#39;↑ parent&#39;, run: () =&gt; go(&#39;up&#39;) },
+     { keys: [&#39;ArrowDown&#39;], hint: &#39;↓ first child&#39;, run: () =&gt; go(&#39;down&#39;) },
+     { keys: [&#39;ArrowLeft&#39;], hint: &#39;← previous sibling&#39;, run: () =&gt; go(&#39;left&#39;) },
+     { keys: [&#39;ArrowRight&#39;], hint: &#39;→ next sibling&#39;, run: () =&gt; go(&#39;right&#39;) }
+   ];
+
+   function onKey(e) {
+     const t = e.target;
+     if ([&#39;INPUT&#39;, &#39;TEXTAREA&#39;, &#39;SELECT&#39;].includes(t?.tagName) || t?.isContentEditable) return;
+     const mod = e.metaKey || e.ctrlKey;
+     const hit = SHORTCUTS.find((s) =&gt; s.keys.includes(e.key) &amp;&amp; !!s.mod === mod &amp;&amp; !e.altKey);
+     if (!hit || (e.repeat &amp;&amp; hit.repeat === false)) return;
+     e.preventDefault();
+     hit.run();
+   }
+   ```
+   `keys` is an array so a later entry can bind two keys to one action (`?` and `/`, say)
+   without changing the lookup. The `⌘Z` `title` on the Undo button (`App.svelte:510`) stays as
+   it is.
+
+## Phase 3 — Discoverability (independently shippable)
+
+The legend at `App.svelte:569-576` is the one always-visible strip over the stage. Add a second
+row rendered from the registry, so the hint text has one source of truth:
+
+```svelte
+&lt;span class=&#34;keys&#34;&gt;{SHORTCUTS.map((s) =&gt; s.hint).join(&#39; · &#39;)}&lt;/span&gt;
+```
+
+Style it in `web/src/app.css` beside `.legend` (`:80-91`): muted, smaller, `flex-basis: 100%` so
+it wraps under the swatches. The legend is `pointer-events: none`, which is right for text. A
+`title` on the graph container is not an option: `three-render-objects` owns that element&#39;s
+pointer events and a tooltip would fight the hover card.
+
+## Verification
+
+Build and test run inside the `dev` container (host Node is 12), and the built `web/dist` is
+served from the host for the browser checks.
+
+1. `docker exec -w /src/web dev npm test` passes the Phase 1 cases.
+2. Fresh load, nothing selected: `→` selects the company root and flies to it; `↓` then selects
+   the first objective the Detail panel lists under it; `↓` again selects that objective&#39;s first
+   KR; `→`/`←` walk the KRs in the same order the panel&#39;s &#34;beneath it&#34; list shows; `←` on the
+   first KR does nothing; `↑` twice returns to the root; `↑` again does nothing.
+3. Tumble until the view is rolled, then press `f`: the whole tree fits the viewport, the
+   horizon levels during the flight (same as Reset used to look), selection and any red
+   highlight are untouched.
+4. Ask the chat a question that highlights nodes, wait for the pulse, then press `↓`: the pulse
+   clears and the panel opens on the new node (same as a click).
+5. Click into the chat textarea and press `↑`, `↓`, `f`: the caret moves and `f` types. Same in
+   a Detail field while editing, and in the dataset `&lt;select&gt;` (arrows change the option).
+6. `⌘Z` still undoes; `⌘←` still goes back in the browser; `⌘F` still opens find.
+7. Hold `→` on a wide sibling list: the selection walks without skipping and the camera does not
+   judder or fight itself (see Risks).
+8. Open the Teams panel, press `↓`: the root is selected and the node panel replaces the team
+   panel.
+
+## Out of scope
+
+- `Escape` to deselect or close the panel, `Enter` to enter edit mode, `Home`/`End`,
+  number keys for levels. Each is one registry entry later; this plan lands the registry.
+- A `?` cheat-sheet overlay. The legend row is enough until the table has more than a handful
+  of entries.
+- User-rebindable keys or persisted preferences. Nothing persists yet (Horizon 3).
+- Remembering which child you came up from, so `↑` then `↓` returns there. Nice, but it needs
+  per-node memory that the selection model does not have.
+- Focus management, `tabindex` on spheres, or screen-reader announcements for the scene.
+- Keyboard shortcuts inside the Detail, Team or Chat panels beyond what they already have.
+
+## Risks / rollback
+
+- **Repeated `flyTo` calls while a flight is running.** Each `cameraPosition()` call starts a
+  new tween in `three-render-objects`; if the previous tween is not stopped, two tweens may write
+  the camera on the same frame (verification step 7). If it judders, `go()` should debounce:
+  select immediately, fly on a 60 ms trailing timer. `levelCamera` is safe to re-arm; it
+  overwrites `upTween`.
+- **A `bind:this` on a component** gives an instance whose exports exist only after mount.
+  `graph?.` guards every call, and `onKey` cannot fire before mount in practice.
+- **Rollback** is removing the registry and restoring the eight-line `onKey`; nothing in the
+  document, schema or service changes.
+EOF
+wc -c Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-04-47-601Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-04-47-601Z" class="timestamp-link"><time datetime="2026-09-12T16:04:47.601Z" data-timestamp="2026-09-12T16:04:47.601Z">2026-09-12T16:04:47.601Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>   11938 Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-04-53-067Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-04-53-067Z" class="timestamp-link"><time datetime="2026-09-12T16:04:53.067Z" data-timestamp="2026-09-12T16:04:53.067Z">2026-09-12T16:04:53.067Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-04-53-071Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-04-53-071Z" class="timestamp-link"><time datetime="2026-09-12T16:04:53.071Z" data-timestamp="2026-09-12T16:04:53.071Z">2026-09-12T16:04:53.071Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>Next I'll update the outdated "development is empty" line in CLAUDE.md and check how the camera tween library handles overlapping flights so the risk section is accurate.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-04-56-825Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-04-56-825Z" class="timestamp-link"><time datetime="2026-09-12T16:04:56.825Z" data-timestamp="2026-09-12T16:04:56.825Z">2026-09-12T16:04:56.825Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01NKG9D49z8BQbqHJxgbk2Dp">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Update CLAUDE.md current-work note and inspect camera tween handling</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; python3 - &lt;&lt;&#39;EOF&#39;
+p=&#39;CLAUDE.md&#39;; s=open(p).read()
+old=&#34;&#34;&#34;`Plans/development/` is empty: the September 2026 round shipped in full, and nothing has been
+planned for what comes after it yet. The next piece of work starts with a new plan in
+`development/`, not by reopening one of these.&#34;&#34;&#34;
+new=&#34;&#34;&#34;The September 2026 round shipped in full. One plan is in `development/`:
+[GRAPH_KEYBOARD_SHORTCUTS](Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md), a table-driven
+shortcut registry for the 3D view (`f` frames the tree, arrows walk it). New work starts with a
+new plan in `development/`, not by reopening a completed one.&#34;&#34;&#34;
+assert old in s; open(p,&#39;w&#39;).write(s.replace(old,new)); print(&#34;CLAUDE.md updated&#34;)
+EOF
+f=$(find node_modules web/node_modules -name &#34;three-render-objects.mjs&#34; 2&gt;/dev/null | head -1); echo $f; grep -n &#34;cameraPosition\|tweenGroup\|removeAll\|new Tween&#34; &#34;$f&#34; | head -20</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-04-58-656Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-04-58-656Z" class="timestamp-link"><time datetime="2026-09-12T16:04:58.656Z" data-timestamp="2026-09-12T16:04:58.656Z">2026-09-12T16:04:58.656Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>CLAUDE.md updated
+web/node_modules/three-render-objects/dist/three-render-objects.mjs
+293:        state.tweenGroup.update(); // update camera animation tweens
+306:    cameraPosition: function cameraPosition(state, position, lookAt, transitionDuration) {
+329:          state.tweenGroup.add(state.povPosTween = new Tween(camPos).to(finalPos, transitionDuration).easing(Easing.Quadratic.Out).onUpdate(setCameraPos).onComplete(function () {
+331:            state.tweenGroup.remove(this);
+335:          state.tweenGroup.add(state.povTgtTween = new Tween(camLookAt).to(finalLookAt, transitionDuration / 3).easing(Easing.Quadratic.Out).onUpdate(setLookAt).onComplete(function () {
+337:            state.tweenGroup.remove(this);
+402:          this.cameraPosition(newCameraPosition, center, transitionDuration);
+479:      tweenGroup: new Group(),</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-05-00-926Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-05-00-926Z" class="timestamp-link"><time datetime="2026-09-12T16:05:00.926Z" data-timestamp="2026-09-12T16:05:00.926Z">2026-09-12T16:05:00.926Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01WbAfnCosr9K3ZwM2T4reMo">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read cameraPosition to see whether a prior tween is stopped</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; sed -n 306,342p web/node_modules/three-render-objects/dist/three-render-objects.mjs</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-05-00-965Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-05-00-965Z" class="timestamp-link"><time datetime="2026-09-12T16:05:00.965Z" data-timestamp="2026-09-12T16:05:00.965Z">2026-09-12T16:05:00.965Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>    cameraPosition: function cameraPosition(state, position, lookAt, transitionDuration) {
+      var camera = state.camera;
+
+      // Setter
+      if (position &amp;&amp; state.initialised) {
+        var _state$povPosTween, _state$povTgtTween;
+        var finalPos = position;
+        var finalLookAt = lookAt || {
+          x: 0,
+          y: 0,
+          z: 0
+        };
+
+        // cancel any ongoing pov animation
+        (_state$povPosTween = state.povPosTween) === null || _state$povPosTween === void 0 || _state$povPosTween.end();
+        (_state$povTgtTween = state.povTgtTween) === null || _state$povTgtTween === void 0 || _state$povTgtTween.end();
+        if (!transitionDuration) {
+          // no animation
+          setCameraPos(finalPos);
+          setLookAt(finalLookAt);
+        } else {
+          var camPos = Object.assign({}, camera.position);
+          var camLookAt = getLookAt();
+          state.tweenGroup.add(state.povPosTween = new Tween(camPos).to(finalPos, transitionDuration).easing(Easing.Quadratic.Out).onUpdate(setCameraPos).onComplete(function () {
+            state.povPosTween = undefined;
+            state.tweenGroup.remove(this);
+          }).start());
+
+          // Face direction in 1/3rd of time
+          state.tweenGroup.add(state.povTgtTween = new Tween(camLookAt).to(finalLookAt, transitionDuration / 3).easing(Easing.Quadratic.Out).onUpdate(setLookAt).onComplete(function () {
+            state.povTgtTween = undefined;
+            state.tweenGroup.remove(this);
+          }).start());
+        }
+        return this;
+      }</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-05-04-042Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-05-04-042Z" class="timestamp-link"><time datetime="2026-09-12T16:05:04.042Z" data-timestamp="2026-09-12T16:05:04.042Z">2026-09-12T16:05:04.042Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-05-09-674Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-05-09-674Z" class="timestamp-link"><time datetime="2026-09-12T16:05:09.674Z" data-timestamp="2026-09-12T16:05:09.674Z">2026-09-12T16:05:09.674Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_013q2RyAHfQu9vMiicpU3rZ3">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Refine the tween risk in the plan and show changed files</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; python3 - &lt;&lt;&#39;EOF&#39;
+p=&#39;Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md&#39;; s=open(p).read()
+old=&#34;&#34;&#34;- **Repeated `flyTo` calls while a flight is running.** Each `cameraPosition()` call starts a
+  new tween in `three-render-objects`; if the previous tween is not stopped, two tweens may write
+  the camera on the same frame (verification step 7). If it judders, `go()` should debounce:
+  select immediately, fly on a 60 ms trailing timer. `levelCamera` is safe to re-arm; it
+  overwrites `upTween`.&#34;&#34;&#34;
+new=&#34;&#34;&#34;- **Repeated `flyTo` calls while a flight is running.** `cameraPosition()` in
+  `three-render-objects` calls `.end()` on the running position and look-at tweens before
+  starting new ones (`web/node_modules/three-render-objects/dist/three-render-objects.mjs:319-320`),
+  which jumps the camera to the *previous* destination first. So holding `→` may show a small
+  snap per step rather than a judder (verification step 7). If it is visible, `go()` should
+  debounce: select immediately, fly on a 60 ms trailing timer, so a held key produces one flight
+  to the final node. `levelCamera` is safe to re-arm; it overwrites `upTween`.&#34;&#34;&#34;
+assert old in s; open(p,&#39;w&#39;).write(s.replace(old,new)); print(&#34;ok&#34;)
+EOF
+git status --short Plans CLAUDE.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T16-05-11-695Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T16-05-11-695Z" class="timestamp-link"><time datetime="2026-09-12T16:05:11.695Z" data-timestamp="2026-09-12T16:05:11.695Z">2026-09-12T16:05:11.695Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ok
+MM CLAUDE.md
+A  Plans/completed/NODE_HOVER_CARD.md
+?? Plans/development/
+?? Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T16-05-22-593Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T16-05-22-593Z" class="timestamp-link"><time datetime="2026-09-12T16:05:22.593Z" data-timestamp="2026-09-12T16:05:22.593Z">2026-09-12T16:05:22.593Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>The plan is written at <a href="Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md">Plans/development/GRAPH_KEYBOARD_SHORTCUTS.md</a>, and the "current work" note in <a href="CLAUDE.md">CLAUDE.md</a> now points to it instead of saying <code>development/</code> is empty. Nothing is committed.</p>
+<p><strong>What the plan proposes</strong></p>
+<ul>
+<li><strong>One table-driven registry in App.svelte</strong> replaces the single <code>⌘Z</code> <code>if</code> in the existing window key handler. Undo becomes the first entry, so there is one shortcut path, not two.</li>
+<li><strong>Tree walking lives in a new pure module</strong>, <code>web/src/lib/navigate.js</code>, with <code>node:test</code> cases and a <code>test</code> script added to the web package, mirroring how the schema package tests.</li>
+<li><strong>Graph gains an exported <code>frameAll()</code></strong> that wraps the existing zoom-to-fit plus camera levelling, shared by the mount-time framing and the <code>f</code> key.</li>
+<li><strong>Arrows select through the existing <code>select()</code></strong> and fly the camera, so a keystroke behaves exactly like a sphere click: panel opens, edit mode ends, chat highlight clears.</li>
+<li><strong>A legend row</strong> rendered from the same registry gives discoverability without a cheat-sheet overlay. This phase ships independently.</li>
+</ul>
+<p><strong>Decisions I locked that you may want to revisit</strong></p>
+<ul>
+<li>Sibling order is the order of the tree's node array, because that is the order the Detail panel already lists children, so left and right walk the list the panel shows.</li>
+<li>No wrap-around. Edges are no-ops.</li>
+<li>With nothing selected, any arrow selects the company root.</li>
+<li><code>f</code> moves the camera only. It changes neither selection nor highlight.</li>
+<li>Plain keys never fire while typing or with a modifier held, so browser shortcuts like <code>⌘←</code> keep working.</li>
+</ul>
+<p><strong>One thing worth knowing before implementing.</strong> The camera library ends any running flight by jumping to its destination before starting the next one, so holding an arrow key may show a small snap per step. The plan names that as the risk to check in verification and gives the debounce fix if it shows.</p>
+<p>Escape to deselect, Enter to edit, a <code>?</code> cheat sheet, and rebindable keys are listed as out of scope. Each is one registry entry later.</p></div></div></div>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

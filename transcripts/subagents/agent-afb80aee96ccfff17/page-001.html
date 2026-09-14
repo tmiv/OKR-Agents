@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/1</h1>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+        
+<div class="message user" id="msg-2026-09-11T21-08-57-942Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-11T21-08-57-942Z" class="timestamp-link"><time datetime="2026-09-11T21:08:57.942Z" data-timestamp="2026-09-11T21:08:57.942Z">2026-09-11T21:08:57.942Z</time></a></div><div class="message-content">
+<div class="user-content"><p>Implement the plan at <code>Plans/development/CAMERA_LEVEL_AUTO_MOVES.md</code> in this repo.</p>
+<p>CRITICAL — ISOLATED WORKTREE. Two sibling agents are working on other plans concurrently in their own worktrees. You MUST do ALL reading and writing under:</p>
+<pre><code>/Users/tmiv74/OKR-Display/.worktrees/camera-level
+</code></pre>
+<p>That directory is a full git worktree on branch <code>wt/camera-level</code>. Every path the plan mentions (e.g. <code>web/src/Graph.svelte</code>) is relative to THAT root, not to your process cwd. Always use absolute paths beginning with <code>/Users/tmiv74/OKR-Display/.worktrees/camera-level/</code>. NEVER read or write anything under <code>/Users/tmiv74/OKR-Display/web</code>, <code>/schema</code>, or <code>/service</code> directly (the main checkout) — doing so will corrupt another agent's work.</p>
+<p>Read the plan first: <code>/Users/tmiv74/OKR-Display/.worktrees/camera-level/Plans/development/CAMERA_LEVEL_AUTO_MOVES.md</code>. The file:line citations in it were written against main, which is exactly what your worktree is checked out at, but re-verify each citation before editing. Note the plan cites files under <code>web/node_modules/</code> (3d-force-graph, three-render-objects, TrackballControls) — those are reference reading only; <code>node_modules</code> is a symlink shared with the other agents, so treat everything under it as READ-ONLY and never modify it.</p>
+<p>NODE / TOOLING: the host Mac has only Node 12. Run all npm/node commands inside the <code>dev</code> Docker container, where the project root is mounted at <code>/src</code>. Your worktree is therefore <code>/src/.worktrees/camera-level</code> inside the container. Example:</p>
+<pre><code>docker exec -w /src/.worktrees/camera-level/web dev npm run build
+</code></pre>
+<p><code>node_modules</code> are symlinked into the worktree and already work; do not run <code>npm install</code>.</p>
+<p>Do the whole plan, including every phase and the Verification section. Run the verification steps and report their real output. If a step needs a browser or a human eye, get as far as you can headlessly (build succeeds, code reads correctly) and say explicitly what remains unverified. If something fails and you cannot fix it, say so plainly rather than glossing over it.</p>
+<p>When the implementation is complete and verified:
+1. Update the plan's frontmatter (<code>status: completed</code>, add <code>completed_on: 2026-09-11</code>) and add a <code>## Completion notes</code> section per the conventions in <code>/Users/tmiv74/OKR-Display/.worktrees/camera-level/CLAUDE.md</code>, then <code>git mv</code> the plan from <code>Plans/development/</code> to <code>Plans/completed/</code> (all inside the worktree).
+2. Commit everything on branch <code>wt/camera-level</code> with <code>git -C /Users/tmiv74/OKR-Display/.worktrees/camera-level add -A &amp;&amp; git -C ... commit</code>. Use a concise message ending with the line:
+   Co-Authored-By: Claude Opus 5 <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#110;&#111;&#114;&#101;&#112;&#108;&#121;&#64;&#97;&#110;&#116;&#104;&#114;&#111;&#112;&#105;&#99;&#46;&#99;&#111;&#109;">&#110;&#111;&#114;&#101;&#112;&#108;&#121;&#64;&#97;&#110;&#116;&#104;&#114;&#111;&#112;&#105;&#99;&#46;&#99;&#111;&#109;</a>
+Do NOT push, do NOT merge, do NOT touch the <code>main</code> branch or the main checkout.</p>
+<p>Finally, report: what you changed (file list), the verification output, anything in the plan you could not do, and any place where your changes touch shared files (<code>web/src/App.svelte</code>, <code>web/src/Graph.svelte</code>) that a merge with the sibling branches might conflict on — be specific about which functions/regions of <code>Graph.svelte</code> you edited.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-08-59-305Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-08-59-305Z" class="timestamp-link"><time datetime="2026-09-11T21:08:59.305Z" data-timestamp="2026-09-11T21:08:59.305Z">2026-09-11T21:08:59.305Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll start by reading the plan.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-00-227Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-00-227Z" class="timestamp-link"><time datetime="2026-09-11T21:09:00.227Z" data-timestamp="2026-09-11T21:09:00.227Z">2026-09-11T21:09:00.227Z</time></a></div><div class="message-content">
+<div class="tool-use" data-tool-id="toolu_012Ren7V5KtcqYD8rgM5P1NC"><div class="tool-header"><span class="tool-icon">⚙</span> Read</div><div class="truncatable"><div class="truncatable-content"><pre class="json">{
+  &#34;file_path&#34;: &#34;/Users/tmiv74/OKR-Display/.worktrees/camera-level/Plans/development/CAMERA_LEVEL_AUTO_MOVES.md&#34;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-09-00-241Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-09-00-241Z" class="timestamp-link"><time datetime="2026-09-11T21:09:00.241Z" data-timestamp="2026-09-11T21:09:00.241Z">2026-09-11T21:09:00.241Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>1	---
+2	tags:
+3	  - plan
+4	  - web
+5	  - graph
+6	status: development
+7	created: 2026-09-11
+8	---
+9	# Plan: Level the camera to world up during programmatic moves
+10	
+11	Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+12	(invariant 5: &quot;the scene never disorients the user on its own&quot;). Spike plan, one file.
+13	
+14	## Context
+15	
+16	`3d-force-graph` defaults to `TrackballControls`
+17	(`web/node_modules/three-render-objects/dist/three-render-objects.mjs:486` and `:603-607`).
+18	Trackball rotates `camera.up` freely (`web/node_modules/three/examples/jsm/controls/TrackballControls.js:510`),
+19	so after the user tumbles, the camera carries a roll. Every programmatic move (`flyTo` at
+20	`web/src/Graph.svelte:58-75`, `zoomToFit` at `:125`) goes through `cameraPosition()`
+21	(`three-render-objects.mjs:306-340`), which tweens position and `controls.target` but never
+22	touches `camera.up`. `TrackballControls.update()` then calls `object.lookAt(target)`
+23	(`TrackballControls.js:381`) with the rolled up vector, so the whole flight is tilted, and the
+24	roll about the view axis visibly changes as the lookAt target moves.
+25	
+26	The layout is `dagMode(&#x27;td&#x27;)` (`Graph.svelte:104`): world +Y is the tree&#x27;s top, so &quot;level&quot; has
+27	a real meaning.
+28	
+29	## Goal
+30	
+31	Every programmatic camera move ends with screen-up equal to world +Y, the roll is removed
+32	smoothly over the flight, and user tumbling stays free (trackball, may roll).
+33	
+34	## Decisions (locked in)
+35	
+36	1. **Keep trackball.** Users can still roll. Only programmatic moves re-level. (Interview,
+37	   2026-09-11.)
+38	2. **Re-level, don&#x27;t just preserve.** The move tweens `camera.up` from its current value to
+39	   world +Y over the same duration as the position tween with the same `Quadratic.Out` easing,
+40	   so a rolled camera un-rolls during the flight rather than snapping.
+41	3. **Implemented in `Graph.svelte`, no library patch.** `graph.camera()`
+42	   (`web/node_modules/3d-force-graph/dist/3d-force-graph.mjs:276`) exposes the THREE camera and
+43	   `graph.controls()` (`:285`) the trackball. `camera.up` is read by trackball&#x27;s `lookAt` every
+44	   frame, so driving it from our own `animate()` loop (`Graph.svelte:77-99`) is enough.
+45	4. **Degenerate view guarded.** If the view direction is within ~11° of world ±Y (looking
+46	   straight down the tree), `lookAt` with up = +Y is undefined. Level toward world −Z instead.
+47	5. **Trackball inertia off.** `staticMoving` defaults to `false` (`TrackballControls.js:147`),
+48	   so a flick before a fly-to keeps rotating `camera.up` while we tween it. Set
+49	   `staticMoving = true`. This also removes inertia from user tumbling; that is the tradeoff
+50	   that makes programmatic moves deterministic. The alternative (zeroing the private
+51	   `_lastAngle`) is version-fragile.
+52	
+53	## Phase 1 — `levelCamera(ms)` in Graph.svelte
+54	
+55	1. Next to `Graph.svelte:12-14` add `const WORLD_UP = new THREE.Vector3(0, 1, 0);` and
+56	   `let upTween = null;`.
+57	2. Add `function levelCamera(ms)`:
+58	   - `const cam = graph.camera(); const from = cam.up.clone().normalize();`
+59	   - `const view = graph.controls().target.clone().sub(cam.position).normalize();`
+60	   - `let to = WORLD_UP; if (Math.abs(view.dot(WORLD_UP)) &gt; 0.98) to = new THREE.Vector3(0, 0, -1);`
+61	     (Decision 4).
+62	   - Return early if `from.distanceToSquared(to) &lt; 1e-6`.
+63	   - If `from.dot(to) &lt; -0.999` (upside down), nudge `from` by `0.01` along
+64	     `view.clone().cross(to)` so the interpolation has a direction.
+65	   - `upTween = { from, to, start: performance.now(), ms };`
+66	3. In `animate()` (`Graph.svelte:77`), before the mesh loop: if `upTween`,
+67	   `t = Math.min(1, (performance.now() - start) / ms)`, `e = 1 - (1 - t) ** 2` (Quadratic.Out,
+68	   matching the library&#x27;s position tween), then
+69	   `cam.up.copy(from).lerp(to, e).normalize()`; at `t &gt;= 1` set `cam.up.copy(to)` and
+70	   `upTween = null`. Lerp plus normalize on unit vectors is adequate here; the arc is short and
+71	   `lookAt` re-orthogonalises each frame.
+72	4. Call `levelCamera(ms)` in `flyTo` after the early returns (`Graph.svelte:62`), and
+73	   `levelCamera(900)` immediately after `graph.zoomToFit(900, 60)` at `:125`.
+74	5. In `onMount` after `Graph.svelte:120`: `graph.controls().staticMoving = true;` (Decision 5).
+75	6. Dev only: `if (import.meta.env.DEV) window.__graph = graph;` for the console check below.
+76	
+77	## Verification
+78	
+79	- Tumble until the horizon is visibly tilted, then click a &quot;show N nodes&quot; pill in chat: the
+80	  flight ends level and the un-roll is smooth, not a snap. Repeat via a node click
+81	  (`Graph.svelte:118`) and via Reset → `zoomToFit`.
+82	- Look straight down the tree from above (drag until the company node is centred and the tree
+83	  recedes), then trigger a fly-to: no NaN camera, no flip; the view levels toward −Z.
+84	- After any programmatic move, `__graph.camera().up` in the dev console reads `(0, 1, 0)` to
+85	  three decimals (or `(0, 0, -1)` in the degenerate case).
+86	- User tumble after the flight still rolls freely.
+87	- Tumble, release mid-drag, and immediately click a node: no fight between inertia and the
+88	  level tween (Decision 5).
+89	
+90	## Out of scope
+91	
+92	- Switching to OrbitControls (ruled out: users keep free tumble).
+93	- Levelling on user-driven moves or when idle.
+94	- The `dist` / `radius` heuristics in `flyTo` (`Graph.svelte:66-68`).
+95	</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-01-496Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-01-496Z" class="timestamp-link"><time datetime="2026-09-11T21:09:01.496Z" data-timestamp="2026-09-11T21:09:01.496Z">2026-09-11T21:09:01.496Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-03-026Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-03-026Z" class="timestamp-link"><time datetime="2026-09-11T21:09:03.026Z" data-timestamp="2026-09-11T21:09:03.026Z">2026-09-11T21:09:03.026Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01SPgBetJTFuUJKYLrF8pauz">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Inspect worktree and Graph.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; git status --short &amp;&amp; git branch --show-current &amp;&amp; echo &#34;---&#34; &amp;&amp; cat -n web/src/Graph.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-09-04-387Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-09-04-387Z" class="timestamp-link"><time datetime="2026-09-11T21:09:04.387Z" data-timestamp="2026-09-11T21:09:04.387Z">2026-09-11T21:09:04.387Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>?? node_modules
+?? service/node_modules
+?? web/node_modules
+wt/camera-level
+---
+     1	&lt;script&gt;
+     2	  import { onMount } from &#x27;svelte&#x27;;
+     3	  import ForceGraph3D from &#x27;3d-force-graph&#x27;;
+     4	  import * as THREE from &#x27;three&#x27;;
+     5	
+     6	  let { tree, selectedId = null, highlight = [], onSelect } = $props();
+     7	
+     8	  let el;
+     9	  // The graph instance lives outside Svelte&#x27;s reactive system on purpose:
+    10	  // 3d-force-graph mutates its own data and runs its own render loop.
+    11	  let graph;
+    12	  const meshes = new Map(); // node id → THREE.Mesh, for the pulse loop
+    13	  let highlightSet = new Set();
+    14	  let raf;
+    15	
+    16	  const LEVEL = {
+    17	    company: { color: &#x27;#f5c542&#x27;, size: 10 },
+    18	    objective: { color: &#x27;#4f9cff&#x27;, size: 6.5 },
+    19	    kr: { color: &#x27;#5ad38a&#x27;, size: 3.6 }
+    20	  };
+    21	  const WHITE = new THREE.Color(&#x27;#ffffff&#x27;);
+    22	  const RED = new THREE.Color(&#x27;#ff3b30&#x27;);
+    23	
+    24	  // contributes 0 → red, 1 → green
+    25	  function linkColor(c) {
+    26	    const t = Math.max(0, Math.min(1, c ?? 0.5));
+    27	    return `hsl(${Math.round(120 * t)}, 75%, ${52 - 10 * t}%)`;
+    28	  }
+    29	
+    30	  const esc = (s) =&gt; String(s ?? &#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;]/g, (ch) =&gt; ({ &#x27;&amp;&#x27;: &#x27;&amp;amp;&#x27;, &#x27;&lt;&#x27;: &#x27;&amp;lt;&#x27;, &#x27;&gt;&#x27;: &#x27;&amp;gt;&#x27;, &#x27;&quot;&#x27;: &#x27;&amp;quot;&#x27; })[ch]);
+    31	
+    32	  function makeNodeObject(node) {
+    33	    const cfg = LEVEL[node.level] ?? LEVEL.kr;
+    34	    const mesh = new THREE.Mesh(
+    35	      new THREE.SphereGeometry(cfg.size, 24, 24),
+    36	      new THREE.MeshLambertMaterial({ color: cfg.color, transparent: true, opacity: 0.95 })
+    37	    );
+    38	    mesh.userData.baseColor = new THREE.Color(cfg.color);
+    39	    meshes.set(node.id, mesh);
+    40	    return mesh;
+    41	  }
+    42	
+    43	  // Reuse existing node objects (they carry x/y/z) so an edit nudges the
+    44	  // layout instead of re-heating the whole simulation.
+    45	  function toGraphData(t, prev) {
+    46	    const prevById = new Map((prev?.nodes ?? []).map((n) =&gt; [n.id, n]));
+    47	    const nodes = t.nodes.map((n) =&gt; {
+    48	      const existing = prevById.get(n.id);
+    49	      return existing ? Object.assign(existing, n) : { ...n };
+    50	    });
+    51	    const ids = new Set(nodes.map((n) =&gt; n.id));
+    52	    const links = t.nodes
+    53	      .filter((n) =&gt; n.parent &amp;&amp; ids.has(n.parent))
+    54	      .map((n) =&gt; ({ source: n.parent, target: n.id, contributes: n.contributes ?? 0.5 }));
+    55	    return { nodes, links };
+    56	  }
+    57	
+    58	  export function flyTo(ids, ms = 1200) {
+    59	    if (!graph || !ids?.length) return;
+    60	    const want = new Set(ids);
+    61	    const nodes = graph.graphData().nodes.filter((n) =&gt; want.has(n.id) &amp;&amp; Number.isFinite(n.x));
+    62	    if (!nodes.length) return;
+    63	    const c = { x: 0, y: 0, z: 0 };
+    64	    for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
+    65	    c.x /= nodes.length; c.y /= nodes.length; c.z /= nodes.length;
+    66	    let radius = 0;
+    67	    for (const n of nodes) radius = Math.max(radius, Math.hypot(n.x - c.x, n.y - c.y, n.z - c.z));
+    68	    const dist = Math.max(140, radius * 2.2 + 120);
+    69	    // Approach along the camera&#x27;s current bearing so the move feels continuous.
+    70	    const cam = graph.cameraPosition();
+    71	    const dir = new THREE.Vector3(cam.x - c.x, cam.y - c.y, cam.z - c.z);
+    72	    if (dir.length() &lt; 1) dir.set(0, 0.3, 1);
+    73	    dir.normalize();
+    74	    graph.cameraPosition({ x: c.x + dir.x * dist, y: c.y + dir.y * dist, z: c.z + dir.z * dist }, c, ms);
+    75	  }
+    76	
+    77	  function animate() {
+    78	    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
+    79	    for (const [id, mesh] of meshes) {
+    80	      const hi = highlightSet.has(id);
+    81	      const sel = id === selectedId;
+    82	      const target = hi ? 1.3 + 0.35 * pulse : sel ? 1.35 : 1;
+    83	      mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.2);
+    84	      const mat = mesh.material;
+    85	      if (hi) {
+    86	        mat.color.copy(RED).lerp(WHITE, 0.25 * pulse);
+    87	        mat.emissive.copy(RED);
+    88	        mat.emissiveIntensity = 0.3 + 0.7 * pulse;
+    89	      } else if (sel) {
+    90	        mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.5);
+    91	        mat.emissive.copy(mesh.userData.baseColor);
+    92	        mat.emissiveIntensity = 0.5;
+    93	      } else {
+    94	        mat.color.copy(mesh.userData.baseColor);
+    95	        mat.emissiveIntensity = 0;
+    96	      }
+    97	    }
+    98	    raf = requestAnimationFrame(animate);
+    99	  }
+   100	
+   101	  onMount(() =&gt; {
+   102	    graph = ForceGraph3D()(el)
+   103	      .backgroundColor(&#x27;#0b0f17&#x27;)
+   104	      .dagMode(&#x27;td&#x27;)
+   105	      .dagLevelDistance(90)
+   106	      .onDagError((loopIds) =&gt; console.warn(&#x27;DAG cycle, falling back to free layout&#x27;, loopIds))
+   107	      .nodeId(&#x27;id&#x27;)
+   108	      .nodeLabel((n) =&gt; `&lt;div class=&quot;tip&quot;&gt;&lt;b&gt;${esc(n.label)}&lt;/b&gt;&lt;span&gt;${esc(n.owner)}${n.target ? &#x27; · &#x27; + esc(n.target) : &#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;`)
+   109	      .nodeThreeObject(makeNodeObject)
+   110	      .linkWidth((l) =&gt; 0.5 + 2.8 * (l.contributes ?? 0.5))
+   111	      .linkColor((l) =&gt; linkColor(l.contributes))
+   112	      .linkOpacity(0.9)
+   113	      .linkDirectionalParticles((l) =&gt; ((l.contributes ?? 0.5) &gt;= 0.4 ? 2 : 0))
+   114	      .linkDirectionalParticleWidth(1.4)
+   115	      .linkDirectionalParticleSpeed(0.005)
+   116	      .d3VelocityDecay(0.3)
+   117	      .warmupTicks(80)
+   118	      .onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })
+   119	      .onBackgroundClick(() =&gt; onSelect?.(null));
+   120	    graph.d3Force(&#x27;charge&#x27;).strength(-160);
+   121	
+   122	    graph.graphData(toGraphData(tree, null));
+   123	    const ro = new ResizeObserver(() =&gt; graph.width(el.clientWidth).height(el.clientHeight));
+   124	    ro.observe(el);
+   125	    setTimeout(() =&gt; graph.zoomToFit(900, 60), 700);
+   126	    animate();
+   127	
+   128	    return () =&gt; {
+   129	      cancelAnimationFrame(raf);
+   130	      ro.disconnect();
+   131	      graph._destructor?.();
+   132	    };
+   133	  });
+   134	
+   135	  $effect(() =&gt; {
+   136	    const t = tree;
+   137	    if (!graph) return;
+   138	    graph.graphData(toGraphData(t, graph.graphData()));
+   139	    const alive = new Set(t.nodes.map((n) =&gt; n.id));
+   140	    for (const id of [...meshes.keys()]) if (!alive.has(id)) meshes.delete(id);
+   141	  });
+   142	
+   143	  $effect(() =&gt; {
+   144	    highlightSet = new Set(highlight);
+   145	    if (highlight.length) flyTo(highlight);
+   146	  });
+   147	&lt;/script&gt;
+   148	
+   149	&lt;div class=&quot;graph&quot; bind:this={el}&gt;&lt;/div&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-07-434Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-07-434Z" class="timestamp-link"><time datetime="2026-09-11T21:09:07.434Z" data-timestamp="2026-09-11T21:09:07.434Z">2026-09-11T21:09:07.434Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-11-067Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-11-067Z" class="timestamp-link"><time datetime="2026-09-11T21:09:11.067Z" data-timestamp="2026-09-11T21:09:11.067Z">2026-09-11T21:09:11.067Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Di3KbuMbfiJ1t87N4d8Bne">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Verify library reference citations</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; sed -n &#39;300,345p&#39; web/node_modules/three-render-objects/dist/three-render-objects.mjs &amp;&amp; echo &#34;=== 480-490 ===&#34; &amp;&amp; sed -n &#39;480,490p;600,610p&#39; web/node_modules/three-render-objects/dist/three-render-objects.mjs &amp;&amp; echo &#34;=== 3dfg 270-290 ===&#34; &amp;&amp; sed -n &#39;270,290p&#39; web/node_modules/3d-force-graph/dist/3d-force-graph.mjs &amp;&amp; echo &#34;=== TB 145-150, 375-385, 505-515 ===&#34; &amp;&amp; sed -n &#39;145,150p;375,385p;505,515p&#39; web/node_modules/three/examples/jsm/controls/TrackballControls.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-09-11-124Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-09-11-124Z" class="timestamp-link"><time datetime="2026-09-11T21:09:11.124Z" data-timestamp="2026-09-11T21:09:11.124Z">2026-09-11T21:09:11.124Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>        y = _state$pointerPos.y;
+      return {
+        x: x,
+        y: y
+      };
+    },
+    cameraPosition: function cameraPosition(state, position, lookAt, transitionDuration) {
+      var camera = state.camera;
+
+      // Setter
+      if (position &amp;&amp; state.initialised) {
+        var _state$povPosTween, _state$povTgtTween;
+        var finalPos = position;
+        var finalLookAt = lookAt || {
+          x: 0,
+          y: 0,
+          z: 0
+        };
+
+        // cancel any ongoing pov animation
+        (_state$povPosTween = state.povPosTween) === null || _state$povPosTween === void 0 || _state$povPosTween.end();
+        (_state$povTgtTween = state.povTgtTween) === null || _state$povTgtTween === void 0 || _state$povTgtTween.end();
+        if (!transitionDuration) {
+          // no animation
+          setCameraPos(finalPos);
+          setLookAt(finalLookAt);
+        } else {
+          var camPos = Object.assign({}, camera.position);
+          var camLookAt = getLookAt();
+          state.tweenGroup.add(state.povPosTween = new Tween(camPos).to(finalPos, transitionDuration).easing(Easing.Quadratic.Out).onUpdate(setCameraPos).onComplete(function () {
+            state.povPosTween = undefined;
+            state.tweenGroup.remove(this);
+          }).start());
+
+          // Face direction in 1/3rd of time
+          state.tweenGroup.add(state.povTgtTween = new Tween(camLookAt).to(finalLookAt, transitionDuration / 3).easing(Easing.Quadratic.Out).onUpdate(setLookAt).onComplete(function () {
+            state.povTgtTween = undefined;
+            state.tweenGroup.remove(this);
+          }).start());
+        }
+        return this;
+      }
+
+      // Getter
+      return Object.assign({}, camera.position, {
+        lookAt: getLookAt()
+=== 480-490 ===
+      lastRaycasterCheck: 0
+    };
+  },
+  init: function init(domNode, state) {
+    var _ref4 = arguments.length &gt; 2 &amp;&amp; arguments[2] !== undefined ? arguments[2] : {},
+      _ref4$controlType = _ref4.controlType,
+      controlType = _ref4$controlType === void 0 ? &#x27;trackball&#x27; : _ref4$controlType,
+      _ref4$useWebGPU = _ref4.useWebGPU,
+      useWebGPU = _ref4$useWebGPU === void 0 ? false : _ref4$useWebGPU,
+      _ref4$rendererConfig = _ref4.rendererConfig,
+      rendererConfig = _ref4$rendererConfig === void 0 ? {} : _ref4$rendererConfig,
+    state.postProcessingComposer.addPass(new RenderPass(state.scene, state.camera)); // render scene as first pass
+
+    // configure controls
+    state.controls = new {
+      trackball: TrackballControls,
+      orbit: OrbitControls,
+      fly: FlyControls
+    }[controlType](state.camera, state.renderer.domElement);
+    if (controlType === &#x27;fly&#x27;) {
+      state.controls.movementSpeed = 300;
+      state.controls.rollSpeed = Math.PI / 6;
+=== 3dfg 270-290 ===
+      state.animationFrameRequestId = requestAnimationFrame(this._animationCycle);
+    },
+    scene: function scene(state) {
+      return state.renderObjs.scene();
+    },
+    // Expose scene
+    camera: function camera(state) {
+      return state.renderObjs.camera();
+    },
+    // Expose camera
+    renderer: function renderer(state) {
+      return state.renderObjs.renderer();
+    },
+    // Expose renderer
+    controls: function controls(state) {
+      return state.renderObjs.controls();
+    },
+    // Expose controls
+    _destructor: function _destructor(state) {
+      var _state$forceGraph$_de, _state$forceGraph2;
+      this.pauseAnimation();
+=== TB 145-150, 375-385, 505-515 ===
+		 * @default false
+		 */
+		this.staticMoving = false;
+
+		/**
+		 * Defines the intensity of damping. Only considered if `staticMoving` is set to `false`.
+		this.object.position.addVectors( this.target, this._eye );
+
+		if ( this.object.isPerspectiveCamera ) {
+
+			this._checkDistances();
+
+			this.object.lookAt( this.target );
+
+			const positionChanged = this._lastPosition.distanceToSquared( this.object.position ) &gt; _EPS;
+			const rollChanged = this._lastUp.distanceToSquared( this.object.up ) &gt; _EPS;
+
+
+			angle *= this.rotateSpeed;
+			_quaternion.setFromAxisAngle( _axis, angle );
+
+			this._eye.applyQuaternion( _quaternion );
+			this.object.up.applyQuaternion( _quaternion );
+
+			this._lastAxis.copy( _axis );
+			this._lastAngle = angle;
+
+		} else if ( ! this.staticMoving &amp;&amp; this._lastAngle ) {</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-25-599Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-25-599Z" class="timestamp-link"><time datetime="2026-09-11T21:09:25.599Z" data-timestamp="2026-09-11T21:09:25.599Z">2026-09-11T21:09:25.599Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-25-789Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-25-789Z" class="timestamp-link"><time datetime="2026-09-11T21:09:25.789Z" data-timestamp="2026-09-11T21:09:25.789Z">2026-09-11T21:09:25.789Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>All plan citations check out against the worktree. Now applying the edits.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-40-083Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-40-083Z" class="timestamp-link"><time datetime="2026-09-11T21:09:40.083Z" data-timestamp="2026-09-11T21:09:40.083Z">2026-09-11T21:09:40.083Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01L7NGMjaMGYvLXnDDpwN3Ug">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Apply camera levelling edits to Graph.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; python3 - &lt;&lt;&#39;PY&#39;
+import io, re
+p = &#39;web/src/Graph.svelte&#39;
+s = io.open(p, encoding=&#39;utf-8&#39;).read()
+orig = s
+
+# 1. constants next to `let raf;`
+old = &#34;  let highlightSet = new Set();\n  let raf;\n&#34;
+new = (&#34;  let highlightSet = new Set();\n  let raf;\n&#34;
+       &#34;  const WORLD_UP = new THREE.Vector3(0, 1, 0);\n&#34;
+       &#34;  // { from, to, start, ms } while a programmatic move is re-levelling camera.up.\n&#34;
+       &#34;  let upTween = null;\n&#34;)
+assert s.count(old) == 1
+s = s.replace(old, new)
+
+# 2. levelCamera() before flyTo
+old = &#34;  export function flyTo(ids, ms = 1200) {\n&#34;
+new = &#39;&#39;&#39;  // Trackball lets the user roll `camera.up` freely; every programmatic move
+  // tweens it back to world up over the flight so the view un-rolls smoothly.
+  function levelCamera(ms) {
+    if (!graph) return;
+    const cam = graph.camera();
+    const controls = graph.controls();
+    if (!cam || !controls) return;
+    const from = cam.up.clone().normalize();
+    const view = controls.target.clone().sub(cam.position).normalize();
+    // Looking (almost) straight down the tree makes lookAt with up = +Y undefined.
+    let to = WORLD_UP.clone();
+    if (Math.abs(view.dot(WORLD_UP)) &gt; 0.98) to = new THREE.Vector3(0, 0, -1);
+    if (from.distanceToSquared(to) &lt; 1e-6) { upTween = null; return; }
+    // Upside down: a straight lerp would pass through the origin, so nudge off the antipode.
+    if (from.dot(to) &lt; -0.999) {
+      const nudge = view.clone().cross(to);
+      if (nudge.lengthSq() &lt; 1e-6) nudge.set(1, 0, 0);
+      from.addScaledVector(nudge.normalize(), 0.01).normalize();
+    }
+    upTween = { from, to, start: performance.now(), ms };
+  }
+
+  export function flyTo(ids, ms = 1200) {
+&#39;&#39;&#39;
+assert s.count(old) == 1
+s = s.replace(old, new)
+
+# 3. levelCamera(ms) in flyTo after the early returns
+old = &#34;    if (!nodes.length) return;\n&#34;
+new = &#34;    if (!nodes.length) return;\n    levelCamera(ms);\n&#34;
+assert s.count(old) == 1
+s = s.replace(old, new)
+
+# 4. animate(): drive the up tween before the mesh loop
+old = &#34;  function animate() {\n    const pulse =&#34;
+new = &#39;&#39;&#39;  function animate() {
+    if (upTween) {
+      const cam = graph?.camera();
+      if (!cam) {
+        upTween = null;
+      } else {
+        const t = Math.min(1, (performance.now() - upTween.start) / upTween.ms);
+        if (t &gt;= 1) {
+          cam.up.copy(upTween.to);
+          upTween = null;
+        } else {
+          // Quadratic.Out, matching the library&#39;s position tween.
+          const e = 1 - (1 - t) ** 2;
+          // Lerp + normalize is fine here: the arc is short and lookAt re-orthogonalises.
+          cam.up.copy(upTween.from).lerp(upTween.to, e).normalize();
+        }
+      }
+    }
+    const pulse =&#39;&#39;&#39;
+assert s.count(old) == 1
+s = s.replace(old, new)
+
+# 5. staticMoving + dev handle in onMount
+old = &#34;    graph.d3Force(&#39;charge&#39;).strength(-160);\n&#34;
+new = (&#34;    graph.d3Force(&#39;charge&#39;).strength(-160);\n&#34;
+       &#34;    // Inertia would keep rotating camera.up while we tween it; the tradeoff is\n&#34;
+       &#34;    // that user tumbling no longer coasts.\n&#34;
+       &#34;    graph.controls().staticMoving = true;\n&#34;
+       &#34;    if (import.meta.env.DEV) window.__graph = graph;\n&#34;)
+assert s.count(old) == 1
+s = s.replace(old, new)
+
+# 6. level after zoomToFit
+old = &#34;    setTimeout(() =&gt; graph.zoomToFit(900, 60), 700);\n&#34;
+new = &#34;    setTimeout(() =&gt; { graph.zoomToFit(900, 60); levelCamera(900); }, 700);\n&#34;
+assert s.count(old) == 1
+s = s.replace(old, new)
+
+assert s != orig
+io.open(p, &#39;w&#39;, encoding=&#39;utf-8&#39;).write(s)
+print(&#34;patched&#34;)
+PY</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-09-41-701Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-09-41-701Z" class="timestamp-link"><time datetime="2026-09-11T21:09:41.701Z" data-timestamp="2026-09-11T21:09:41.701Z">2026-09-11T21:09:41.701Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>patched</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-43-823Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-43-823Z" class="timestamp-link"><time datetime="2026-09-11T21:09:43.823Z" data-timestamp="2026-09-11T21:09:43.823Z">2026-09-11T21:09:43.823Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01C7brerBpzj1EqGtJ4mXSJs">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Review the diff</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; git diff</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-09-45-128Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-09-45-128Z" class="timestamp-link"><time datetime="2026-09-11T21:09:45.128Z" data-timestamp="2026-09-11T21:09:45.128Z">2026-09-11T21:09:45.128Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>diff --git a/web/src/Graph.svelte b/web/src/Graph.svelte
+index 9a80753..d0cad87 100644
+--- a/web/src/Graph.svelte
++++ b/web/src/Graph.svelte
+@@ -12,6 +12,9 @@
+   const meshes = new Map(); // node id → THREE.Mesh, for the pulse loop
+   let highlightSet = new Set();
+   let raf;
++  const WORLD_UP = new THREE.Vector3(0, 1, 0);
++  // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
++  let upTween = null;
+ 
+   const LEVEL = {
+     company: { color: &#x27;#f5c542&#x27;, size: 10 },
+@@ -55,11 +58,34 @@
+     return { nodes, links };
+   }
+ 
++  // Trackball lets the user roll `camera.up` freely; every programmatic move
++  // tweens it back to world up over the flight so the view un-rolls smoothly.
++  function levelCamera(ms) {
++    if (!graph) return;
++    const cam = graph.camera();
++    const controls = graph.controls();
++    if (!cam || !controls) return;
++    const from = cam.up.clone().normalize();
++    const view = controls.target.clone().sub(cam.position).normalize();
++    // Looking (almost) straight down the tree makes lookAt with up = +Y undefined.
++    let to = WORLD_UP.clone();
++    if (Math.abs(view.dot(WORLD_UP)) &gt; 0.98) to = new THREE.Vector3(0, 0, -1);
++    if (from.distanceToSquared(to) &lt; 1e-6) { upTween = null; return; }
++    // Upside down: a straight lerp would pass through the origin, so nudge off the antipode.
++    if (from.dot(to) &lt; -0.999) {
++      const nudge = view.clone().cross(to);
++      if (nudge.lengthSq() &lt; 1e-6) nudge.set(1, 0, 0);
++      from.addScaledVector(nudge.normalize(), 0.01).normalize();
++    }
++    upTween = { from, to, start: performance.now(), ms };
++  }
++
+   export function flyTo(ids, ms = 1200) {
+     if (!graph || !ids?.length) return;
+     const want = new Set(ids);
+     const nodes = graph.graphData().nodes.filter((n) =&gt; want.has(n.id) &amp;&amp; Number.isFinite(n.x));
+     if (!nodes.length) return;
++    levelCamera(ms);
+     const c = { x: 0, y: 0, z: 0 };
+     for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
+     c.x /= nodes.length; c.y /= nodes.length; c.z /= nodes.length;
+@@ -75,6 +101,23 @@
+   }
+ 
+   function animate() {
++    if (upTween) {
++      const cam = graph?.camera();
++      if (!cam) {
++        upTween = null;
++      } else {
++        const t = Math.min(1, (performance.now() - upTween.start) / upTween.ms);
++        if (t &gt;= 1) {
++          cam.up.copy(upTween.to);
++          upTween = null;
++        } else {
++          // Quadratic.Out, matching the library&#x27;s position tween.
++          const e = 1 - (1 - t) ** 2;
++          // Lerp + normalize is fine here: the arc is short and lookAt re-orthogonalises.
++          cam.up.copy(upTween.from).lerp(upTween.to, e).normalize();
++        }
++      }
++    }
+     const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
+     for (const [id, mesh] of meshes) {
+       const hi = highlightSet.has(id);
+@@ -118,11 +161,15 @@
+       .onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })
+       .onBackgroundClick(() =&gt; onSelect?.(null));
+     graph.d3Force(&#x27;charge&#x27;).strength(-160);
++    // Inertia would keep rotating camera.up while we tween it; the tradeoff is
++    // that user tumbling no longer coasts.
++    graph.controls().staticMoving = true;
++    if (import.meta.env.DEV) window.__graph = graph;
+ 
+     graph.graphData(toGraphData(tree, null));
+     const ro = new ResizeObserver(() =&gt; graph.width(el.clientWidth).height(el.clientHeight));
+     ro.observe(el);
+-    setTimeout(() =&gt; graph.zoomToFit(900, 60), 700);
++    setTimeout(() =&gt; { graph.zoomToFit(900, 60); levelCamera(900); }, 700);
+     animate();
+ 
+     return () =&gt; {</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-47-732Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-47-732Z" class="timestamp-link"><time datetime="2026-09-11T21:09:47.732Z" data-timestamp="2026-09-11T21:09:47.732Z">2026-09-11T21:09:47.732Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-49-436Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-49-436Z" class="timestamp-link"><time datetime="2026-09-11T21:09:49.436Z" data-timestamp="2026-09-11T21:09:49.436Z">2026-09-11T21:09:49.436Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_016X2gUvfwpFo9vcLruqP8P1">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check web package config and docker container</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; cat web/package.json &amp;&amp; ls web &amp;&amp; docker ps --format &#39;{{.Names}}&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-09-49-506Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-09-49-506Z" class="timestamp-link"><time datetime="2026-09-11T21:09:49.506Z" data-timestamp="2026-09-11T21:09:49.506Z">2026-09-11T21:09:49.506Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>{
+  &quot;name&quot;: &quot;okr-viewer-web&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;,
+    &quot;preview&quot;: &quot;vite preview&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@okr-viewer/schema&quot;: &quot;^0.1.0&quot;,
+    &quot;3d-force-graph&quot;: &quot;^1.80.0&quot;,
+    &quot;three&quot;: &quot;&gt;=0.179 &lt;1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@sveltejs/vite-plugin-svelte&quot;: &quot;^7.3.0&quot;,
+    &quot;svelte&quot;: &quot;^5.57.0&quot;,
+    &quot;vite&quot;: &quot;^8.3.0&quot;
+  }
+}
+index.html
+node_modules
+package.json
+src
+vite.config.js
+dev</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-51-278Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-51-278Z" class="timestamp-link"><time datetime="2026-09-11T21:09:51.278Z" data-timestamp="2026-09-11T21:09:51.278Z">2026-09-11T21:09:51.278Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01XMm8CTBWR1LyWqBCGkdfTc">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Build the web app in dev container</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">docker exec -w /src/.worktrees/camera-level/web dev npm run build 2&gt;&amp;1 | tail -30</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-09-55-454Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-09-55-454Z" class="timestamp-link"><time datetime="2026-09-11T21:09:55.454Z" data-timestamp="2026-09-11T21:09:55.454Z">2026-09-11T21:09:55.454Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>&gt; okr-viewer-web@0.1.0 build
+&gt; vite build
+
+9:09:54 PM [vite-plugin-svelte] no Svelte config found at /src/.worktrees/camera-level/web - using default configuration.
+vite v8.3.0 building client environment for production...
+transforming...
+✓ 501 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                     0.39 kB │ gzip:   0.26 kB
+dist/assets/index-D89q5GNf.css      5.73 kB │ gzip:   1.84 kB
+dist/assets/index-BOav_edI.js   1,560.24 kB │ gzip: 407.01 kB
+
+✓ built in 933ms
+[plugin builtin:vite-reporter] 
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-57-486Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-57-486Z" class="timestamp-link"><time datetime="2026-09-11T21:09:57.486Z" data-timestamp="2026-09-11T21:09:57.486Z">2026-09-11T21:09:57.486Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-09-58-858Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-09-58-858Z" class="timestamp-link"><time datetime="2026-09-11T21:09:58.858Z" data-timestamp="2026-09-11T21:09:58.858Z">2026-09-11T21:09:58.858Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_015bXnvUsrvPcYFSzdueGSu6">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check dev-only guard stripped and staticMoving present in prod bundle</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level/web &amp;&amp; grep -c &#34;__graph&#34; dist/assets/index-BOav_edI.js; echo &#34;exit=$?&#34;; grep -o &#34;staticMoving=!0&#34; dist/assets/index-BOav_edI.js | head -3</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-00-338Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-00-338Z" class="timestamp-link"><time datetime="2026-09-11T21:10:00.338Z" data-timestamp="2026-09-11T21:10:00.338Z">2026-09-11T21:10:00.338Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>2
+exit=0
+staticMoving=!0</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-01-774Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-01-774Z" class="timestamp-link"><time datetime="2026-09-11T21:10:01.774Z" data-timestamp="2026-09-11T21:10:01.774Z">2026-09-11T21:10:01.774Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-02-755Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-02-755Z" class="timestamp-link"><time datetime="2026-09-11T21:10:02.755Z" data-timestamp="2026-09-11T21:10:02.755Z">2026-09-11T21:10:02.755Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01CQNrNSEyb6Y78LBqbXA4NV">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Inspect __graph occurrences in bundle</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level/web &amp;&amp; grep -o &#34;.\{80\}__graph.\{60\}&#34; dist/assets/index-BOav_edI.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-02-798Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-02-798Z" class="timestamp-link"><time datetime="2026-09-11T21:10:02.798Z" data-timestamp="2026-09-11T21:10:02.798Z">2026-09-11T21:10:02.798Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>.concat.apply(r,Lx((n.children||[]).filter(function(e){return!e.hasOwnProperty(`__graphObjType`)||e.__graphObjType===`node`&amp;&amp;t(e.__data)}).map(e)))
+n&amp;&amp;e.nodeThreeObject===n&amp;&amp;(n=n.clone());var o;return n&amp;&amp;!a?o=n:(o=new $x.Mesh,o.__graphDefaultObj=!0,n&amp;&amp;a&amp;&amp;o.add(n)),o.__graphObjType=`node`,o}).on
+te(new Float32Array(6),3)),i=new $x.Line(a)}}var o;return n?r?(o=new $x.Group,o.__graphDefaultObj=!0,o.add(i),o.add(n)):o=n:(o=i,o.__graphDefaultOb
+!0),o.renderOrder=10,o.__graphObjType=`link`,o}).onUpdateObj(function(t,n){if(t.__graphDefaultObj){var r=t.children.length?t.children[0]:t,i=Math.c
+stener(`drag`,function(e){var n=fY(e.object);if(n){if(!e.object.hasOwnProperty(`__graphObjType`)){var r=e.object.__initialPos,i=e.object.__prevPos,
+ar n=fY(e);if(!n)return 1;var r=fY(t);if(!r)return-1;var i=function(e){return e.__graphObjType===`node`};return i(r)-i(n)}).tooltipContent(function
+.onHover(function(e){var n=fY(e);if(n!==t.hoverObj){var r=t.hoverObj?t.hoverObj.__graphObjType:null,a=t.hoverObj?t.hoverObj.__data:null,o=n?n.__gra
+=n}}).clickAfterDrag(!1).onClick(function(e,n){var r=fY(e);if(r){var i=t[`on${r.__graphObjType===`node`?`Node`:`Link`}Click`];i&amp;&amp;i(r.__data,n)}else
+ackgroundClick(n)}).onRightClick(function(e,n){var r=fY(e);if(r){var i=t[`on${r.__graphObjType===`node`?`Node`:`Link`}RightClick`];i&amp;&amp;i(r.__data,n)
+n)}),this._animationCycle()}});function fY(e){for(var t=e;t&amp;&amp;!t.hasOwnProperty(`__graphObjType`);)t=t.parent;return t}var pY=Lr(`&lt;div class=&quot;graph&quot;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-04-753Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-04-753Z" class="timestamp-link"><time datetime="2026-09-11T21:10:04.753Z" data-timestamp="2026-09-11T21:10:04.753Z">2026-09-11T21:10:04.753Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-05-973Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-05-973Z" class="timestamp-link"><time datetime="2026-09-11T21:10:05.973Z" data-timestamp="2026-09-11T21:10:05.973Z">2026-09-11T21:10:05.973Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01RnApDvdQGLpcwV7TE2pAAC">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Confirm dev-only window handle stripped</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level/web &amp;&amp; grep -c &#34;window.__graph\|__graph=&#34; dist/assets/index-BOav_edI.js || echo &#34;not present (DEV guard stripped in prod)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-06-005Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-06-005Z" class="timestamp-link"><time datetime="2026-09-11T21:10:06.005Z" data-timestamp="2026-09-11T21:10:06.005Z">2026-09-11T21:10:06.005Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>0
+not present (DEV guard stripped in prod)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-11-065Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-11-065Z" class="timestamp-link"><time datetime="2026-09-11T21:10:11.065Z" data-timestamp="2026-09-11T21:10:11.065Z">2026-09-11T21:10:11.065Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-11-478Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-11-478Z" class="timestamp-link"><time datetime="2026-09-11T21:10:11.478Z" data-timestamp="2026-09-11T21:10:11.478Z">2026-09-11T21:10:11.478Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Now a headless check of the tween math itself, using the real three.js.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-25-533Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-25-533Z" class="timestamp-link"><time datetime="2026-09-11T21:10:25.533Z" data-timestamp="2026-09-11T21:10:25.533Z">2026-09-11T21:10:25.533Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01RJR7iwDw3yUzoW6y7BEZAV">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Run headless math check of camera levelling</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; cat &gt; web/.tmp-camera-check.mjs &lt;&lt;&#39;JS&#39;
+import * as THREE from &#39;three&#39;;
+
+// --- verbatim logic from Graph.svelte (levelCamera + the animate() tween block) ---
+const WORLD_UP = new THREE.Vector3(0, 1, 0);
+let upTween = null;
+
+function levelCamera(cam, controls, ms) {
+  const from = cam.up.clone().normalize();
+  const view = controls.target.clone().sub(cam.position).normalize();
+  let to = WORLD_UP.clone();
+  if (Math.abs(view.dot(WORLD_UP)) &gt; 0.98) to = new THREE.Vector3(0, 0, -1);
+  if (from.distanceToSquared(to) &lt; 1e-6) { upTween = null; return; }
+  if (from.dot(to) &lt; -0.999) {
+    const nudge = view.clone().cross(to);
+    if (nudge.lengthSq() &lt; 1e-6) nudge.set(1, 0, 0);
+    from.addScaledVector(nudge.normalize(), 0.01).normalize();
+  }
+  upTween = { from, to, start: 0, ms };
+}
+
+function step(cam, now) {
+  if (!upTween) return;
+  const t = Math.min(1, (now - upTween.start) / upTween.ms);
+  if (t &gt;= 1) { cam.up.copy(upTween.to); upTween = null; }
+  else {
+    const e = 1 - (1 - t) ** 2;
+    cam.up.copy(upTween.from).lerp(upTween.to, e).normalize();
+  }
+}
+
+function run(name, camUp, camPos, target, ms = 900) {
+  const cam = new THREE.PerspectiveCamera();
+  cam.position.copy(camPos);
+  cam.up.copy(camUp).normalize();
+  const controls = { target: target.clone() };
+  upTween = null;
+  levelCamera(cam, controls, ms);
+  let bad = 0, frames = 0;
+  for (let now = 0; now &lt;= ms + 20; now += 16) {
+    step(cam, now);
+    frames++;
+    if (!Number.isFinite(cam.up.x + cam.up.y + cam.up.z)) bad++;
+    if (Math.abs(cam.up.length() - 1) &gt; 1e-6) bad++;
+    // lookAt must produce a finite matrix every frame
+    cam.lookAt(controls.target);
+    if (!cam.matrixWorld.elements.every(Number.isFinite)) bad++;
+  }
+  const f = (v) =&gt; `(${v.x.toFixed(3)}, ${v.y.toFixed(3)}, ${v.z.toFixed(3)})`;
+  console.log(`${name}\n  frames=${frames} nan/denorm=${bad} tweenCleared=${upTween === null} final up=${f(cam.up)}`);
+}
+
+const V = (x, y, z) =&gt; new THREE.Vector3(x, y, z);
+// rolled ~35 deg about the view axis, looking along -Z
+run(&#39;1. rolled horizon, view along -Z&#39;, V(Math.sin(0.61), Math.cos(0.61), 0), V(0, 0, 400), V(0, 0, 0));
+// straight down the tree: view is -Y -&gt; degenerate, should level to -Z
+run(&#39;2. looking straight down (degenerate)&#39;, V(0, 0, -1).applyAxisAngle(V(0,1,0), 0.4), V(0, 500, 0), V(0, 0, 0));
+// upside down: up is almost exactly -Y
+run(&#39;3. upside down (antipodal)&#39;, V(0.0005, -1, 0), V(0, 0, 400), V(0, 0, 0));
+// already level: no tween at all
+{
+  const cam = new THREE.PerspectiveCamera(); cam.position.set(0,0,400); cam.up.set(0,1,0);
+  upTween = null; levelCamera(cam, { target: V(0,0,0) }, 900);
+  console.log(`4. already level\n  tween created=${upTween !== null} (expect false)`);
+}
+JS
+docker exec -w /src/.worktrees/camera-level/web dev node .tmp-camera-check.mjs</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-27-160Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-27-160Z" class="timestamp-link"><time datetime="2026-09-11T21:10:27.160Z" data-timestamp="2026-09-11T21:10:27.160Z">2026-09-11T21:10:27.160Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>1. rolled horizon, view along -Z
+  frames=58 nan/denorm=0 tweenCleared=true final up=(0.000, 1.000, 0.000)
+2. looking straight down (degenerate)
+  frames=58 nan/denorm=0 tweenCleared=true final up=(0.000, 0.000, -1.000)
+3. upside down (antipodal)
+  frames=58 nan/denorm=0 tweenCleared=true final up=(0.000, 1.000, 0.000)
+4. already level
+  tween created=false (expect false)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-32-030Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-32-030Z" class="timestamp-link"><time datetime="2026-09-11T21:10:32.030Z" data-timestamp="2026-09-11T21:10:32.030Z">2026-09-11T21:10:32.030Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-34-451Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-34-451Z" class="timestamp-link"><time datetime="2026-09-11T21:10:34.451Z" data-timestamp="2026-09-11T21:10:34.451Z">2026-09-11T21:10:34.451Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_014HLMPnrgrSVSwqP3t5z9on">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check container port mappings and vite config</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">rm -f /Users/tmiv74/OKR-Display/.worktrees/camera-level/web/.tmp-camera-check.mjs; docker port dev 2&gt;&amp;1; echo &#34;---&#34;; docker inspect dev --format &#39;{{json .HostConfig.PortBindings}} {{json .NetworkSettings.Ports}}&#39; 2&gt;&amp;1; echo &#34;---&#34;; cat /Users/tmiv74/OKR-Display/.worktrees/camera-level/web/vite.config.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-35-964Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-35-964Z" class="timestamp-link"><time datetime="2026-09-11T21:10:35.964Z" data-timestamp="2026-09-11T21:10:35.964Z">2026-09-11T21:10:35.964Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>5173/tcp -&gt; 0.0.0.0:5173
+5173/tcp -&gt; [::]:5173
+---
+{&quot;5173/tcp&quot;:[{&quot;HostIp&quot;:&quot;&quot;,&quot;HostPort&quot;:&quot;5173&quot;}]} {&quot;5173/tcp&quot;:[{&quot;HostIp&quot;:&quot;0.0.0.0&quot;,&quot;HostPort&quot;:&quot;5173&quot;},{&quot;HostIp&quot;:&quot;::&quot;,&quot;HostPort&quot;:&quot;5173&quot;}]}
+---
+import { defineConfig } from &#x27;vite&#x27;;
+import { svelte } from &#x27;@sveltejs/vite-plugin-svelte&#x27;;
+
+export default defineConfig({
+  plugins: [svelte()],
+  // Dev-only: the browser talks to /api and Vite forwards it to the service,
+  // so the API key never leaves service/.env and there is no CORS to fight.
+  server: {
+    host: &#x27;0.0.0.0&#x27;, // reachable from outside the container / on the LAN
+    proxy: { &#x27;/api&#x27;: &#x27;http://localhost:8787&#x27; }
+  }
+});</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-40-600Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-40-600Z" class="timestamp-link"><time datetime="2026-09-11T21:10:40.600Z" data-timestamp="2026-09-11T21:10:40.600Z">2026-09-11T21:10:40.600Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-41-901Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-41-901Z" class="timestamp-link"><time datetime="2026-09-11T21:10:41.901Z" data-timestamp="2026-09-11T21:10:41.901Z">2026-09-11T21:10:41.901Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01BpWE4CKgJfvKUiZM6woarF">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check if port 5173 is free</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">curl -s -o /dev/null -w &#34;%{http_code}&#34; --max-time 3 http://localhost:5173/ ; echo &#34; &lt;- current 5173 status (000 = nothing listening)&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-43-418Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-43-418Z" class="timestamp-link"><time datetime="2026-09-11T21:10:43.418Z" data-timestamp="2026-09-11T21:10:43.418Z">2026-09-11T21:10:43.418Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>200 &lt;- current 5173 status (000 = nothing listening)</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-53-742Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-53-742Z" class="timestamp-link"><time datetime="2026-09-11T21:10:53.742Z" data-timestamp="2026-09-11T21:10:53.742Z">2026-09-11T21:10:53.742Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-53-744Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-53-744Z" class="timestamp-link"><time datetime="2026-09-11T21:10:53.744Z" data-timestamp="2026-09-11T21:10:53.744Z">2026-09-11T21:10:53.744Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01L8THsx29juq3T9qr9Nspsj">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check when renderObjs is initialised</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level/web &amp;&amp; grep -n &#34;renderObjs&#34; node_modules/3d-force-graph/dist/3d-force-graph.mjs | head -30</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-53-783Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-53-783Z" class="timestamp-link"><time datetime="2026-09-11T21:10:53.783Z" data-timestamp="2026-09-11T21:10:53.783Z">2026-09-11T21:10:53.783Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>155:// Expose config from renderObjs
+156:var bindRenderObjs = linkKapsule(&#x27;renderObjs&#x27;, ThreeRenderObjects);
+182:        return state.renderObjs.lineHoverPrecision(p);
+189:        var controls = state.renderObjs.controls();
+245:      state.renderObjs.fitToBbox((_state$forceGraph = state.forceGraph).getGraphBbox.apply(_state$forceGraph, bboxArgs), transitionDuration, padding);
+269:      state.renderObjs.tick();
+273:      return state.renderObjs.scene();
+277:      return state.renderObjs.camera();
+281:      return state.renderObjs.renderer();
+285:      return state.renderObjs.controls();
+296:      state.renderObjs._destructor();
+306:      renderObjs: ThreeRenderObjects({
+322:    // Add renderObjs
+325:    state.renderObjs(roDomNode);
+326:    var camera = state.renderObjs.camera();
+327:    var renderer = state.renderObjs.renderer();
+328:    var controls = state.renderObjs.controls();
+484:    // config renderObjs
+485:    three.REVISION &lt; 155 &amp;&amp; (state.renderObjs.renderer().useLegacyLights = false); // force behavior for three &lt; 155
+486:    state.renderObjs.hoverOrderComparator(function (a, b) {</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-57-880Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-57-880Z" class="timestamp-link"><time datetime="2026-09-11T21:10:57.880Z" data-timestamp="2026-09-11T21:10:57.880Z">2026-09-11T21:10:57.880Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-10-59-221Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-10-59-221Z" class="timestamp-link"><time datetime="2026-09-11T21:10:59.221Z" data-timestamp="2026-09-11T21:10:59.221Z">2026-09-11T21:10:59.221Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01RDxHxpL1uYmigLV9SEdeg6">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find callers of Graph API outside Graph.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; grep -rn &#34;flyTo\|Graph.svelte\|zoomToFit&#34; web/src --include=*.svelte --include=*.js | grep -v &#34;^web/src/Graph.svelte&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-10-59-260Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-10-59-260Z" class="timestamp-link"><time datetime="2026-09-11T21:10:59.260Z" data-timestamp="2026-09-11T21:10:59.260Z">2026-09-11T21:10:59.260Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>(eval):1: no matches found: --include=*.svelte</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-01-444Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-01-444Z" class="timestamp-link"><time datetime="2026-09-11T21:11:01.444Z" data-timestamp="2026-09-11T21:11:01.444Z">2026-09-11T21:11:01.444Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01BE59tSFaFocHwKvhL5rTFY">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find callers of Graph API outside Graph.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; grep -rn &#34;flyTo\|Graph\b\|zoomToFit&#34; web/src | grep -v &#34;^web/src/Graph.svelte&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-11-01-482Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-11-01-482Z" class="timestamp-link"><time datetime="2026-09-11T21:11:01.482Z" data-timestamp="2026-09-11T21:11:01.482Z">2026-09-11T21:11:01.482Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>web/src/App.svelte:2:  import Graph from &#x27;./Graph.svelte&#x27;;
+web/src/App.svelte:170:      &lt;Graph {tree} {selectedId} {highlight} onSelect={select} /&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-03-804Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-03-804Z" class="timestamp-link"><time datetime="2026-09-11T21:11:03.804Z" data-timestamp="2026-09-11T21:11:03.804Z">2026-09-11T21:11:03.804Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-15-921Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-15-921Z" class="timestamp-link"><time datetime="2026-09-11T21:11:15.921Z" data-timestamp="2026-09-11T21:11:15.921Z">2026-09-11T21:11:15.921Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01RKCdKdBcVoFSmNVSMiigrt">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Update plan status and move to completed</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; python3 - &lt;&lt;&#39;PY&#39;
+import io
+p = &#39;Plans/development/CAMERA_LEVEL_AUTO_MOVES.md&#39;
+s = io.open(p, encoding=&#39;utf-8&#39;).read()
+s = s.replace(&#34;status: development\ncreated: 2026-09-11\n&#34;,
+              &#34;status: completed\ncreated: 2026-09-11\ncompleted_on: 2026-09-11\n&#34;, 1)
+s = s.rstrip(&#39;\n&#39;) + &#39;&#39;&#39;
+
+## Completion notes
+
+- **Planned vs. actual:** every phase landed as written, in one file
+  (`web/src/Graph.svelte`). All `file:line` citations — `flyTo` at `:58-75`, `animate()` at
+  `:77-99`, `zoomToFit` at `:125`, `d3Force` at `:120`, and the four library references under
+  `web/node_modules/` — were re-verified against `main` before editing and were all accurate.
+  `graph.controls()` and `graph.camera()` are both populated synchronously by
+  `ForceGraph3D()(el)` (`3d-force-graph.mjs:325-328`), so the `staticMoving` assignment is safe
+  where the plan put it.
+- **Mid-flight adjustments:** two small hardenings beyond the plan text. The antipodal nudge
+  normalises `view × to` before scaling and falls back to `(1,0,0)` when that cross product is
+  degenerate (view parallel to `to`), otherwise the nudge magnitude would depend on the angle
+  between them and could be zero. `levelCamera` also returns early if `graph.camera()` or
+  `graph.controls()` is missing, and the `animate()` block drops a stale tween if the graph has
+  been torn down.
+- **Surprises / residual risks:** none in the math — a headless harness replaying the exact
+  `levelCamera` + tween code against real `three` confirmed a rolled view converges to
+  `(0.000, 1.000, 0.000)`, the straight-down case to `(0.000, 0.000, -1.000)`, the upside-down
+  case to `(0.000, 1.000, 0.000)`, and an already-level camera creates no tween, with no NaN or
+  denormalised `up` and a finite `lookAt` matrix on every frame. The remaining risk is purely
+  perceptual and was **not** verified in a browser: that the un-roll *looks* smooth rather than
+  abrupt, and that losing trackball inertia (Decision 5) is an acceptable tradeoff in the hand.
+  Both need a human at the app.
+&#39;&#39;&#39;
+io.open(p, &#39;w&#39;, encoding=&#39;utf-8&#39;).write(s)
+print(&#39;plan updated&#39;)
+PY
+git -C /Users/tmiv74/OKR-Display/.worktrees/camera-level mv Plans/development/CAMERA_LEVEL_AUTO_MOVES.md Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md &amp;&amp; ls Plans/completed</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-11-17-315Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-11-17-315Z" class="timestamp-link"><time datetime="2026-09-11T21:11:17.315Z" data-timestamp="2026-09-11T21:11:17.315Z">2026-09-11T21:11:17.315Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>plan updated
+CAMERA_LEVEL_AUTO_MOVES.md
+OKR_SCHEMA_PACKAGE.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-22-197Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-22-197Z" class="timestamp-link"><time datetime="2026-09-11T21:11:22.197Z" data-timestamp="2026-09-11T21:11:22.197Z">2026-09-11T21:11:22.197Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-23-303Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-23-303Z" class="timestamp-link"><time datetime="2026-09-11T21:11:23.303Z" data-timestamp="2026-09-11T21:11:23.303Z">2026-09-11T21:11:23.303Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_012vWPfmgREWNrbAGVN2xHcz">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check gitignore before staging</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; cat .gitignore 2&gt;/dev/null; echo &#34;=== status ===&#34;; git status --short</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-11-24-737Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-11-24-737Z" class="timestamp-link"><time datetime="2026-09-11T21:11:24.737Z" data-timestamp="2026-09-11T21:11:24.737Z">2026-09-11T21:11:24.737Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>node_modules/
+dist/
+.env
+.DS_Store
+*.log
+=== status ===
+RM Plans/development/CAMERA_LEVEL_AUTO_MOVES.md -&gt; Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md
+ M web/src/Graph.svelte
+?? node_modules
+?? service/node_modules
+?? web/node_modules</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-26-892Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-26-892Z" class="timestamp-link"><time datetime="2026-09-11T21:11:26.892Z" data-timestamp="2026-09-11T21:11:26.892Z">2026-09-11T21:11:26.892Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-28-367Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-28-367Z" class="timestamp-link"><time datetime="2026-09-11T21:11:28.367Z" data-timestamp="2026-09-11T21:11:28.367Z">2026-09-11T21:11:28.367Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_019CQMDM64WzvWt37D8SXNtt">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Stage only intended files</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; git add web/src/Graph.svelte Plans/development/CAMERA_LEVEL_AUTO_MOVES.md Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md &amp;&amp; git status --short &amp;&amp; echo &#34;=== staged files ===&#34; &amp;&amp; git diff --cached --name-status</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-11-30-178Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-11-30-178Z" class="timestamp-link"><time datetime="2026-09-11T21:11:30.178Z" data-timestamp="2026-09-11T21:11:30.178Z">2026-09-11T21:11:30.178Z</time></a></div><div class="message-content"><div class="tool-result tool-error"><div class="truncatable"><div class="truncatable-content"><pre>Exit code 128
+fatal: pathspec &#x27;Plans/development/CAMERA_LEVEL_AUTO_MOVES.md&#x27; did not match any files</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-32-348Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-32-348Z" class="timestamp-link"><time datetime="2026-09-11T21:11:32.348Z" data-timestamp="2026-09-11T21:11:32.348Z">2026-09-11T21:11:32.348Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01NrF1JkACsmwGDqWqEJWS7y">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Stage intended files</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; git add web/src/Graph.svelte Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md &amp;&amp; git diff --cached --name-status &amp;&amp; echo &#34;=== unstaged ===&#34; &amp;&amp; git status --short</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-11-34-072Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-11-34-072Z" class="timestamp-link"><time datetime="2026-09-11T21:11:34.072Z" data-timestamp="2026-09-11T21:11:34.072Z">2026-09-11T21:11:34.072Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>R074	Plans/development/CAMERA_LEVEL_AUTO_MOVES.md	Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md
+M	web/src/Graph.svelte
+=== unstaged ===
+R  Plans/development/CAMERA_LEVEL_AUTO_MOVES.md -&gt; Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md
+M  web/src/Graph.svelte
+?? node_modules
+?? service/node_modules
+?? web/node_modules</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-38-777Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-38-777Z" class="timestamp-link"><time datetime="2026-09-11T21:11:38.777Z" data-timestamp="2026-09-11T21:11:38.777Z">2026-09-11T21:11:38.777Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01H7pmKFoZo6eJbJSABtcXqX">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Commit on wt/camera-level</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display/.worktrees/camera-level &amp;&amp; git commit -q -F - &lt;&lt;&#39;MSG&#39; &amp;&amp; git log --oneline -1 &amp;&amp; git status --short
+Level the camera to world up on programmatic moves
+
+flyTo and the initial zoomToFit now tween camera.up back to world +Y with
+Quadratic.Out over the flight duration, so a view the user has rolled with
+the trackball un-rolls smoothly instead of flying tilted. Levels toward -Z
+when the view is within ~11 degrees of world +/-Y, where lookAt with +Y is
+undefined. Trackball staticMoving is on so inertia cannot fight the tween;
+user tumbling still rolls freely.
+
+Co-Authored-By: Claude Opus 5 &lt;noreply@anthropic.com&gt;
+MSG</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T21-11-40-329Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T21-11-40-329Z" class="timestamp-link"><time datetime="2026-09-11T21:11:40.329Z" data-timestamp="2026-09-11T21:11:40.329Z">2026-09-11T21:11:40.329Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>bdf533f Level the camera to world up on programmatic moves
+?? node_modules
+?? service/node_modules
+?? web/node_modules</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-11-42-727Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-11-42-727Z" class="timestamp-link"><time datetime="2026-09-11T21:11:42.727Z" data-timestamp="2026-09-11T21:11:42.727Z">2026-09-11T21:11:42.727Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T21-12-06-142Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T21-12-06-142Z" class="timestamp-link"><time datetime="2026-09-11T21:12:06.142Z" data-timestamp="2026-09-11T21:12:06.142Z">2026-09-11T21:12:06.142Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Done. Committed as <code>bdf533f</code> on <code>wt/camera-level</code>.</p>
+<h2>What changed</h2>
+<p><strong><code>/Users/tmiv74/OKR-Display/.worktrees/camera-level/web/src/Graph.svelte</code></strong> — the only source file touched. Five regions:</p>
+<ol>
+<li><strong>Module scope</strong> (after <code>let raf;</code>, was <code>:14</code>) — added <code>WORLD_UP</code> and <code>let upTween = null;</code>.</li>
+<li><strong>New <code>levelCamera(ms)</code></strong> — inserted between <code>toGraphData()</code> and <code>flyTo()</code> (before old <code>:58</code>). Reads <code>graph.camera()</code> / <code>graph.controls()</code>, computes the view direction, picks <code>+Y</code> or <code>-Z</code> (Decision 4, <code>|view·up| &gt; 0.98</code>), returns early when already level, nudges off the antipode when upside down, and arms <code>upTween</code>.</li>
+<li><strong><code>flyTo()</code></strong> — one line, <code>levelCamera(ms);</code> immediately after the <code>if (!nodes.length) return;</code> early return.</li>
+<li><strong><code>animate()</code></strong> — a block at the top of the function, before the <code>pulse</code>/mesh loop, that advances the tween with <code>e = 1 - (1 - t) ** 2</code> and clears it at <code>t &gt;= 1</code>.</li>
+<li><strong><code>onMount()</code></strong> — after <code>graph.d3Force('charge')</code>: <code>graph.controls().staticMoving = true;</code> and <code>if (import.meta.env.DEV) window.__graph = graph;</code>; and the <code>setTimeout</code> now reads <code>{ graph.zoomToFit(900, 60); levelCamera(900); }</code>.</li>
+</ol>
+<p><strong><code>Plans/development/ → Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md</code></strong> — <code>git mv</code>, <code>status: completed</code>, <code>completed_on: 2026-09-11</code>, plus <code>## Completion notes</code>.</p>
+<p>All plan citations were re-verified before editing and every one was accurate (<code>flyTo</code> 58-75, <code>animate</code> 77-99, <code>zoomToFit</code> :125, <code>d3Force</code> :120, and the four <code>node_modules</code> references). Nothing under <code>node_modules</code> was modified.</p>
+<h2>Verification output</h2>
+<p><strong>Build</strong> (<code>docker exec -w /src/.worktrees/camera-level/web dev npm run build</code>):</p>
+<pre><code>✓ 501 modules transformed.
+dist/assets/index-BOav_edI.js   1,560.24 kB │ gzip: 407.01 kB
+✓ built in 933ms
+</code></pre>
+<p>(The only warning is the pre-existing 500 kB chunk-size notice.) I also confirmed <code>staticMoving=!0</code> is in the production bundle and <code>window.__graph</code> is not — the DEV guard strips correctly.</p>
+<p><strong>Tween math</strong>, exercised headlessly by replaying the exact <code>levelCamera</code> + <code>animate()</code> code against real <code>three</code> over a 900 ms frame sequence, calling <code>lookAt</code> each frame:</p>
+<pre><code>1. rolled horizon, view along -Z
+  frames=58 nan/denorm=0 tweenCleared=true final up=(0.000, 1.000, 0.000)
+2. looking straight down (degenerate)
+  frames=58 nan/denorm=0 tweenCleared=true final up=(0.000, 0.000, -1.000)
+3. upside down (antipodal)
+  frames=58 nan/denorm=0 tweenCleared=true final up=(0.000, 1.000, 0.000)
+4. already level
+  tween created=false (expect false)
+</code></pre>
+<p>That covers the plan's "<code>up</code> reads (0,1,0) to three decimals (or (0,0,-1) in the degenerate case)" and "no NaN camera, no flip" checks. The harness file was deleted, not committed.</p>
+<p>I also confirmed from <code>3d-force-graph.mjs:325-328</code> that <code>camera()</code> and <code>controls()</code> are populated synchronously by <code>ForceGraph3D()(el)</code>, so the <code>staticMoving</code> write in <code>onMount</code> cannot hit an undefined controls object.</p>
+<h2>Not verified</h2>
+<p>Port 5173 already had a dev server running (almost certainly a sibling agent's), so I did <strong>not</strong> start one — taking that port would have disrupted them. Everything needing a live WebGL view remains unverified:</p>
+<ul>
+<li>that the un-roll <em>looks</em> smooth rather than snapping;</li>
+<li>that user tumbling still rolls freely after a flight;</li>
+<li>the "tumble, release mid-drag, immediately click a node" inertia check (Decision 5).</li>
+</ul>
+<p>The code path is straightforward and the numbers are right, but the perceptual judgements need a human at the app.</p>
+<h2>Merge-conflict surface</h2>
+<ul>
+<li><strong><code>web/src/App.svelte</code> — untouched.</strong> No conflict from me.</li>
+<li><strong><code>web/src/Graph.svelte</code></strong> — five regions listed above. The likely collision points with siblings: <strong><code>CLEAR_HIGHLIGHT_ON_SELECT</code></strong> almost certainly edits the <code>onNodeClick</code> / <code>onBackgroundClick</code> chain in <code>onMount</code> and the <code>$effect</code> on <code>highlight</code> that calls <code>flyTo</code> — my <code>onMount</code> insertion is two lines below <code>.onBackgroundClick(...)</code> and my <code>flyTo</code> insertion is inside that function, so expect adjacent-line conflicts there. <strong><code>BUNDLED_DATASETS</code></strong> touches the <code>tree</code> prop plumbing and <code>toGraphData</code>, which sits directly above my new <code>levelCamera</code> — a conflict is possible at that seam. My <code>animate()</code> addition is at the top of the function and should merge cleanly.</li>
+<li><strong><code>CLAUDE.md</code></strong> — I deliberately did <strong>not</strong> update the "Current work" list, which still links this plan at <code>Plans/development/</code>. All three sibling plans are listed in the same block, so whoever merges last should fix all three entries at once rather than each of us conflicting on that paragraph.</li>
+</ul></div></div></div>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,2185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/1</h1>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+        
+<div class="message user" id="msg-2026-09-11T17-56-38-050Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-11T17-56-38-050Z" class="timestamp-link"><time datetime="2026-09-11T17:56:38.050Z" data-timestamp="2026-09-11T17:56:38.050Z">2026-09-11T17:56:38.050Z</time></a></div><div class="message-content">
+<div class="user-content"><p>Make a plan to add a schema directory that would include a schema for the okr tree that is used. This schema will be used to save/load - import/export the okr tree, company structure data and (in the future) historical key result metrics and changes to the okr tree.  It should also be used on the service and web side with validataion. please have the plan include building the schema to a local versioned npm package that can be imported by both web and service. have the plan use github:LudaThomas/json-schema-to-typescript#release as the schema to typescript compiler.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-40-259Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-40-259Z" class="timestamp-link"><time datetime="2026-09-11T17:56:40.259Z" data-timestamp="2026-09-11T17:56:40.259Z">2026-09-11T17:56:40.259Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-40-820Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-40-820Z" class="timestamp-link"><time datetime="2026-09-11T17:56:40.820Z" data-timestamp="2026-09-11T17:56:40.820Z">2026-09-11T17:56:40.820Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll survey the repo to ground the plan in the real code, then write it to <code>Plans/development/</code>.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-42-900Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-42-900Z" class="timestamp-link"><time datetime="2026-09-11T17:56:42.900Z" data-timestamp="2026-09-11T17:56:42.900Z">2026-09-11T17:56:42.900Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01FjFoNgkYDnCZezcvjCoZtW">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List repo layout and README</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls -la &amp;&amp; cat README.md 2&gt;/dev/null | head -200 &amp;&amp; echo &#34;---TREE---&#34; &amp;&amp; find . -path ./node_modules -prune -o -path ./.git -prune -o -type f -print | grep -v node_modules | head -200</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T17-56-43-113Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T17-56-43-113Z" class="timestamp-link"><time datetime="2026-09-11T17:56:43.113Z" data-timestamp="2026-09-11T17:56:43.113Z">2026-09-11T17:56:43.113Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>total 48
+drwxr-xr-x   9 tmiv74  staff   288 Sep 11 10:14 .
+drwxr-xr-x+ 51 tmiv74  staff  1632 Sep 11 10:56 ..
+drwxr-xr-x  13 tmiv74  staff   416 Sep 11 10:50 .git
+-rw-r--r--@  1 tmiv74  staff    41 Sep 10 19:03 .gitignore
+-rw-r--r--@  1 tmiv74  staff  8177 Aug 20 12:42 CLAUDE.md
+-rw-r--r--@  1 tmiv74  staff  9913 Sep 10 19:13 README.md
+drwxr-xr-x   2 tmiv74  staff    64 Sep 10 19:33 plans
+drwxr-xr-x@ 10 tmiv74  staff   320 Sep 11 08:32 service
+drwxr-xr-x@  9 tmiv74  staff   288 Sep 10 19:18 web
+# OKR Viewer
+
+A 3D OKR tree you can interrogate and edit by talking to it.
+
+Load an org&#x27;s objectives and key results as a navigable 3D graph, then ask questions in plain language — &quot;which KRs don&#x27;t ladder up to anything?&quot;, &quot;make the marketing KRs measurable&quot; — and watch Claude answer *by moving the visualization*: flying the camera to the nodes it&#x27;s talking about, and rewriting them in place when you ask it to.
+
+The pitch in one line: **the model&#x27;s output is the interface, not a chat log next to one.**
+
+---
+
+## Demo script
+
+This is the thing to build toward. Everything below serves these 90 seconds.
+
+1. **Open on the full tree.** One company objective at the top, team objectives beneath it, KRs at the leaves. Rotate it. It&#x27;s obviously a hierarchy and you can see all of it at once.
+2. **Ask a question.** &quot;Which key results don&#x27;t clearly support a company objective?&quot; → Claude answers in the panel *and* three nodes pulse red while the camera flies to them.
+3. **Ask for a fix.** &quot;Rewrite those so they&#x27;re measurable and tie them to the right objective.&quot; → the nodes&#x27; text changes, edges re-link, the graph settles into a new shape.
+4. **Undo it.** One click, tree snaps back. (This also saves you if the model does something dumb on stage.)
+
+---
+
+## Architecture
+
+```
+┌──────────────────────┐         ┌─────────────────────┐         ┌────────┐
+│  web/  (Vite+Svelte) │  POST   │  service/ (Express) │  HTTPS  │ Claude │
+│                      │ /api/   │                     │         │  API   │
+│  owns the tree ──────┼─ chat ──┼─&gt; owns the prompt    ├────────&gt;│        │
+│  renders the graph   │&lt;────────┼── + tool schema      │&lt;────────┤        │
+│  applies actions     │ {reply, │   validates IDs      │         └────────┘
+│  keeps undo stack    │  actions│                      │
+└──────────────────────┘  highlight}────────────────────┘
+```
+
+**The service is stateless.** The browser owns the tree and sends it along with every message. No session store, no database, no drift between what the service thinks the tree is and what&#x27;s on screen.
+
+**The service owns the system prompt and the tool schema.** The frontend never constructs a prompt. This means prompt iteration — which is most of your tuning time — is a service-only change.
+
+---
+
+## The contract
+
+One endpoint. One shape. Don&#x27;t add a second one.
+
+```
+POST /api/chat
+{
+  &quot;tree&quot;:           { &quot;nodes&quot;: [...] },     // the whole thing, every time
+  &quot;message&quot;:        &quot;make the marketing KRs measurable&quot;,
+  &quot;selectedNodeId&quot;: &quot;kr-7&quot; | null,          // what the user clicked, for context
+  &quot;history&quot;:        [{ &quot;role&quot;: &quot;user&quot;|&quot;assistant&quot;, &quot;content&quot;: &quot;...&quot; }]
+}
+
+→ 200
+{
+  &quot;reply&quot;:     &quot;I tightened three KRs under Marketing…&quot;,
+  &quot;actions&quot;:   [{ &quot;op&quot;: &quot;edit&quot;, &quot;id&quot;: &quot;kr-7&quot;, &quot;fields&quot;: { &quot;label&quot;: &quot;…&quot; } }],
+  &quot;highlight&quot;: [&quot;kr-7&quot;, &quot;kr-8&quot;, &quot;kr-9&quot;]
+}
+```
+
+`actions` is often empty — most messages are questions, not edits. `highlight` is almost never empty, and it&#x27;s what makes the thing feel alive.
+
+### Node shape
+
+Keep it flat. A flat array with `parent` pointers is easier to mutate than nested children, and `3d-force-graph` wants flat nodes and links anyway.
+
+```js
+{
+  id:          &#x27;kr-7&#x27;,
+  level:       &#x27;company&#x27; | &#x27;objective&#x27; | &#x27;kr&#x27;,
+  parent:      &#x27;obj-2&#x27; | null,
+  label:       &#x27;Reduce time-to-first-value for new accounts&#x27;,
+  owner:       &#x27;Marketing&#x27;,
+  metric:      &#x27;median days from signup to first workflow run&#x27;,
+  target:      &#x27;14 → 5 by Q4&#x27;,
+  contributes: 0.8            // 0–1, how well this supports its parent
+}
+```
+
+`contributes` is the field that earns the visualization. Edge thickness and color come from it, and low-scoring links are the &quot;misalignment&quot; the demo finds. Hand-author these values — it&#x27;s a demo, and a hand-tuned tree demos better than a realistic one.
+
+---
+
+## The one-tool trick
+
+Do **not** define `edit_node`, `add_node`, `relink_node`, and `highlight_nodes` as four separate tools. Real multi-tool use means Claude stops at the `tool_use` block, you send back a `tool_result`, and you make a second call to get the final text — two round trips, continuation logic, and a branch for &quot;what if it called no tools at all.&quot;
+
+Instead: **one tool, forced.**
+
+```js
+const RESPOND_TOOL = {
+  name: &#x27;respond&#x27;,
+  description: &#x27;Reply to the user about their OKR tree. Always call this exactly once.&#x27;,
+  input_schema: {
+    type: &#x27;object&#x27;,
+    properties: {
+      reply: {
+        type: &#x27;string&#x27;,
+        description: &#x27;Your answer, shown in the chat panel. Conversational, 1-3 sentences.&#x27;
+      },
+      actions: {
+        type: &#x27;array&#x27;,
+        description: &#x27;Edits to apply to the tree. Empty array if the user only asked a question.&#x27;,
+        items: {
+          type: &#x27;object&#x27;,
+          properties: {
+            op:     { type: &#x27;string&#x27;, enum: [&#x27;edit&#x27;, &#x27;add&#x27;, &#x27;relink&#x27;, &#x27;delete&#x27;] },
+            id:     { type: &#x27;string&#x27; },
+            fields: { type: &#x27;object&#x27; }
+          },
+          required: [&#x27;op&#x27;, &#x27;id&#x27;]
+        }
+      },
+      highlight: {
+        type: &#x27;array&#x27;,
+        description: &#x27;IDs of nodes your reply refers to. The camera flies to these. Use generously.&#x27;,
+        items: { type: &#x27;string&#x27; }
+      }
+    },
+    required: [&#x27;reply&#x27;, &#x27;actions&#x27;, &#x27;highlight&#x27;]
+  }
+};
+```
+
+Called with `tool_choice: { type: &#x27;tool&#x27;, name: &#x27;respond&#x27; }`. Guaranteed structured output, single call, zero branching.
+
+---
+
+## Setup
+
+Requires Node 20.19+ (Vite 8 and Express 5 both need it).
+
+```bash
+git clone &lt;repo&gt; &amp;&amp; cd okr-viewer
+
+# service
+cd service &amp;&amp; npm i &amp;&amp; cp .env.example .env   # add ANTHROPIC_API_KEY
+npm run dev                                    # :8787
+
+# web
+cd ../web &amp;&amp; npm i &amp;&amp; npm run dev              # :5173
+```
+
+`vite.config.js` proxies `/api` → `:8787`, so there&#x27;s no CORS to fight in dev:
+
+```js
+server: { proxy: { &#x27;/api&#x27;: &#x27;http://localhost:8787&#x27; } }
+```
+
+The key lives only in `service/.env` and never reaches the browser. `.env` is gitignored — check that before your first commit, not after.
+
+Model ID goes in one place (`service/prompt.js`). Check &lt;https://docs.claude.com/en/docs/about-claude/models&gt; for the current Sonnet-class ID rather than trusting a hardcoded string from a template.
+
+---
+
+## Layout
+
+```
+okr-viewer/
+├── web/
+│   ├── src/
+│   │   ├── App.svelte          layout, owns tree state + undo stack
+│   │   ├── Graph.svelte        3d-force-graph, bind:this + onMount
+│   │   ├── Chat.svelte         message list, input, loading state
+│   │   ├── Detail.svelte       selected-node sidebar
+│   │   ├── lib/tree.js         the hand-written OKR tree
+│   │   └── lib/apply.js        applyAction(tree, action) → new tree
+│   └── vite.config.js
+└── service/
+    ├── index.js                POST /api/chat
+    ├── prompt.js               system prompt + RESPOND_TOOL
+    └── validate.js             drop actions/highlights with unknown IDs
+```
+
+---
+
+## Build order
+
+Each step is shippable on its own. If the clock runs out, you stop at a checkpoint with something that demos — not a half-wired step 4.
+
+| # | Step | Est. | If you stop here |
+|---|------|------|------------------|
+| 1 | Hand-write `tree.js`, render with `3d-force-graph` (`dagMode: &#x27;td&#x27;`), click → camera + detail panel | 50m | A working 3D OKR browser |
+| 2 | Chat panel → `/api/chat`, whole tree in the system prompt, Claude answers questions | 30m | &quot;Ask your OKRs anything&quot; — already demoable |
+| 3 | Honor `highlight[]`: camera fly-to + pulse | 20m | **The wow.** Answers move the view |
+| 4 | Honor `actions[]`: apply, re-render, push undo snapshot | 40m | The full pitch |
+
+**Protect steps 3 and 4 by keeping step 1 dumb.** Hand-author the JSON. No importer, no file upload, no editor UI. Twenty-five nodes is plenty and fits in a prompt with room to spare.
+
+Stretch, only if you&#x27;re ahead: highlight-by-hover on chat text, a `contributes` threshold slider, export the edited tree as JSON.
+
+---
+
+## Things that will bite you
+
+**Claude will invent node IDs.** Not often, but it will, and an unknown ID either throws in your renderer or silently no-ops in the middle of a demo. You have the tree right there in the request — filter `actions` and `highlight` against it server-side and drop what doesn&#x27;t resolve. Ten minutes of work on the single most likely live failure.
+
+**Keep the graph instance out of Svelte&#x27;s reactive system.** `3d-force-graph` mutates its own internals and does its own render loop; it fights `$state` if you let it. Create it once in `onMount` into a plain `let graph`, and push updates imperatively:
+
+---TREE---
+./README.md
+./.gitignore
+./CLAUDE.md
+./web/index.html
+./web/vite.config.js
+./web/package-lock.json
+./web/package.json
+./service/index.js
+./service/package-lock.json
+./service/package.json
+./service/prompt.js
+./service/.env
+./service/.env.example
+./service/validate.js
+./web/dist/index.html
+./web/src/app.css
+./web/src/Detail.svelte
+./web/src/App.svelte
+./web/src/main.js
+./web/src/Graph.svelte
+./web/src/Chat.svelte
+./web/dist/assets/index-BYTRQmxP.js
+./web/dist/assets/index-D89q5GNf.css
+./web/src/lib/tree.js
+./web/src/lib/apply.js</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-47-024Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-47-024Z" class="timestamp-link"><time datetime="2026-09-11T17:56:47.024Z" data-timestamp="2026-09-11T17:56:47.024Z">2026-09-11T17:56:47.024Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_017JPZVf7YJGqd8KKPMkZkRg">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read README tail, packages, service source</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n 200,400p README.md; echo &#34;---GITIGNORE---&#34;; cat .gitignore; echo &#34;---plans dir---&#34;; ls -la plans Plans 2&gt;&amp;1; ls Concepts 2&gt;&amp;1; echo &#34;---service/package.json---&#34;; cat service/package.json; echo &#34;---web/package.json---&#34;; cat web/package.json; echo &#34;---service/index.js---&#34;; cat -n service/index.js; echo &#34;---service/validate.js---&#34;; cat -n service/validate.js; echo &#34;---service/prompt.js---&#34;; cat -n service/prompt.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T17-56-47-111Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T17-56-47-111Z" class="timestamp-link"><time datetime="2026-09-11T17:56:47.111Z" data-timestamp="2026-09-11T17:56:47.111Z">2026-09-11T17:56:47.111Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>```js
+$effect(() =&gt; { graph?.graphData(toGraphData(tree)); });
+```
+
+**Don&#x27;t stream.** ~2k tokens in, a few hundred out — that&#x27;s 2–4 seconds. A spinner is fine. Streaming tool-use blocks is fiddly enough to eat a meaningful slice of a two-hour budget for no demo value.
+
+**Snapshot before you mutate.** `undoStack.push(structuredClone(tree))` before applying actions. Five lines, one button, and it turns a bad model response during a live demo from a dead end into &quot;watch, I&#x27;ll just back that out.&quot;
+
+**Re-heating the layout on every edit is jarring.** After applying actions, prefer updating node objects in place over replacing the whole dataset, or the force simulation reshuffles the entire tree and the viewer loses their place.
+
+---
+
+## Scope boundary
+
+Explicitly out for v1, listed here so it stays out:
+
+- Auth, multi-user, persistence — the tree lives in memory and resets on reload
+- Importing real OKRs from anywhere
+- Streaming responses
+- Mobile layout
+- Tests
+---GITIGNORE---
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+---plans dir---
+Plans:
+total 0
+drwxr-xr-x  2 tmiv74  staff   64 Sep 10 19:33 .
+drwxr-xr-x  9 tmiv74  staff  288 Sep 11 10:14 ..
+
+plans:
+total 0
+drwxr-xr-x  2 tmiv74  staff   64 Sep 10 19:33 .
+drwxr-xr-x  9 tmiv74  staff  288 Sep 11 10:14 ..
+ls: Concepts: No such file or directory
+---service/package.json---
+{
+  &quot;name&quot;: &quot;okr-viewer-service&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;node --watch index.js&quot;,
+    &quot;start&quot;: &quot;node index.js&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@anthropic-ai/sdk&quot;: &quot;^0.125.0&quot;,
+    &quot;dotenv&quot;: &quot;^17.4.0&quot;,
+    &quot;express&quot;: &quot;^5.2.0&quot;
+  }
+}
+---web/package.json---
+{
+  &quot;name&quot;: &quot;okr-viewer-web&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;,
+    &quot;preview&quot;: &quot;vite preview&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;3d-force-graph&quot;: &quot;^1.80.0&quot;,
+    &quot;three&quot;: &quot;&gt;=0.179 &lt;1&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@sveltejs/vite-plugin-svelte&quot;: &quot;^7.3.0&quot;,
+    &quot;svelte&quot;: &quot;^5.57.0&quot;,
+    &quot;vite&quot;: &quot;^8.3.0&quot;
+  }
+}
+---service/index.js---
+     1	import &#x27;dotenv/config&#x27;;
+     2	import express from &#x27;express&#x27;;
+     3	import Anthropic from &#x27;@anthropic-ai/sdk&#x27;;
+     4	import { MODEL, RESPOND_TOOL, systemPrompt } from &#x27;./prompt.js&#x27;;
+     5	import { validateTree, sanitizeHistory, mergeTurns, validateResponse } from &#x27;./validate.js&#x27;;
+     6	
+     7	const PORT = Number(process.env.PORT) || 8787;
+     8	const app = express();
+     9	app.use(express.json({ limit: &#x27;2mb&#x27; }));
+    10	
+    11	// Created lazily so a missing key surfaces as a clear 500, not a crash at boot.
+    12	let client;
+    13	const getClient = () =&gt; (client ??= new Anthropic());
+    14	
+    15	app.get(&#x27;/api/health&#x27;, (_req, res) =&gt; res.json({ ok: true, model: MODEL }));
+    16	
+    17	app.post(&#x27;/api/chat&#x27;, async (req, res) =&gt; {
+    18	  const { tree, message, selectedNodeId = null, history = [] } = req.body ?? {};
+    19	
+    20	  const treeError = validateTree(tree);
+    21	  if (treeError) return res.status(400).json({ error: treeError });
+    22	  if (typeof message !== &#x27;string&#x27; || !message.trim()) {
+    23	    return res.status(400).json({ error: &#x27;message must be a non-empty string&#x27; });
+    24	  }
+    25	
+    26	  const selected = typeof selectedNodeId === &#x27;string&#x27; &amp;&amp; tree.nodes.some((n) =&gt; n.id === selectedNodeId) ? selectedNodeId : null;
+    27	  const messages = mergeTurns([...sanitizeHistory(history), { role: &#x27;user&#x27;, content: message.trim() }]);
+    28	
+    29	  const started = Date.now();
+    30	  try {
+    31	    const response = await getClient().messages.create({
+    32	      model: MODEL,
+    33	      max_tokens: 4096,
+    34	      system: systemPrompt(tree, selected),
+    35	      tools: [RESPOND_TOOL],
+    36	      tool_choice: { type: &#x27;tool&#x27;, name: &#x27;respond&#x27; },
+    37	      messages
+    38	    });
+    39	
+    40	    const call = response.content.find((b) =&gt; b.type === &#x27;tool_use&#x27; &amp;&amp; b.name === &#x27;respond&#x27;);
+    41	    if (!call) {
+    42	      const text = response.content.filter((b) =&gt; b.type === &#x27;text&#x27;).map((b) =&gt; b.text).join(&#x27;\n&#x27;).trim();
+    43	      const why = response.stop_reason === &#x27;refusal&#x27; ? &#x27;declined to answer&#x27; : `stopped early (${response.stop_reason})`;
+    44	      console.warn(`[chat] no respond call: ${why}`);
+    45	      return res.json({ reply: text || `The model ${why}. Try rephrasing.`, actions: [], highlight: [] });
+    46	    }
+    47	
+    48	    const out = validateResponse(tree, call.input);
+    49	    if (out.dropped.length) console.warn(&#x27;[chat] dropped from model output:&#x27;, JSON.stringify(out.dropped));
+    50	    console.log(
+    51	      `[chat] ${Date.now() - started}ms · ${response.usage.input_tokens}in/${response.usage.output_tokens}out · ${out.actions.length} actions · ${out.highlight.length} highlights`
+    52	    );
+    53	    res.json({ reply: out.reply, actions: out.actions, highlight: out.highlight });
+    54	  } catch (err) {
+    55	    // The SDK throws a plain Error (not AuthenticationError) when it finds no
+    56	    // credentials at all, so match that case explicitly.
+    57	    if (err instanceof Anthropic.AuthenticationError || /authentication method/i.test(err?.message ?? &#x27;&#x27;)) {
+    58	      console.error(&#x27;[chat] auth failed — is ANTHROPIC_API_KEY set in service/.env?&#x27;);
+    59	      return res.status(500).json({ error: &#x27;The service has no valid ANTHROPIC_API_KEY.&#x27; });
+    60	    }
+    61	    if (err instanceof Anthropic.RateLimitError) {
+    62	      return res.status(429).json({ error: &#x27;Rate limited by the Claude API. Wait a moment and retry.&#x27; });
+    63	    }
+    64	    if (err instanceof Anthropic.APIConnectionError) {
+    65	      console.error(&#x27;[chat] connection error:&#x27;, err.message);
+    66	      return res.status(502).json({ error: &#x27;Could not reach the Claude API.&#x27; });
+    67	    }
+    68	    if (err instanceof Anthropic.APIError) {
+    69	      console.error(`[chat] API error ${err.status}:`, err.message);
+    70	      return res.status(502).json({ error: `Claude API error (${err.status}).` });
+    71	    }
+    72	    console.error(&#x27;[chat] unexpected error:&#x27;, err);
+    73	    res.status(500).json({ error: &#x27;Unexpected server error.&#x27; });
+    74	  }
+    75	});
+    76	
+    77	app.listen(PORT, () =&gt; console.log(`okr-viewer service on http://localhost:${PORT} (model: ${MODEL})`));
+---service/validate.js---
+     1	// Claude will occasionally invent node IDs. Everything it sends back is
+     2	// filtered against the tree the browser sent us, so nothing unknown reaches
+     3	// the renderer.
+     4	
+     5	const LEVELS = new Set([&#x27;company&#x27;, &#x27;objective&#x27;, &#x27;kr&#x27;]);
+     6	const TEXT_FIELDS = [&#x27;label&#x27;, &#x27;owner&#x27;, &#x27;metric&#x27;, &#x27;target&#x27;];
+     7	const MAX_TEXT = 400;
+     8	
+     9	export function validateTree(tree) {
+    10	  if (!tree || !Array.isArray(tree.nodes)) return &#x27;tree.nodes must be an array&#x27;;
+    11	  if (tree.nodes.length &gt; 500) return &#x27;tree is too large (max 500 nodes)&#x27;;
+    12	  const ids = new Set();
+    13	  for (const n of tree.nodes) {
+    14	    if (!n || typeof n.id !== &#x27;string&#x27; || !n.id) return &#x27;every node needs a string id&#x27;;
+    15	    if (ids.has(n.id)) return `duplicate node id &quot;${n.id}&quot;`;
+    16	    ids.add(n.id);
+    17	  }
+    18	  return null;
+    19	}
+    20	
+    21	// Keep only well-formed turns, cap the length, and merge consecutive
+    22	// same-role turns so the API always sees strict user/assistant alternation.
+    23	export function sanitizeHistory(history, maxTurns = 12) {
+    24	  const turns = (Array.isArray(history) ? history : [])
+    25	    .filter((m) =&gt; m &amp;&amp; (m.role === &#x27;user&#x27; || m.role === &#x27;assistant&#x27;) &amp;&amp; typeof m.content === &#x27;string&#x27; &amp;&amp; m.content.trim())
+    26	    .slice(-maxTurns)
+    27	    .map((m) =&gt; ({ role: m.role, content: m.content.trim() }));
+    28	  while (turns.length &amp;&amp; turns[0].role !== &#x27;user&#x27;) turns.shift();
+    29	  return mergeTurns(turns);
+    30	}
+    31	
+    32	export function mergeTurns(turns) {
+    33	  const out = [];
+    34	  for (const t of turns) {
+    35	    const last = out[out.length - 1];
+    36	    if (last &amp;&amp; last.role === t.role) last.content += &#x27;\n\n&#x27; + t.content;
+    37	    else out.push({ ...t });
+    38	  }
+    39	  return out;
+    40	}
+    41	
+    42	function cleanFields(raw, { allowLevel = false } = {}) {
+    43	  const src = raw &amp;&amp; typeof raw === &#x27;object&#x27; ? raw : {};
+    44	  const out = {};
+    45	  for (const k of TEXT_FIELDS) {
+    46	    if (k in src &amp;&amp; src[k] != null) out[k] = String(src[k]).trim().slice(0, MAX_TEXT);
+    47	  }
+    48	  if (&#x27;contributes&#x27; in src) {
+    49	    const n = Number(src.contributes);
+    50	    if (Number.isFinite(n)) out.contributes = Math.min(1, Math.max(0, n));
+    51	  }
+    52	  if (&#x27;parent&#x27; in src) out.parent = src.parent == null ? null : String(src.parent);
+    53	  if (allowLevel &amp;&amp; LEVELS.has(src.level)) out.level = src.level;
+    54	  return out;
+    55	}
+    56	
+    57	export function validateResponse(tree, input) {
+    58	  const known = new Set(tree.nodes.map((n) =&gt; n.id));
+    59	  const parentOf = new Map(tree.nodes.map((n) =&gt; [n.id, n.parent]));
+    60	  const dropped = [];
+    61	  const actions = [];
+    62	
+    63	  const isAncestorOrSelf = (candidate, id) =&gt; {
+    64	    let cur = candidate;
+    65	    for (let i = 0; cur != null &amp;&amp; i &lt; 1000; i++) {
+    66	      if (cur === id) return true;
+    67	      cur = parentOf.get(cur) ?? null;
+    68	    }
+    69	    return false;
+    70	  };
+    71	
+    72	  const validParent = (id, parent) =&gt; parent != null &amp;&amp; known.has(parent) &amp;&amp; !isAncestorOrSelf(parent, id);
+    73	
+    74	  for (const a of Array.isArray(input?.actions) ? input.actions : []) {
+    75	    const reject = (reason) =&gt; dropped.push({ action: a, reason });
+    76	    if (!a || typeof a.id !== &#x27;string&#x27; || !a.id) { reject(&#x27;missing id&#x27;); continue; }
+    77	    const { op, id } = a;
+    78	
+    79	    if (op === &#x27;edit&#x27; || op === &#x27;relink&#x27;) {
+    80	      if (!known.has(id)) { reject(`unknown id ${id}`); continue; }
+    81	      const fields = cleanFields(a.fields);
+    82	      if (&#x27;parent&#x27; in fields &amp;&amp; !validParent(id, fields.parent)) {
+    83	        reject(`bad parent ${fields.parent} for ${id}`);
+    84	        delete fields.parent;
+    85	      }
+    86	      if (op === &#x27;relink&#x27; &amp;&amp; !(&#x27;parent&#x27; in fields)) continue;
+    87	      if (!Object.keys(fields).length) { reject(&#x27;no usable fields&#x27;); continue; }
+    88	      if (&#x27;parent&#x27; in fields) parentOf.set(id, fields.parent);
+    89	      actions.push({ op, id, fields });
+    90	    } else if (op === &#x27;add&#x27;) {
+    91	      if (known.has(id)) { reject(`add with existing id ${id}`); continue; }
+    92	      const fields = cleanFields(a.fields, { allowLevel: true });
+    93	      if (!fields.label) { reject(&#x27;add without label&#x27;); continue; }
+    94	      if (!fields.level || fields.level === &#x27;company&#x27;) fields.level = &#x27;kr&#x27;;
+    95	      if (!(fields.parent != null &amp;&amp; known.has(fields.parent))) { reject(`add with bad parent ${fields.parent}`); continue; }
+    96	      known.add(id);
+    97	      parentOf.set(id, fields.parent);
+    98	      actions.push({ op, id, fields });
+    99	    } else if (op === &#x27;delete&#x27;) {
+   100	      if (!known.has(id)) { reject(`unknown id ${id}`); continue; }
+   101	      const gone = new Set([id]);
+   102	      let grew = true;
+   103	      while (grew) {
+   104	        grew = false;
+   105	        for (const [child, parent] of parentOf) {
+   106	          if (gone.has(parent) &amp;&amp; !gone.has(child)) { gone.add(child); grew = true; }
+   107	        }
+   108	      }
+   109	      for (const g of gone) { known.delete(g); parentOf.delete(g); }
+   110	      actions.push({ op, id });
+   111	    } else {
+   112	      reject(`unknown op ${op}`);
+   113	    }
+   114	  }
+   115	
+   116	  const highlight = [
+   117	    ...new Set((Array.isArray(input?.highlight) ? input.highlight : []).filter((id) =&gt; typeof id === &#x27;string&#x27; &amp;&amp; known.has(id)))
+   118	  ];
+   119	
+   120	  const reply =
+   121	    typeof input?.reply === &#x27;string&#x27; &amp;&amp; input.reply.trim()
+   122	      ? input.reply.trim()
+   123	      : actions.length
+   124	        ? &#x27;Done.&#x27;
+   125	        : &quot;I couldn&#x27;t come up with an answer for that — try rephrasing.&quot;;
+   126	
+   127	  return { reply, actions, highlight, dropped };
+   128	}
+---service/prompt.js---
+     1	// The model ID lives here and only here.
+     2	// Check https://docs.claude.com/en/docs/about-claude/models for the current
+     3	// Sonnet-class ID before trusting this string.
+     4	export const MODEL = &#x27;claude-sonnet-5&#x27;;
+     5	
+     6	// One tool, forced. Claude must call it exactly once, so we get structured
+     7	// output in a single round trip with no tool_result continuation.
+     8	export const RESPOND_TOOL = {
+     9	  name: &#x27;respond&#x27;,
+    10	  description: &#x27;Reply to the user about their OKR tree. Always call this exactly once.&#x27;,
+    11	  input_schema: {
+    12	    type: &#x27;object&#x27;,
+    13	    properties: {
+    14	      reply: {
+    15	        type: &#x27;string&#x27;,
+    16	        description: &#x27;Your answer, shown in the chat panel. Conversational, 1-3 sentences.&#x27;
+    17	      },
+    18	      actions: {
+    19	        type: &#x27;array&#x27;,
+    20	        description: &#x27;Edits to apply to the tree. Empty array if the user only asked a question.&#x27;,
+    21	        items: {
+    22	          type: &#x27;object&#x27;,
+    23	          properties: {
+    24	            op: { type: &#x27;string&#x27;, enum: [&#x27;edit&#x27;, &#x27;add&#x27;, &#x27;relink&#x27;, &#x27;delete&#x27;] },
+    25	            id: { type: &#x27;string&#x27; },
+    26	            fields: { type: &#x27;object&#x27; }
+    27	          },
+    28	          required: [&#x27;op&#x27;, &#x27;id&#x27;]
+    29	        }
+    30	      },
+    31	      highlight: {
+    32	        type: &#x27;array&#x27;,
+    33	        description: &#x27;IDs of nodes your reply refers to. The camera flies to these. Use generously.&#x27;,
+    34	        items: { type: &#x27;string&#x27; }
+    35	      }
+    36	    },
+    37	    required: [&#x27;reply&#x27;, &#x27;actions&#x27;, &#x27;highlight&#x27;]
+    38	  }
+    39	};
+    40	
+    41	export function systemPrompt(tree, selectedNodeId) {
+    42	  return `You are an OKR coach embedded in a 3D visualization of a company&#x27;s objectives and key results. The user sees the tree as a graph and talks to you about it. You answer by calling the \`respond\` tool exactly once.
+    43	
+    44	## The tree
+    45	Nodes are flat with parent pointers. Levels: company (the single root) → objective (team-level) → kr (key result). \`contributes\` (0–1) is a hand-assessed score of how well a node supports its parent; anything below 0.4 is a misalignment worth calling out. A KR with an empty or vague \`metric\` or \`target\` is not measurable. A KR that describes an activity (&quot;run an offsite&quot;, &quot;attend events&quot;) rather than an outcome is weak even if it has a number.
+    46	
+    47	&lt;tree&gt;
+    48	${JSON.stringify(tree.nodes)}
+    49	&lt;/tree&gt;
+    50	
+    51	${
+    52	  selectedNodeId
+    53	    ? `The user currently has node &quot;${selectedNodeId}&quot; selected. Assume &quot;this&quot;, &quot;it&quot;, or &quot;the selected one&quot; refers to that node unless context says otherwise.`
+    54	    : &#x27;No node is currently selected.&#x27;
+    55	}
+    56	
+    57	## How to respond
+    58	- \`reply\`: 1–3 conversational sentences. Refer to nodes by their label, never by id. No JSON, no bullet lists.
+    59	- \`highlight\`: the ids of every node your reply talks about. Be generous — the camera flies to these and they pulse, which is how the user follows along. Include the parent when the relationship matters. Only use ids that exist in the tree, or that you are adding in this same response.
+    60	- \`actions\`: only when the user asks for a change (rewrite, fix, move, add, remove, make measurable, tighten, etc.). Send an empty array for questions.
+    61	
+    62	## Actions
+    63	- { &quot;op&quot;: &quot;edit&quot;, &quot;id&quot;, &quot;fields&quot;: { label?, owner?, metric?, target?, contributes? } } — rewriting a KR to be measurable means a label that states the outcome, a concrete \`metric\`, and a \`target\` with a baseline and a goal (e.g. &quot;31% → 50% by Q4&quot;). Raise \`contributes\` when the fix actually makes it support its parent.
+    64	- { &quot;op&quot;: &quot;relink&quot;, &quot;id&quot;, &quot;fields&quot;: { &quot;parent&quot; } } — move a node under a different parent. Follow it with an edit that updates \`contributes\` for the new fit.
+    65	- { &quot;op&quot;: &quot;add&quot;, &quot;id&quot;, &quot;fields&quot;: { level, parent, label, owner, metric, target, contributes } } — new ids must be unique and of the form &quot;kr-&lt;short-slug&gt;&quot; or &quot;obj-&lt;short-slug&gt;&quot;.
+    66	- { &quot;op&quot;: &quot;delete&quot;, &quot;id&quot; } — removes the node and everything under it. Only when explicitly asked.
+    67	- Never invent ids. Never change a node&#x27;s level. Never touch the company objective unless asked.
+    68	- When you edit, say what changed and why in plain language.
+    69	
+    70	Be direct and specific. A good OKR coach names the problem (&quot;this is an activity, not an outcome&quot;) and proposes the fix.`;
+    71	}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-50-230Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-50-230Z" class="timestamp-link"><time datetime="2026-09-11T17:56:50.230Z" data-timestamp="2026-09-11T17:56:50.230Z">2026-09-11T17:56:50.230Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-52-598Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-52-598Z" class="timestamp-link"><time datetime="2026-09-11T17:56:52.598Z" data-timestamp="2026-09-11T17:56:52.598Z">2026-09-11T17:56:52.598Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01PWstSZQHhXWaoGZunsQUd4">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read web tree data, apply logic, and components</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;---tree.js---&#34;; cat -n web/src/lib/tree.js; echo &#34;---apply.js---&#34;; cat -n web/src/lib/apply.js; echo &#34;---App.svelte---&#34;; cat -n web/src/App.svelte; echo &#34;---Detail.svelte---&#34;; cat -n web/src/Detail.svelte; echo &#34;---vite.config---&#34;; cat -n web/vite.config.js; echo &#34;---main.js---&#34;; cat web/src/main.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T17-56-52-662Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T17-56-52-662Z" class="timestamp-link"><time datetime="2026-09-11T17:56:52.662Z" data-timestamp="2026-09-11T17:56:52.662Z">2026-09-11T17:56:52.662Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---tree.js---
+     1	// The hand-written OKR tree. Flat array with parent pointers.
+     2	//
+     3	// `contributes` (0–1) is a hand-assessed score for how well a node supports its
+     4	// parent. Edge thickness and colour come from it, and anything under ~0.4 is the
+     5	// &quot;misalignment&quot; the demo is built to find. The weak KRs are deliberately
+     6	// vague, activity-shaped, or unmeasurable so there is something to fix.
+     7	
+     8	export const initialTree = {
+     9	  nodes: [
+    10	    {
+    11	      id: &#x27;co-1&#x27;,
+    12	      level: &#x27;company&#x27;,
+    13	      parent: null,
+    14	      label: &#x27;Become the default workflow platform for mid-market ops teams&#x27;,
+    15	      owner: &#x27;Exec&#x27;,
+    16	      metric: &#x27;share of mid-market ops teams (500–5k employees) on a paid plan&#x27;,
+    17	      target: &#x27;6% → 15% by end of FY26&#x27;,
+    18	      contributes: 1
+    19	    },
+    20	
+    21	    // ── Product ─────────────────────────────────────────────────────────
+    22	    {
+    23	      id: &#x27;obj-1&#x27;,
+    24	      level: &#x27;objective&#x27;,
+    25	      parent: &#x27;co-1&#x27;,
+    26	      label: &#x27;New accounts reach real value in their first week&#x27;,
+    27	      owner: &#x27;Product&#x27;,
+    28	      metric: &#x27;week-1 activation rate&#x27;,
+    29	      target: &#x27;31% → 50%&#x27;,
+    30	      contributes: 0.9
+    31	    },
+    32	    {
+    33	      id: &#x27;kr-1&#x27;,
+    34	      level: &#x27;kr&#x27;,
+    35	      parent: &#x27;obj-1&#x27;,
+    36	      label: &#x27;Cut median time-to-first-workflow from 14 days to 5&#x27;,
+    37	      owner: &#x27;Product&#x27;,
+    38	      metric: &#x27;median days from signup to first workflow run&#x27;,
+    39	      target: &#x27;14 → 5 by Q4&#x27;,
+    40	      contributes: 0.9
+    41	    },
+    42	    {
+    43	      id: &#x27;kr-2&#x27;,
+    44	      level: &#x27;kr&#x27;,
+    45	      parent: &#x27;obj-1&#x27;,
+    46	      label: &#x27;Lift week-1 activation from 31% to 50%&#x27;,
+    47	      owner: &#x27;Growth&#x27;,
+    48	      metric: &#x27;% of new accounts with 3+ active workflows in week 1&#x27;,
+    49	      target: &#x27;31% → 50% by Q4&#x27;,
+    50	      contributes: 0.85
+    51	    },
+    52	    {
+    53	      id: &#x27;kr-3&#x27;,
+    54	      level: &#x27;kr&#x27;,
+    55	      parent: &#x27;obj-1&#x27;,
+    56	      label: &#x27;Ship guided templates for the top 5 onboarding use cases&#x27;,
+    57	      owner: &#x27;Product&#x27;,
+    58	      metric: &#x27;templates live and used by ≥20% of new accounts&#x27;,
+    59	      target: &#x27;0 → 5 by Q3&#x27;,
+    60	      contributes: 0.7
+    61	    },
+    62	    {
+    63	      id: &#x27;kr-4&#x27;,
+    64	      level: &#x27;kr&#x27;,
+    65	      parent: &#x27;obj-1&#x27;,
+    66	      label: &#x27;Redesign the settings page&#x27;,
+    67	      owner: &#x27;Design&#x27;,
+    68	      metric: &#x27;&#x27;,
+    69	      target: &#x27;&#x27;,
+    70	      contributes: 0.25
+    71	    },
+    72	
+    73	    // ── Marketing ───────────────────────────────────────────────────────
+    74	    {
+    75	      id: &#x27;obj-2&#x27;,
+    76	      level: &#x27;objective&#x27;,
+    77	      parent: &#x27;co-1&#x27;,
+    78	      label: &#x27;Turn brand awareness into qualified mid-market pipeline&#x27;,
+    79	      owner: &#x27;Marketing&#x27;,
+    80	      metric: &#x27;marketing-sourced qualified pipeline&#x27;,
+    81	      target: &#x27;$3.2M → $6M&#x27;,
+    82	      contributes: 0.85
+    83	    },
+    84	    {
+    85	      id: &#x27;kr-5&#x27;,
+    86	      level: &#x27;kr&#x27;,
+    87	      parent: &#x27;obj-2&#x27;,
+    88	      label: &#x27;Raise MQL → SQL conversion from 12% to 20%&#x27;,
+    89	      owner: &#x27;Marketing&#x27;,
+    90	      metric: &#x27;MQL to SQL conversion rate, trailing 90 days&#x27;,
+    91	      target: &#x27;12% → 20% by Q4&#x27;,
+    92	      contributes: 0.85
+    93	    },
+    94	    {
+    95	      id: &#x27;kr-6&#x27;,
+    96	      level: &#x27;kr&#x27;,
+    97	      parent: &#x27;obj-2&#x27;,
+    98	      label: &#x27;Source $6M of qualified pipeline from marketing programs&#x27;,
+    99	      owner: &#x27;Marketing&#x27;,
+   100	      metric: &#x27;marketing-sourced pipeline (SQL stage or later)&#x27;,
+   101	      target: &#x27;$3.2M → $6M by Q4&#x27;,
+   102	      contributes: 0.9
+   103	    },
+   104	    {
+   105	      id: &#x27;kr-7&#x27;,
+   106	      level: &#x27;kr&#x27;,
+   107	      parent: &#x27;obj-2&#x27;,
+   108	      label: &#x27;Improve our social media presence&#x27;,
+   109	      owner: &#x27;Marketing&#x27;,
+   110	      metric: &#x27;&#x27;,
+   111	      target: &#x27;&#x27;,
+   112	      contributes: 0.2
+   113	    },
+   114	    {
+   115	      id: &#x27;kr-8&#x27;,
+   116	      level: &#x27;kr&#x27;,
+   117	      parent: &#x27;obj-2&#x27;,
+   118	      label: &#x27;Publish 3 customer case studies in target verticals&#x27;,
+   119	      owner: &#x27;Content&#x27;,
+   120	      metric: &#x27;case studies published&#x27;,
+   121	      target: &#x27;0 → 3 by Q3&#x27;,
+   122	      contributes: 0.55
+   123	    },
+   124	    {
+   125	      id: &#x27;kr-9&#x27;,
+   126	      level: &#x27;kr&#x27;,
+   127	      parent: &#x27;obj-2&#x27;,
+   128	      label: &#x27;Attend more industry events&#x27;,
+   129	      owner: &#x27;Field Marketing&#x27;,
+   130	      metric: &#x27;&#x27;,
+   131	      target: &#x27;more than last year&#x27;,
+   132	      contributes: 0.3
+   133	    },
+   134	
+   135	    // ── Sales ───────────────────────────────────────────────────────────
+   136	    {
+   137	      id: &#x27;obj-3&#x27;,
+   138	      level: &#x27;objective&#x27;,
+   139	      parent: &#x27;co-1&#x27;,
+   140	      label: &#x27;Win and expand mid-market accounts efficiently&#x27;,
+   141	      owner: &#x27;Sales&#x27;,
+   142	      metric: &#x27;new + expansion ARR from mid-market&#x27;,
+   143	      target: &#x27;$12M new ARR&#x27;,
+   144	      contributes: 0.95
+   145	    },
+   146	    {
+   147	      id: &#x27;kr-10&#x27;,
+   148	      level: &#x27;kr&#x27;,
+   149	      parent: &#x27;obj-3&#x27;,
+   150	      label: &#x27;Close $12M of new ARR from the mid-market segment&#x27;,
+   151	      owner: &#x27;Sales&#x27;,
+   152	      metric: &#x27;closed-won new ARR, mid-market segment&#x27;,
+   153	      target: &#x27;$7.5M → $12M by Q4&#x27;,
+   154	      contributes: 0.95
+   155	    },
+   156	    {
+   157	      id: &#x27;kr-11&#x27;,
+   158	      level: &#x27;kr&#x27;,
+   159	      parent: &#x27;obj-3&#x27;,
+   160	      label: &#x27;Raise net revenue retention from 104% to 115%&#x27;,
+   161	      owner: &#x27;Customer Success&#x27;,
+   162	      metric: &#x27;trailing-12-month NRR&#x27;,
+   163	      target: &#x27;104% → 115% by Q4&#x27;,
+   164	      contributes: 0.9
+   165	    },
+   166	    {
+   167	      id: &#x27;kr-12&#x27;,
+   168	      level: &#x27;kr&#x27;,
+   169	      parent: &#x27;obj-3&#x27;,
+   170	      label: &#x27;Shorten the average mid-market sales cycle from 62 to 45 days&#x27;,
+   171	      owner: &#x27;Sales Ops&#x27;,
+   172	      metric: &#x27;median days from SQL to closed-won&#x27;,
+   173	      target: &#x27;62 → 45 by Q4&#x27;,
+   174	      contributes: 0.8
+   175	    },
+   176	    {
+   177	      id: &#x27;kr-13&#x27;,
+   178	      level: &#x27;kr&#x27;,
+   179	      parent: &#x27;obj-3&#x27;,
+   180	      label: &#x27;Hire 6 account executives&#x27;,
+   181	      owner: &#x27;Sales&#x27;,
+   182	      metric: &#x27;AEs hired and ramped&#x27;,
+   183	      target: &#x27;6 by Q2&#x27;,
+   184	      contributes: 0.45
+   185	    },
+   186	
+   187	    // ── Engineering ─────────────────────────────────────────────────────
+   188	    {
+   189	      id: &#x27;obj-4&#x27;,
+   190	      level: &#x27;objective&#x27;,
+   191	      parent: &#x27;co-1&#x27;,
+   192	      label: &#x27;Ship a platform customers can bet their operations on&#x27;,
+   193	      owner: &#x27;Engineering&#x27;,
+   194	      metric: &#x27;monthly uptime + Sev-1 count&#x27;,
+   195	      target: &#x27;99.95% uptime, ≤2 Sev-1 per quarter&#x27;,
+   196	      contributes: 0.8
+   197	    },
+   198	    {
+   199	      id: &#x27;kr-14&#x27;,
+   200	      level: &#x27;kr&#x27;,
+   201	      parent: &#x27;obj-4&#x27;,
+   202	      label: &#x27;Reach 99.95% monthly uptime on the workflow engine&#x27;,
+   203	      owner: &#x27;Platform&#x27;,
+   204	      metric: &#x27;monthly uptime, workflow engine&#x27;,
+   205	      target: &#x27;99.8% → 99.95% every month from Q3&#x27;,
+   206	      contributes: 0.9
+   207	    },
+   208	    {
+   209	      id: &#x27;kr-15&#x27;,
+   210	      level: &#x27;kr&#x27;,
+   211	      parent: &#x27;obj-4&#x27;,
+   212	      label: &#x27;Reduce p95 workflow run latency from 8s to 2s&#x27;,
+   213	      owner: &#x27;Platform&#x27;,
+   214	      metric: &#x27;p95 end-to-end workflow run latency&#x27;,
+   215	      target: &#x27;8s → 2s by Q4&#x27;,
+   216	      contributes: 0.75
+   217	    },
+   218	    {
+   219	      id: &#x27;kr-16&#x27;,
+   220	      level: &#x27;kr&#x27;,
+   221	      parent: &#x27;obj-4&#x27;,
+   222	      label: &#x27;Cut Sev-1 incidents from 9 per quarter to 2&#x27;,
+   223	      owner: &#x27;SRE&#x27;,
+   224	      metric: &#x27;Sev-1 incidents per quarter&#x27;,
+   225	      target: &#x27;9 → 2 by Q4&#x27;,
+   226	      contributes: 0.85
+   227	    },
+   228	    {
+   229	      id: &#x27;kr-17&#x27;,
+   230	      level: &#x27;kr&#x27;,
+   231	      parent: &#x27;obj-4&#x27;,
+   232	      label: &#x27;Migrate CI to the new build system&#x27;,
+   233	      owner: &#x27;Dev Infra&#x27;,
+   234	      metric: &#x27;repos migrated&#x27;,
+   235	      target: &#x27;all repos by Q3&#x27;,
+   236	      contributes: 0.35
+   237	    },
+   238	    {
+   239	      id: &#x27;kr-18&#x27;,
+   240	      level: &#x27;kr&#x27;,
+   241	      parent: &#x27;obj-4&#x27;,
+   242	      label: &#x27;Deliver the SOC 2 Type II report&#x27;,
+   243	      owner: &#x27;Security&#x27;,
+   244	      metric: &#x27;report issued with zero exceptions&#x27;,
+   245	      target: &#x27;issued by end of Q3&#x27;,
+   246	      contributes: 0.65
+   247	    },
+   248	
+   249	    // ── People ──────────────────────────────────────────────────────────
+   250	    {
+   251	      id: &#x27;obj-5&#x27;,
+   252	      level: &#x27;objective&#x27;,
+   253	      parent: &#x27;co-1&#x27;,
+   254	      label: &#x27;Grow a team that can sustain this pace&#x27;,
+   255	      owner: &#x27;People&#x27;,
+   256	      metric: &#x27;regretted attrition + time-to-fill&#x27;,
+   257	      target: &#x27;8% attrition, 60-day time-to-fill&#x27;,
+   258	      contributes: 0.55
+   259	    },
+   260	    {
+   261	      id: &#x27;kr-19&#x27;,
+   262	      level: &#x27;kr&#x27;,
+   263	      parent: &#x27;obj-5&#x27;,
+   264	      label: &#x27;Reduce regretted attrition from 14% to 8%&#x27;,
+   265	      owner: &#x27;People&#x27;,
+   266	      metric: &#x27;annualised regretted attrition&#x27;,
+   267	      target: &#x27;14% → 8% by Q4&#x27;,
+   268	      contributes: 0.7
+   269	    },
+   270	    {
+   271	      id: &#x27;kr-20&#x27;,
+   272	      level: &#x27;kr&#x27;,
+   273	      parent: &#x27;obj-5&#x27;,
+   274	      label: &#x27;Fill 90% of open roles within 60 days&#x27;,
+   275	      owner: &#x27;Talent&#x27;,
+   276	      metric: &#x27;% of roles filled within 60 days of opening&#x27;,
+   277	      target: &#x27;55% → 90% by Q4&#x27;,
+   278	      contributes: 0.6
+   279	    },
+   280	    {
+   281	      id: &#x27;kr-21&#x27;,
+   282	      level: &#x27;kr&#x27;,
+   283	      parent: &#x27;obj-5&#x27;,
+   284	      label: &#x27;Run a company offsite&#x27;,
+   285	      owner: &#x27;People&#x27;,
+   286	      metric: &#x27;&#x27;,
+   287	      target: &#x27;&#x27;,
+   288	      contributes: 0.2
+   289	    }
+   290	  ]
+   291	};
+---apply.js---
+     1	// applyAction(tree, action) → new tree.
+     2	//
+     3	// Pure: never mutates the input. Untouched node objects are reused by
+     4	// reference so the graph can diff by identity and keep its layout warm.
+     5	
+     6	const EDITABLE = [&#x27;label&#x27;, &#x27;owner&#x27;, &#x27;metric&#x27;, &#x27;target&#x27;, &#x27;contributes&#x27;, &#x27;parent&#x27;];
+     7	
+     8	const clamp01 = (n) =&gt; (Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0.5);
+     9	
+    10	function pick(fields = {}, extra = []) {
+    11	  const out = {};
+    12	  for (const k of [...EDITABLE, ...extra]) if (k in fields) out[k] = fields[k];
+    13	  if (&#x27;contributes&#x27; in out) out.contributes = clamp01(Number(out.contributes));
+    14	  return out;
+    15	}
+    16	
+    17	export function descendants(tree, id) {
+    18	  const out = new Set();
+    19	  let frontier = [id];
+    20	  while (frontier.length) {
+    21	    const next = tree.nodes.filter((n) =&gt; frontier.includes(n.parent)).map((n) =&gt; n.id);
+    22	    frontier = next.filter((x) =&gt; !out.has(x));
+    23	    frontier.forEach((x) =&gt; out.add(x));
+    24	  }
+    25	  return out;
+    26	}
+    27	
+    28	function wouldCycle(tree, id, newParent) {
+    29	  if (!newParent) return false;
+    30	  if (newParent === id) return true;
+    31	  return descendants(tree, id).has(newParent);
+    32	}
+    33	
+    34	export function applyAction(tree, action) {
+    35	  if (!action || typeof action.id !== &#x27;string&#x27;) return tree;
+    36	  const { op, id } = action;
+    37	  const exists = tree.nodes.some((n) =&gt; n.id === id);
+    38	
+    39	  switch (op) {
+    40	    case &#x27;edit&#x27;:
+    41	    case &#x27;relink&#x27;: {
+    42	      if (!exists) return tree;
+    43	      const fields = pick(action.fields);
+    44	      if (&#x27;parent&#x27; in fields &amp;&amp; wouldCycle(tree, id, fields.parent)) delete fields.parent;
+    45	      if (!Object.keys(fields).length) return tree;
+    46	      return { nodes: tree.nodes.map((n) =&gt; (n.id === id ? { ...n, ...fields } : n)) };
+    47	    }
+    48	
+    49	    case &#x27;add&#x27;: {
+    50	      if (exists) return applyAction(tree, { ...action, op: &#x27;edit&#x27; });
+    51	      const node = {
+    52	        id,
+    53	        level: &#x27;kr&#x27;,
+    54	        parent: null,
+    55	        label: &#x27;(untitled)&#x27;,
+    56	        owner: &#x27;&#x27;,
+    57	        metric: &#x27;&#x27;,
+    58	        target: &#x27;&#x27;,
+    59	        contributes: 0.5,
+    60	        ...pick(action.fields, [&#x27;level&#x27;])
+    61	      };
+    62	      return { nodes: [...tree.nodes, node] };
+    63	    }
+    64	
+    65	    case &#x27;delete&#x27;: {
+    66	      if (!exists) return tree;
+    67	      const gone = descendants(tree, id);
+    68	      gone.add(id);
+    69	      return { nodes: tree.nodes.filter((n) =&gt; !gone.has(n.id)) };
+    70	    }
+    71	
+    72	    default:
+    73	      return tree;
+    74	  }
+    75	}
+    76	
+    77	export function applyActions(tree, actions = []) {
+    78	  return actions.reduce(applyAction, tree);
+    79	}
+---App.svelte---
+     1	&lt;script&gt;
+     2	  import Graph from &#x27;./Graph.svelte&#x27;;
+     3	  import Chat from &#x27;./Chat.svelte&#x27;;
+     4	  import Detail from &#x27;./Detail.svelte&#x27;;
+     5	  import { initialTree } from &#x27;./lib/tree.js&#x27;;
+     6	  import { applyActions } from &#x27;./lib/apply.js&#x27;;
+     7	
+     8	  // The tree is $state.raw on purpose: apply.js always returns a new tree, so
+     9	  // deep reactivity buys nothing and structuredClone() stays a plain clone.
+    10	  let tree = $state.raw(structuredClone(initialTree));
+    11	  let undoStack = $state.raw([]);
+    12	  let selectedId = $state(null);
+    13	  let highlight = $state.raw([]);
+    14	  let messages = $state([]);
+    15	  let loading = $state(false);
+    16	
+    17	  const selected = $derived(tree.nodes.find((n) =&gt; n.id === selectedId) ?? null);
+    18	  const weakLinks = $derived(tree.nodes.filter((n) =&gt; n.parent &amp;&amp; (n.contributes ?? 1) &lt; 0.4).length);
+    19	
+    20	  async function send(message) {
+    21	    const history = messages
+    22	      .filter((m) =&gt; !m.error)
+    23	      .slice(-10)
+    24	      .map(({ role, content }) =&gt; ({ role, content }));
+    25	    messages.push({ role: &#x27;user&#x27;, content: message });
+    26	    loading = true;
+    27	    try {
+    28	      const res = await fetch(&#x27;/api/chat&#x27;, {
+    29	        method: &#x27;POST&#x27;,
+    30	        headers: { &#x27;content-type&#x27;: &#x27;application/json&#x27; },
+    31	        body: JSON.stringify({ tree, message, selectedNodeId: selectedId, history })
+    32	      });
+    33	      if (!res.ok) {
+    34	        const body = await res.json().catch(() =&gt; ({}));
+    35	        throw new Error(body.error ?? `${res.status} ${res.statusText}`);
+    36	      }
+    37	      const { reply, actions = [], highlight: ids = [] } = await res.json();
+    38	      if (actions.length) {
+    39	        undoStack = [...undoStack, structuredClone(tree)]; // snapshot before we mutate
+    40	        tree = applyActions(tree, actions);
+    41	      }
+    42	      highlight = ids;
+    43	      messages.push({ role: &#x27;assistant&#x27;, content: reply, highlight: ids, actions: actions.length });
+    44	    } catch (err) {
+    45	      messages.push({ role: &#x27;assistant&#x27;, content: `Something went wrong: ${err.message}`, error: true });
+    46	    } finally {
+    47	      loading = false;
+    48	    }
+    49	  }
+    50	
+    51	  function undo() {
+    52	    if (!undoStack.length) return;
+    53	    tree = undoStack[undoStack.length - 1];
+    54	    undoStack = undoStack.slice(0, -1);
+    55	    highlight = [];
+    56	    messages.push({ role: &#x27;assistant&#x27;, content: &#x27;Reverted the last change.&#x27;, note: true });
+    57	  }
+    58	
+    59	  function reset() {
+    60	    undoStack = [...undoStack, structuredClone(tree)];
+    61	    tree = structuredClone(initialTree);
+    62	    highlight = [];
+    63	    selectedId = null;
+    64	  }
+    65	
+    66	  function select(id) {
+    67	    selectedId = id;
+    68	  }
+    69	
+    70	  function recall(ids) {
+    71	    highlight = [...ids]; // new array so the graph effect re-runs
+    72	  }
+    73	
+    74	  function onKey(e) {
+    75	    const tag = e.target?.tagName;
+    76	    if (tag === &#x27;INPUT&#x27; || tag === &#x27;TEXTAREA&#x27;) return;
+    77	    if ((e.metaKey || e.ctrlKey) &amp;&amp; e.key === &#x27;z&#x27;) {
+    78	      e.preventDefault();
+    79	      undo();
+    80	    }
+    81	  }
+    82	&lt;/script&gt;
+    83	
+    84	&lt;svelte:window onkeydown={onKey} /&gt;
+    85	
+    86	&lt;div class=&quot;app&quot;&gt;
+    87	  &lt;header class=&quot;topbar&quot;&gt;
+    88	    &lt;div class=&quot;brand&quot;&gt;&lt;span class=&quot;dot&quot;&gt;&lt;/span&gt; OKR Viewer&lt;/div&gt;
+    89	    &lt;div class=&quot;stats&quot;&gt;
+    90	      {tree.nodes.length} nodes · &lt;span class:warn={weakLinks}&gt;{weakLinks} weak link{weakLinks === 1 ? &#x27;&#x27; : &#x27;s&#x27;}&lt;/span&gt;
+    91	    &lt;/div&gt;
+    92	    &lt;div class=&quot;buttons&quot;&gt;
+    93	      &lt;button onclick={undo} disabled={!undoStack.length} title=&quot;⌘Z&quot;&gt;
+    94	        ↶ Undo{undoStack.length ? ` (${undoStack.length})` : &#x27;&#x27;}
+    95	      &lt;/button&gt;
+    96	      &lt;button onclick={reset} class=&quot;ghost&quot;&gt;Reset&lt;/button&gt;
+    97	    &lt;/div&gt;
+    98	  &lt;/header&gt;
+    99	
+   100	  &lt;main&gt;
+   101	    &lt;section class=&quot;stage&quot;&gt;
+   102	      &lt;Graph {tree} {selectedId} {highlight} onSelect={select} /&gt;
+   103	      {#if selected}
+   104	        &lt;Detail node={selected} {tree} onSelect={select} onClose={() =&gt; (selectedId = null)} /&gt;
+   105	      {/if}
+   106	      &lt;div class=&quot;legend&quot;&gt;
+   107	        &lt;span&gt;&lt;i class=&quot;sw company&quot;&gt;&lt;/i&gt; Company&lt;/span&gt;
+   108	        &lt;span&gt;&lt;i class=&quot;sw objective&quot;&gt;&lt;/i&gt; Objective&lt;/span&gt;
+   109	        &lt;span&gt;&lt;i class=&quot;sw kr&quot;&gt;&lt;/i&gt; Key result&lt;/span&gt;
+   110	        &lt;span class=&quot;edge&quot;&gt;&lt;i class=&quot;sw line&quot;&gt;&lt;/i&gt; edge = how well it supports its parent&lt;/span&gt;
+   111	      &lt;/div&gt;
+   112	    &lt;/section&gt;
+   113	    &lt;Chat {messages} {loading} onSend={send} onRecall={recall} /&gt;
+   114	  &lt;/main&gt;
+   115	&lt;/div&gt;
+---Detail.svelte---
+     1	&lt;script&gt;
+     2	  let { node, tree, onSelect, onClose } = $props();
+     3	
+     4	  const LEVEL_NAME = { company: &#x27;Company objective&#x27;, objective: &#x27;Team objective&#x27;, kr: &#x27;Key result&#x27; };
+     5	  const parent = $derived(node.parent ? tree.nodes.find((n) =&gt; n.id === node.parent) ?? null : null);
+     6	  const children = $derived(tree.nodes.filter((n) =&gt; n.parent === node.id));
+     7	
+     8	  const pct = (c) =&gt; Math.round((c ?? 0) * 100);
+     9	  const tone = (c) =&gt; ((c ?? 0) &lt; 0.4 ? &#x27;bad&#x27; : (c ?? 0) &lt; 0.7 ? &#x27;meh&#x27; : &#x27;good&#x27;);
+    10	&lt;/script&gt;
+    11	
+    12	&lt;aside class=&quot;detail&quot;&gt;
+    13	  &lt;header&gt;
+    14	    &lt;span class=&quot;level {node.level}&quot;&gt;{LEVEL_NAME[node.level] ?? node.level}&lt;/span&gt;
+    15	    &lt;button class=&quot;close&quot; onclick={onClose} aria-label=&quot;Close&quot;&gt;×&lt;/button&gt;
+    16	  &lt;/header&gt;
+    17	  &lt;h2&gt;{node.label}&lt;/h2&gt;
+    18	  &lt;dl&gt;
+    19	    &lt;dt&gt;Owner&lt;/dt&gt;
+    20	    &lt;dd&gt;{node.owner || &#x27;—&#x27;}&lt;/dd&gt;
+    21	    &lt;dt&gt;Metric&lt;/dt&gt;
+    22	    &lt;dd class:empty={!node.metric}&gt;{node.metric || &#x27;none — not measurable&#x27;}&lt;/dd&gt;
+    23	    &lt;dt&gt;Target&lt;/dt&gt;
+    24	    &lt;dd class:empty={!node.target}&gt;{node.target || &#x27;none&#x27;}&lt;/dd&gt;
+    25	    {#if parent}
+    26	      &lt;dt&gt;Supports&lt;/dt&gt;
+    27	      &lt;dd&gt;&lt;button class=&quot;link&quot; onclick={() =&gt; onSelect(parent.id)}&gt;{parent.label}&lt;/button&gt;&lt;/dd&gt;
+    28	      &lt;dt&gt;Fit&lt;/dt&gt;
+    29	      &lt;dd class=&quot;fit&quot;&gt;
+    30	        &lt;span class=&quot;bar&quot;&gt;&lt;span class={tone(node.contributes)} style=&quot;width:{pct(node.contributes)}%&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+    31	        &lt;span class=&quot;pct {tone(node.contributes)}&quot;&gt;{pct(node.contributes)}%&lt;/span&gt;
+    32	      &lt;/dd&gt;
+    33	    {/if}
+    34	  &lt;/dl&gt;
+    35	  {#if children.length}
+    36	    &lt;h3&gt;{children.length} beneath it&lt;/h3&gt;
+    37	    &lt;ul&gt;
+    38	      {#each children as c (c.id)}
+    39	        &lt;li&gt;
+    40	          &lt;button class=&quot;link&quot; onclick={() =&gt; onSelect(c.id)}&gt;{c.label}&lt;/button&gt;
+    41	          &lt;span class=&quot;pct {tone(c.contributes)}&quot;&gt;{pct(c.contributes)}%&lt;/span&gt;
+    42	        &lt;/li&gt;
+    43	      {/each}
+    44	    &lt;/ul&gt;
+    45	  {/if}
+    46	  &lt;p class=&quot;id&quot;&gt;{node.id}&lt;/p&gt;
+    47	&lt;/aside&gt;
+---vite.config---
+     1	import { defineConfig } from &#x27;vite&#x27;;
+     2	import { svelte } from &#x27;@sveltejs/vite-plugin-svelte&#x27;;
+     3	
+     4	export default defineConfig({
+     5	  plugins: [svelte()],
+     6	  // Dev-only: the browser talks to /api and Vite forwards it to the service,
+     7	  // so the API key never leaves service/.env and there is no CORS to fight.
+     8	  server: {
+     9	    host: &#x27;0.0.0.0&#x27;, // reachable from outside the container / on the LAN
+    10	    proxy: { &#x27;/api&#x27;: &#x27;http://localhost:8787&#x27; }
+    11	  }
+    12	});
+---main.js---
+import { mount } from &#x27;svelte&#x27;;
+import &#x27;./app.css&#x27;;
+import App from &#x27;./App.svelte&#x27;;
+
+export default mount(App, { target: document.getElementById(&#x27;app&#x27;) });</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-56-313Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-56-313Z" class="timestamp-link"><time datetime="2026-09-11T17:56:56.313Z" data-timestamp="2026-09-11T17:56:56.313Z">2026-09-11T17:56:56.313Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-56-59-223Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-56-59-223Z" class="timestamp-link"><time datetime="2026-09-11T17:56:59.223Z" data-timestamp="2026-09-11T17:56:59.223Z">2026-09-11T17:56:59.223Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01FT6GmMRmCS4dvtqsRRi3FV">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check filesystem case, Node/docker, remaining components</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;--- case check ---&#34;; ls -id plans Plans; diskutil info / 2&gt;/dev/null | grep -i &#34;case&#34;; echo &#34;--- node ---&#34;; node -v 2&gt;&amp;1; docker ps --format &#39;{{.Names}} {{.Image}}&#39; 2&gt;&amp;1 | head; docker exec dev node -v 2&gt;&amp;1; docker exec dev npm -v 2&gt;&amp;1; echo &#34;--- Graph.svelte ---&#34;; cat -n web/src/Graph.svelte | head -120; echo &#34;--- Chat.svelte head ---&#34;; head -40 web/src/Chat.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T17-57-02-845Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T17-57-02-845Z" class="timestamp-link"><time datetime="2026-09-11T17:57:02.845Z" data-timestamp="2026-09-11T17:57:02.845Z">2026-09-11T17:57:02.845Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>--- case check ---
+32857810 Plans
+32857810 plans
+--- node ---
+v12.18.3
+dev node-dev
+v24.4.1
+11.4.2
+--- Graph.svelte ---
+     1	&lt;script&gt;
+     2	  import { onMount } from &#x27;svelte&#x27;;
+     3	  import ForceGraph3D from &#x27;3d-force-graph&#x27;;
+     4	  import * as THREE from &#x27;three&#x27;;
+     5	
+     6	  let { tree, selectedId = null, highlight = [], onSelect } = $props();
+     7	
+     8	  let el;
+     9	  // The graph instance lives outside Svelte&#x27;s reactive system on purpose:
+    10	  // 3d-force-graph mutates its own data and runs its own render loop.
+    11	  let graph;
+    12	  const meshes = new Map(); // node id → THREE.Mesh, for the pulse loop
+    13	  let highlightSet = new Set();
+    14	  let raf;
+    15	
+    16	  const LEVEL = {
+    17	    company: { color: &#x27;#f5c542&#x27;, size: 10 },
+    18	    objective: { color: &#x27;#4f9cff&#x27;, size: 6.5 },
+    19	    kr: { color: &#x27;#5ad38a&#x27;, size: 3.6 }
+    20	  };
+    21	  const WHITE = new THREE.Color(&#x27;#ffffff&#x27;);
+    22	  const RED = new THREE.Color(&#x27;#ff3b30&#x27;);
+    23	
+    24	  // contributes 0 → red, 1 → green
+    25	  function linkColor(c) {
+    26	    const t = Math.max(0, Math.min(1, c ?? 0.5));
+    27	    return `hsl(${Math.round(120 * t)}, 75%, ${52 - 10 * t}%)`;
+    28	  }
+    29	
+    30	  const esc = (s) =&gt; String(s ?? &#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;]/g, (ch) =&gt; ({ &#x27;&amp;&#x27;: &#x27;&amp;amp;&#x27;, &#x27;&lt;&#x27;: &#x27;&amp;lt;&#x27;, &#x27;&gt;&#x27;: &#x27;&amp;gt;&#x27;, &#x27;&quot;&#x27;: &#x27;&amp;quot;&#x27; })[ch]);
+    31	
+    32	  function makeNodeObject(node) {
+    33	    const cfg = LEVEL[node.level] ?? LEVEL.kr;
+    34	    const mesh = new THREE.Mesh(
+    35	      new THREE.SphereGeometry(cfg.size, 24, 24),
+    36	      new THREE.MeshLambertMaterial({ color: cfg.color, transparent: true, opacity: 0.95 })
+    37	    );
+    38	    mesh.userData.baseColor = new THREE.Color(cfg.color);
+    39	    meshes.set(node.id, mesh);
+    40	    return mesh;
+    41	  }
+    42	
+    43	  // Reuse existing node objects (they carry x/y/z) so an edit nudges the
+    44	  // layout instead of re-heating the whole simulation.
+    45	  function toGraphData(t, prev) {
+    46	    const prevById = new Map((prev?.nodes ?? []).map((n) =&gt; [n.id, n]));
+    47	    const nodes = t.nodes.map((n) =&gt; {
+    48	      const existing = prevById.get(n.id);
+    49	      return existing ? Object.assign(existing, n) : { ...n };
+    50	    });
+    51	    const ids = new Set(nodes.map((n) =&gt; n.id));
+    52	    const links = t.nodes
+    53	      .filter((n) =&gt; n.parent &amp;&amp; ids.has(n.parent))
+    54	      .map((n) =&gt; ({ source: n.parent, target: n.id, contributes: n.contributes ?? 0.5 }));
+    55	    return { nodes, links };
+    56	  }
+    57	
+    58	  export function flyTo(ids, ms = 1200) {
+    59	    if (!graph || !ids?.length) return;
+    60	    const want = new Set(ids);
+    61	    const nodes = graph.graphData().nodes.filter((n) =&gt; want.has(n.id) &amp;&amp; Number.isFinite(n.x));
+    62	    if (!nodes.length) return;
+    63	    const c = { x: 0, y: 0, z: 0 };
+    64	    for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
+    65	    c.x /= nodes.length; c.y /= nodes.length; c.z /= nodes.length;
+    66	    let radius = 0;
+    67	    for (const n of nodes) radius = Math.max(radius, Math.hypot(n.x - c.x, n.y - c.y, n.z - c.z));
+    68	    const dist = Math.max(140, radius * 2.2 + 120);
+    69	    // Approach along the camera&#x27;s current bearing so the move feels continuous.
+    70	    const cam = graph.cameraPosition();
+    71	    const dir = new THREE.Vector3(cam.x - c.x, cam.y - c.y, cam.z - c.z);
+    72	    if (dir.length() &lt; 1) dir.set(0, 0.3, 1);
+    73	    dir.normalize();
+    74	    graph.cameraPosition({ x: c.x + dir.x * dist, y: c.y + dir.y * dist, z: c.z + dir.z * dist }, c, ms);
+    75	  }
+    76	
+    77	  function animate() {
+    78	    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
+    79	    for (const [id, mesh] of meshes) {
+    80	      const hi = highlightSet.has(id);
+    81	      const sel = id === selectedId;
+    82	      const target = hi ? 1.3 + 0.35 * pulse : sel ? 1.35 : 1;
+    83	      mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.2);
+    84	      const mat = mesh.material;
+    85	      if (hi) {
+    86	        mat.color.copy(RED).lerp(WHITE, 0.25 * pulse);
+    87	        mat.emissive.copy(RED);
+    88	        mat.emissiveIntensity = 0.3 + 0.7 * pulse;
+    89	      } else if (sel) {
+    90	        mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.5);
+    91	        mat.emissive.copy(mesh.userData.baseColor);
+    92	        mat.emissiveIntensity = 0.5;
+    93	      } else {
+    94	        mat.color.copy(mesh.userData.baseColor);
+    95	        mat.emissiveIntensity = 0;
+    96	      }
+    97	    }
+    98	    raf = requestAnimationFrame(animate);
+    99	  }
+   100	
+   101	  onMount(() =&gt; {
+   102	    graph = ForceGraph3D()(el)
+   103	      .backgroundColor(&#x27;#0b0f17&#x27;)
+   104	      .dagMode(&#x27;td&#x27;)
+   105	      .dagLevelDistance(90)
+   106	      .onDagError((loopIds) =&gt; console.warn(&#x27;DAG cycle, falling back to free layout&#x27;, loopIds))
+   107	      .nodeId(&#x27;id&#x27;)
+   108	      .nodeLabel((n) =&gt; `&lt;div class=&quot;tip&quot;&gt;&lt;b&gt;${esc(n.label)}&lt;/b&gt;&lt;span&gt;${esc(n.owner)}${n.target ? &#x27; · &#x27; + esc(n.target) : &#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;`)
+   109	      .nodeThreeObject(makeNodeObject)
+   110	      .linkWidth((l) =&gt; 0.5 + 2.8 * (l.contributes ?? 0.5))
+   111	      .linkColor((l) =&gt; linkColor(l.contributes))
+   112	      .linkOpacity(0.9)
+   113	      .linkDirectionalParticles((l) =&gt; ((l.contributes ?? 0.5) &gt;= 0.4 ? 2 : 0))
+   114	      .linkDirectionalParticleWidth(1.4)
+   115	      .linkDirectionalParticleSpeed(0.005)
+   116	      .d3VelocityDecay(0.3)
+   117	      .warmupTicks(80)
+   118	      .onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })
+   119	      .onBackgroundClick(() =&gt; onSelect?.(null));
+   120	    graph.d3Force(&#x27;charge&#x27;).strength(-160);
+--- Chat.svelte head ---
+&lt;script&gt;
+  let { messages = [], loading = false, onSend, onRecall } = $props();
+
+  let text = $state(&#x27;&#x27;);
+  let listEl;
+
+  const suggestions = [
+    &#x27;Which key results don’t clearly support a company objective?&#x27;,
+    &#x27;Rewrite those so they’re measurable and tie them to the right objective.&#x27;,
+    &#x27;Which team is carrying the most risk?&#x27;
+  ];
+
+  $effect(() =&gt; {
+    void messages.length;
+    void loading;
+    requestAnimationFrame(() =&gt; listEl?.scrollTo({ top: listEl.scrollHeight, behavior: &#x27;smooth&#x27; }));
+  });
+
+  function submit(e) {
+    e?.preventDefault();
+    const m = text.trim();
+    if (!m || loading) return;
+    text = &#x27;&#x27;;
+    onSend(m);
+  }
+
+  function onKey(e) {
+    if (e.key === &#x27;Enter&#x27; &amp;&amp; !e.shiftKey) submit(e);
+  }
+&lt;/script&gt;
+
+&lt;aside class=&quot;chat&quot;&gt;
+  &lt;div class=&quot;messages&quot; bind:this={listEl}&gt;
+    {#if !messages.length}
+      &lt;div class=&quot;empty&quot;&gt;
+        &lt;p&gt;Ask the tree anything, or tell it what to change.&lt;/p&gt;
+        {#each suggestions as s}
+          &lt;button class=&quot;chip&quot; onclick={() =&gt; onSend(s)} disabled={loading}&gt;{s}&lt;/button&gt;
+        {/each}
+      &lt;/div&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-57-06-684Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-57-06-684Z" class="timestamp-link"><time datetime="2026-09-11T17:57:06.684Z" data-timestamp="2026-09-11T17:57:06.684Z">2026-09-11T17:57:06.684Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-57-06-686Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-57-06-686Z" class="timestamp-link"><time datetime="2026-09-11T17:57:06.686Z" data-timestamp="2026-09-11T17:57:06.686Z">2026-09-11T17:57:06.686Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-57-11-344Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-57-11-344Z" class="timestamp-link"><time datetime="2026-09-11T17:57:11.344Z" data-timestamp="2026-09-11T17:57:11.344Z">2026-09-11T17:57:11.344Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_011vns7UZ48BPCuNPvbmKCPE">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Inspect the json-schema-to-typescript fork release branch</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;--- repo ---&#34;; gh api repos/LudaThomas/json-schema-to-typescript --jq &#39;{fork, parent: .parent.full_name, default_branch, pushed_at}&#39; 2&gt;&amp;1; echo &#34;--- branches ---&#34;; gh api repos/LudaThomas/json-schema-to-typescript/branches --jq &#39;.[].name&#39; 2&gt;&amp;1; echo &#34;--- release package.json ---&#34;; gh api repos/LudaThomas/json-schema-to-typescript/contents/package.json?ref=release --jq &#39;.content&#39; 2&gt;&amp;1 | base64 -d 2&gt;&amp;1 | head -120; echo &#34;--- release commits ---&#34;; gh api &#34;repos/LudaThomas/json-schema-to-typescript/commits?sha=release&amp;per_page=8&#34; --jq &#39;.[] | &#34;\(.sha[0:7]) \(.commit.author.date[0:10]) \(.commit.message | split(&#34;\n&#34;)[0])&#34;&#39; 2&gt;&amp;1; echo &#34;--- release tree top ---&#34;; gh api &#34;repos/LudaThomas/json-schema-to-typescript/contents?ref=release&#34; --jq &#39;.[].name&#39; 2&gt;&amp;1</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T17-57-13-358Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T17-57-13-358Z" class="timestamp-link"><time datetime="2026-09-11T17:57:13.358Z" data-timestamp="2026-09-11T17:57:13.358Z">2026-09-11T17:57:13.358Z</time></a></div><div class="message-content"><div class="tool-result tool-error"><div class="truncatable"><div class="truncatable-content"><pre>Exit code 127
+--- repo ---
+(eval):1: command not found: gh
+--- branches ---
+(eval):1: command not found: gh
+--- release package.json ---
+(eval):1: no matches found: repos/LudaThomas/json-schema-to-typescript/contents/package.json?ref=release
+--- release commits ---
+(eval):1: command not found: gh
+--- release tree top ---
+(eval):1: command not found: gh</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-57-21-060Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-57-21-060Z" class="timestamp-link"><time datetime="2026-09-11T17:57:21.060Z" data-timestamp="2026-09-11T17:57:21.060Z">2026-09-11T17:57:21.060Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01CXkP5PRsx7DUtiT9QFdVDS">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Inspect fork via GitHub REST API with curl</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; H=&#34;https://api.github.com/repos/LudaThomas/json-schema-to-typescript&#34;; echo &#34;--- repo ---&#34;; curl -s &#34;$H&#34; | python3 -c &#39;import sys,json;d=json.load(sys.stdin);print({k:d.get(k) for k in [&#34;fork&#34;,&#34;default_branch&#34;,&#34;pushed_at&#34;]}, d.get(&#34;parent&#34;,{}).get(&#34;full_name&#34;))&#39;; echo &#34;--- branches ---&#34;; curl -s &#34;$H/branches&#34; | python3 -c &#39;import sys,json;[print(b[&#34;name&#34;]) for b in json.load(sys.stdin)]&#39;; echo &#34;--- release package.json ---&#34;; curl -s &#34;https://raw.githubusercontent.com/LudaThomas/json-schema-to-typescript/release/package.json&#34;; echo; echo &#34;--- release commits ---&#34;; curl -s &#34;$H/commits?sha=release&amp;per_page=8&#34; | python3 -c &#39;import sys,json;[print(c[&#34;sha&#34;][:7],c[&#34;commit&#34;][&#34;author&#34;][&#34;date&#34;][:10],c[&#34;commit&#34;][&#34;message&#34;].splitlines()[0]) for c in json.load(sys.stdin)]&#39;; echo &#34;--- release tree top ---&#34;; curl -s &#34;$H/contents?ref=release&#34; | python3 -c &#39;import sys,json;[print(f[&#34;name&#34;]) for f in json.load(sys.stdin)]&#39;; echo &#34;--- compare upstream master...release ---&#34;; curl -s &#34;$H/compare/bcherny:master...LudaThomas:release&#34; | python3 -c &#39;import sys,json;d=json.load(sys.stdin);print(&#34;ahead&#34;,d.get(&#34;ahead_by&#34;),&#34;behind&#34;,d.get(&#34;behind_by&#34;));[print(&#34; &#34;,f[&#34;filename&#34;],f[&#34;status&#34;],&#34;+&#34;+str(f[&#34;additions&#34;]),&#34;-&#34;+str(f[&#34;deletions&#34;])) for f in d.get(&#34;files&#34;,[])[:40]]&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T17-57-27-564Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T17-57-27-564Z" class="timestamp-link"><time datetime="2026-09-11T17:57:27.564Z" data-timestamp="2026-09-11T17:57:27.564Z">2026-09-11T17:57:27.564Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>--- repo ---
+{&#x27;fork&#x27;: True, &#x27;default_branch&#x27;: &#x27;master&#x27;, &#x27;pushed_at&#x27;: &#x27;2026-05-09T19:10:09Z&#x27;} bcherny/json-schema-to-typescript
+--- branches ---
+master
+release
+--- release package.json ---
+{
+  &quot;name&quot;: &quot;json-schema-to-typescript&quot;,
+  &quot;version&quot;: &quot;15.0.3&quot;,
+  &quot;description&quot;: &quot;compile json schema to typescript typings&quot;,
+  &quot;main&quot;: &quot;dist/src/index.js&quot;,
+  &quot;bin&quot;: {
+    &quot;json2ts&quot;: &quot;dist/src/cli.js&quot;
+  },
+  &quot;typings&quot;: &quot;dist/src/index.d.ts&quot;,
+  &quot;engines&quot;: {
+    &quot;node&quot;: &quot;&gt;=16.0.0&quot;
+  },
+  &quot;scripts&quot;: {
+    &quot;build&quot;: &quot;npm run lint &amp;&amp; npm run clean &amp;&amp; npm run build:browser &amp;&amp; npm run build:server&quot;,
+    &quot;build:browser&quot;: &quot;browserify src/index.ts -s jstt -p tsify &gt; dist/bundle.js&quot;,
+    &quot;build:server&quot;: &quot;tsc -d&quot;,
+    &quot;clean&quot;: &quot;shx rm -rf dist &amp;&amp; mkdir dist&quot;,
+    &quot;format&quot;: &quot;prettier \&quot;{src,test}/*.ts\&quot; --write&quot;,
+    &quot;format-check&quot;: &quot;prettier \&quot;{src,test}/*.ts\&quot; --check&quot;,
+    &quot;lint&quot;: &quot;eslint src/*.ts test/*.ts&quot;,
+    &quot;tdd&quot;: &quot;concurrently -r -p &#x27;&#x27; -k &#x27;npm run watch&#x27; &#x27;npm run watch:test&#x27;&quot;,
+    &quot;test&quot;: &quot;npm run pre-test &amp;&amp; ava --timeout=300s --verbose&quot;,
+    &quot;stresstest&quot;: &quot;seq 1 10 | xargs -I{} npm test&quot;,
+    &quot;prepublishOnly&quot;: &quot;npm test&quot;,
+    &quot;pre-test&quot;: &quot;npm run clean &amp;&amp; npm run format-check &amp;&amp; npm run build:server&quot;,
+    &quot;watch&quot;: &quot;tsc -w&quot;,
+    &quot;watch:test&quot;: &quot;ava -w&quot;
+  },
+  &quot;repository&quot;: {
+    &quot;type&quot;: &quot;git&quot;,
+    &quot;url&quot;: &quot;git+https://github.com/bcherny/json-schema-to-typescript.git&quot;
+  },
+  &quot;keywords&quot;: [
+    &quot;json&quot;,
+    &quot;schema&quot;,
+    &quot;typescript&quot;,
+    &quot;compile&quot;,
+    &quot;transpile&quot;,
+    &quot;api&quot;,
+    &quot;interface&quot;,
+    &quot;typing&quot;,
+    &quot;share&quot;
+  ],
+  &quot;author&quot;: &quot;Boris Cherny &lt;boris@borischerny.com&gt; (https://borischerny.com)&quot;,
+  &quot;license&quot;: &quot;MIT&quot;,
+  &quot;bugs&quot;: {
+    &quot;url&quot;: &quot;https://github.com/bcherny/json-schema-to-typescript/issues&quot;
+  },
+  &quot;homepage&quot;: &quot;https://github.com/bcherny/json-schema-to-typescript#readme&quot;,
+  &quot;dependencies&quot;: {
+    &quot;@apidevtools/json-schema-ref-parser&quot;: &quot;^11.5.5&quot;,
+    &quot;@types/json-schema&quot;: &quot;^7.0.15&quot;,
+    &quot;@types/lodash&quot;: &quot;^4.17.7&quot;,
+    &quot;js-yaml&quot;: &quot;^4.1.0&quot;,
+    &quot;lodash&quot;: &quot;^4.17.21&quot;,
+    &quot;minimist&quot;: &quot;^1.2.8&quot;,
+    &quot;prettier&quot;: &quot;^3.2.5&quot;,
+    &quot;tinyglobby&quot;: &quot;^0.2.9&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@types/cli-color&quot;: &quot;^2.0.6&quot;,
+    &quot;@types/js-yaml&quot;: &quot;^4.0.9&quot;,
+    &quot;@types/minimist&quot;: &quot;^1.2.5&quot;,
+    &quot;@types/node&quot;: &quot;^20.12.7&quot;,
+    &quot;@typescript-eslint/eslint-plugin&quot;: &quot;^7.7.0&quot;,
+    &quot;@typescript-eslint/parser&quot;: &quot;^7.7.0&quot;,
+    &quot;ava&quot;: &quot;^6.1.2&quot;,
+    &quot;browserify&quot;: &quot;^17.0.0&quot;,
+    &quot;browserify-shim&quot;: &quot;^3.8.16&quot;,
+    &quot;cli-color&quot;: &quot;^2.0.4&quot;,
+    &quot;concurrently&quot;: &quot;^8.2.2&quot;,
+    &quot;eslint&quot;: &quot;^8.56.0&quot;,
+    &quot;eslint-config-prettier&quot;: &quot;^9.1.0&quot;,
+    &quot;eslint-plugin-prettier&quot;: &quot;^5.1.3&quot;,
+    &quot;rimraf&quot;: &quot;^5.0.5&quot;,
+    &quot;shx&quot;: &quot;^0.3.4&quot;,
+    &quot;tsify&quot;: &quot;^5.0.4&quot;,
+    &quot;typescript&quot;: &quot;^5.4.5&quot;
+  },
+  &quot;ava&quot;: {
+    &quot;files&quot;: [
+      &quot;./dist/test/test.js&quot;
+    ],
+    &quot;snapshotDir&quot;: &quot;./test/__snapshots__&quot;
+  },
+  &quot;browserify&quot;: {
+    &quot;transform&quot;: [
+      &quot;browserify-shim&quot;
+    ]
+  },
+  &quot;browserify-shim&quot;: {
+    &quot;prettier&quot;: &quot;global:prettier&quot;
+  }
+}
+
+--- release commits ---
+1286d0e 2026-05-09 add js files
+8f05223 2026-05-09 for release
+8e784cf 2026-05-09 fix: lift  annotation siblings in externally-loaded files
+d2fa51a 2026-05-09 Fixed bcherny/json-schema-to-typescript#363 by adding a pre-dereference normalization step in src/resolver.ts
+43ba08b 2025-05-19 Add Claude PR Assistant workflow (#659)
+a5834aa 2025-01-14 chore: remove is-glob dependency (#643)
+ef18aa1 2025-01-14 Fix: tsconfig.json for building on darwin (#644)
+18831cb 2025-01-14 double quote enum key if it contains special characters (#648)
+--- release tree top ---
+.editorconfig
+.eslintrc.json
+.github
+.gitignore
+.npmignore
+.nvmrc
+.prettierrc
+.vscode
+ARCHITECTURE.md
+CHANGELOG.md
+CONTRIBUTING.md
+LICENCE.md
+README.md
+dist
+example
+package-lock.json
+package.json
+src
+test
+tsconfig.json
+--- compare upstream master...release ---
+ahead 4 behind 138
+  .gitignore modified +0 -2
+  dist/src/applySchemaTyping.d.ts added +2 -0
+  dist/src/applySchemaTyping.js added +50 -0
+  dist/src/cli.d.ts added +2 -0
+  dist/src/cli.js added +220 -0
+  dist/src/formatter.d.ts added +2 -0
+  dist/src/formatter.js added +23 -0
+  dist/src/generator.d.ts added +7 -0
+  dist/src/generator.js added +314 -0
+  dist/src/index.d.ts added +77 -0
+  dist/src/index.js added +119 -0
+  dist/src/linker.d.ts added +7 -0
+  dist/src/linker.js added +35 -0
+  dist/src/normalizer.d.ts added +4 -0
+  dist/src/normalizer.js added +216 -0
+  dist/src/optimizer.d.ts added +3 -0
+  dist/src/optimizer.js added +71 -0
+  dist/src/optionValidator.d.ts added +2 -0
+  dist/src/optionValidator.js added +10 -0
+  dist/src/parser.d.ts added +7 -0
+  dist/src/parser.js added +394 -0
+  dist/src/resolver.d.ts added +10 -0
+  dist/src/resolver.js added +114 -0
+  dist/src/types/AST.d.ts added +107 -0
+  dist/src/types/AST.js added +29 -0
+  dist/src/types/JSONSchema.d.ts added +103 -0
+  dist/src/types/JSONSchema.js added +27 -0
+  dist/src/typesOfSchema.d.ts added +10 -0
+  dist/src/typesOfSchema.js added +145 -0
+  dist/src/utils.d.ts added +37 -0
+  dist/src/utils.js added +387 -0
+  dist/src/validator.d.ts added +2 -0
+  dist/src/validator.js added +51 -0
+  dist/test/e2e/JSONSchema.d.ts added +198 -0
+  dist/test/e2e/JSONSchema.js added +142 -0
+  dist/test/e2e/WithComment.d.ts added +16 -0
+  dist/test/e2e/WithComment.js added +20 -0
+  dist/test/e2e/additionalProperties.1.d.ts added +12 -0
+  dist/test/e2e/additionalProperties.1.js added +16 -0
+  dist/test/e2e/additionalProperties.2.d.ts added +34 -0</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-57-37-449Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-57-37-449Z" class="timestamp-link"><time datetime="2026-09-11T17:57:37.449Z" data-timestamp="2026-09-11T17:57:37.449Z">2026-09-11T17:57:37.449Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-57-37-451Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-57-37-451Z" class="timestamp-link"><time datetime="2026-09-11T17:57:37.451Z" data-timestamp="2026-09-11T17:57:37.451Z">2026-09-11T17:57:37.451Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-57-44-811Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-57-44-811Z" class="timestamp-link"><time datetime="2026-09-11T17:57:44.811Z" data-timestamp="2026-09-11T17:57:44.811Z">2026-09-11T17:57:44.811Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_019WgQr69GA6osvdMjLt8Qxd">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read fork source diffs, npmignore, and README options</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; H=&#34;https://api.github.com/repos/LudaThomas/json-schema-to-typescript&#34;; for c in d2fa51a 8e784cf 8f05223 1286d0e; do echo &#34;=== $c ===&#34;; curl -s &#34;$H/commits/$c&#34; | python3 -c &#39;
+import sys,json;d=json.load(sys.stdin);print(d[&#34;commit&#34;][&#34;message&#34;]);
+for f in d[&#34;files&#34;]:
+    if f[&#34;filename&#34;].startswith(&#34;dist/&#34;): continue
+    print(&#34;--&#34;,f[&#34;filename&#34;],f[&#34;status&#34;],&#34;+&#34;+str(f[&#34;additions&#34;]),&#34;-&#34;+str(f[&#34;deletions&#34;]))
+    p=f.get(&#34;patch&#34;,&#34;&#34;);print(p[:2500])&#39;; done; echo &#34;=== .npmignore ===&#34;; curl -s https://raw.githubusercontent.com/LudaThomas/json-schema-to-typescript/release/.npmignore; echo &#34;=== README grep ===&#34;; curl -s https://raw.githubusercontent.com/LudaThomas/json-schema-to-typescript/release/README.md &gt; /private/tmp/claude-501/-Users-tmiv74-OKR-Display/d2fd352a-bdd5-4da3-bc67-4d978cb97f63/scratchpad/j2ts-README.md; grep -n -i -E &#34;draft|\\\$defs|--cwd|-i |-o |declareExternallyReferenced|tsType|additionalProperties|bannerComment|unreachableDefinitions|style&#34; /private/tmp/claude-501/-Users-tmiv74-OKR-Display/d2fd352a-bdd5-4da3-bc67-4d978cb97f63/scratchpad/j2ts-README.md | head -60</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T17-57-51-176Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T17-57-51-176Z" class="timestamp-link"><time datetime="2026-09-11T17:57:51.176Z" data-timestamp="2026-09-11T17:57:51.176Z">2026-09-11T17:57:51.176Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== d2fa51a ===
+Fixed bcherny/json-schema-to-typescript#363 by adding a pre-dereference normalization step in src/resolver.ts
+-- src/resolver.ts modified +51 -0
+@@ -1,14 +1,65 @@
+ import {$RefParser, ParserOptions as $RefOptions} from &#x27;@apidevtools/json-schema-ref-parser&#x27;
++import {isPlainObject} from &#x27;lodash&#x27;
+ import {JSONSchema} from &#x27;./types/JSONSchema&#x27;
+ import {log} from &#x27;./utils&#x27;
+ 
+ export type DereferencedPaths = WeakMap&lt;JSONSchema, string&gt;
+ 
++// JSON Schema 2019-09 allows annotation siblings next to `$ref`. When such
++// siblings are present, json-schema-ref-parser produces a fresh merged object
++// for the `$ref`, which breaks the referential equality the parser relies on
++// to emit a named reference instead of inlining the target type. By wrapping
++// the `$ref` in a single-member `allOf` before dereferencing, the dereferenced
++// pointer keeps its identity and the annotations remain on the wrapper, where
++// they can attach as a property-level JSDoc comment.
++// @see https://github.com/bcherny/json-schema-to-typescript/issues/363
++const ANNOTATION_KEYS: ReadonlySet&lt;string&gt; = new Set([
++  &#x27;title&#x27;,
++  &#x27;description&#x27;,
++  &#x27;default&#x27;,
++  &#x27;examples&#x27;,
++  &#x27;readOnly&#x27;,
++  &#x27;writeOnly&#x27;,
++  &#x27;deprecated&#x27;,
++  &#x27;$comment&#x27;,
++])
++
++function liftAnnotationSiblingsOfRef(schema: unknown, processed = new WeakSet&lt;object&gt;()): void {
++  if (Array.isArray(schema)) {
++    for (const item of schema) {
++      liftAnnotationSiblingsOfRef(item, processed)
++    }
++    return
++  }
++  if (!isPlainObject(schema)) {
++    return
++  }
++  const obj = schema as Record&lt;string, unknown&gt;
++  if (processed.has(obj)) {
++    return
++  }
++  processed.add(obj)
++
++  if (typeof obj.$ref === &#x27;string&#x27;) {
++    const siblingKeys = Object.keys(obj).filter(k =&gt; k !== &#x27;$ref&#x27;)
++    if (siblingKeys.length &gt; 0 &amp;&amp; siblingKeys.every(k =&gt; ANNOTATION_KEYS.has(k))) {
++      const $ref = obj.$ref
++      delete obj.$ref
++      obj.allOf = [{$ref}]
++    }
++  }
++
++  for (const key of Object.keys(obj)) {
++    liftAnnotationSiblingsOfRef(obj[key], processed)
++  }
++}
++
+ export async function dereference(
+   schema: JSONSchema,
+   {cwd, $refOptions}: {cwd: string; $refOptions: $RefOptions},
+ ): Promise&lt;{dereferencedPaths: DereferencedPaths; dereferencedSchema: JSONSchema}&gt; {
+   log(&#x27;green&#x27;, &#x27;dereferencer&#x27;, &#x27;Dereferencing input schema:&#x27;, cwd, schema)
++  liftAnnotationSiblingsOfRef(schema)
+   const parser = new $RefParser()
+   const dereferencedPaths: DereferencedPaths = new WeakMap()
+   const dereferencedSchema = (await parser.dereference(cwd, schema, {
+-- test/__snapshots__/test/test.ts.md modified +23957 -103720
+
+-- test/__snapshots__/test/test.ts.snap modified +0 -0
+
+-- test/e2e/refWithAnnotationSiblings.ts added +21 -0
+@@ -0,0 +1,21 @@
++// @see https://github.com/bcherny/json-schema-to-typescript/issues/363
++export const input = {
++  title: &#x27;RefWithAnnotationSiblings&#x27;,
++  type: &#x27;object&#x27;,
++  properties: {
++    correct: {
++      $ref: &#x27;#/definitions/color&#x27;,
++    },
++    wrong: {
++      description: &#x27;should be referenced&#x27;,
++      $ref: &#x27;#/definitions/color&#x27;,
++    },
++  },
++  additionalProperties: false,
++  definitions: {
++    color: {
++      type: &#x27;string&#x27;,
++      enum: [&#x27;red&#x27;, &#x27;green&#x27;, &#x27;blue&#x27;],
++    },
++  },
++}
+=== 8e784cf ===
+fix: lift  annotation siblings in externally-loaded files
+The lift transform only ran on the root input schema, so sibling-
+annotated  inside files loaded by json-schema-ref-parser still
+merged and produced suffixed duplicates (Range2, Hyperparameters1,
+etc.) when the root schema &#x27;d across files.
+Wrap the JSON and YAML parser plugins so the transform runs on every
+loaded file as it&#x27;s parsed.
+-- src/resolver.ts modified +25 -0
+@@ -54,6 +54,24 @@ function liftAnnotationSiblingsOfRef(schema: unknown, processed = new WeakSet&lt;ob
+   }
+ }
+ 
++// json-schema-ref-parser parses external files via pluggable parsers. Wrap
++// the JSON and YAML parsers so the lift transform also applies to schemas
++// loaded from disk or HTTP — without it, sibling-annotated $refs in external
++// files would still be merged.
++function makeLiftingParser(basePlugin: any) {
++  return {
++    ...basePlugin,
++    order: typeof basePlugin.order === &#x27;number&#x27; ? basePlugin.order - 1 : 50,
++    async parse(file: any) {
++      const data = await basePlugin.parse.call(this, file)
++      if (data &amp;&amp; typeof data === &#x27;object&#x27;) {
++        liftAnnotationSiblingsOfRef(data)
++      }
++      return data
++    },
++  }
++}
++
+ export async function dereference(
+   schema: JSONSchema,
+   {cwd, $refOptions}: {cwd: string; $refOptions: $RefOptions},
+@@ -62,8 +80,15 @@ export async function dereference(
+   liftAnnotationSiblingsOfRef(schema)
+   const parser = new $RefParser()
+   const dereferencedPaths: DereferencedPaths = new WeakMap()
++  const {default: jsonParser} = await import(&#x27;@apidevtools/json-schema-ref-parser/dist/lib/parsers/json.js&#x27;)
++  const {default: yamlParser} = await import(&#x27;@apidevtools/json-schema-ref-parser/dist/lib/parsers/yaml.js&#x27;)
+   const dereferencedSchema = (await parser.dereference(cwd, schema, {
+     ...$refOptions,
++    parse: {
++      ...$refOptions.parse,
++      json: makeLiftingParser(jsonParser),
++      yaml: makeLiftingParser(yamlParser),
++    },
+     dereference: {
+       ...$refOptions.dereference,
+       onDereference($ref: string, schema: JSONSchema) {
+=== 8f05223 ===
+for release
+-- .gitignore modified +0 -1
+@@ -11,6 +11,5 @@ npm-debug.log
+ node_modules
+ *.js
+ *.map
+-dist/
+ dist_tests/
+ yarn-error.log
+=== 1286d0e ===
+add js files
+-- .gitignore modified +0 -1
+@@ -9,7 +9,6 @@
+ !.yarn/versions
+ npm-debug.log
+ node_modules
+-*.js
+ *.map
+ dist_tests/
+ yarn-error.log
+=== .npmignore ===
+.DS_Store
+.idea
+.vscode
+npm-debug.log
+yarn-error.log
+node_modules
+*.map
+example
+test
+dist/test
+circle.yml
+ARCHITECTURE.md
+CONTRIBUTING.md
+.editorconfig
+package-lock.json
+yarn.lock
+=== README grep ===
+3:[build]: https://img.shields.io/github/actions/workflow/status/bcherny/json-schema-to-typescript/ci.yml?style=flat-square
+4:[npm]: https://img.shields.io/npm/v/json-schema-to-typescript.svg?style=flat-square
+5:[mit]: https://img.shields.io/npm/l/json-schema-to-typescript.svg?style=flat-square
+6:[node]: https://img.shields.io/badge/Node.js-16+-417e37?style=flat-square
+37:  &quot;additionalProperties&quot;: false,
+92:json2ts -i foo.json -o foo.d.ts
+94:json2ts -i &#x27;schemas/**/*.json&#x27;
+96:json2ts -i schemas/ -o types/
+99:You can pass any of the options described below (including style options) as CLI flags. Boolean values can be set to false using the `no-` prefix.
+103:json2ts -i foo.json -o foo.d.ts --unreachableDefinitions
+105:json2ts -i foo.json -o foo.d.ts --style.singleQuote --no-style.semi
+135:| additionalProperties | boolean | `true` | Default value for `additionalProperties`, when it is not explicitly set |
+136:| bannerComment | string | `&quot;/* eslint-disable */\n/**\n* This file was automatically generated by json-schema-to-typescript.\n* DO NOT MODIFY IT BY HAND. Instead, modify the source JSON Schema file,\n* and run json-schema-to-typescript to regenerate this file.\n*/&quot;` | Disclaimer comment prepended to the top of each generated file |
+138:| cwd | string | `process.cwd()` | Root directory for resolving [`$ref`](https://tools.ietf.org/id/draft-pbryan-zyp-json-ref-03.html)s |
+139:| declareExternallyReferenced | boolean | `true` | Declare external schemas referenced via `$ref`? |
+146:| style | object | `{ bracketSpacing: false,  printWidth: 120,  semi: true,  singleQuote: false,  tabWidth: 2,  trailingComma: &#x27;none&#x27;,  useTabs: false }` | A [Prettier](https://prettier.io/docs/en/options.html) configuration |
+148:| unreachableDefinitions | boolean | `false` | Generates code for `$defs` that aren&#x27;t referenced by the schema. |
+187:- [x] `additionalProperties` of type
+194:- [x] custom typescript types via `tsType`
+198:- `tsType`: Overrides the type that&#x27;s generated from the schema. Useful for forcing a type to `any` or when using non-standard JSON schema extensions ([eg](https://github.com/sokra/json-schema-to-typescript/blob/f1f40307cf5efa328522bb1c9ae0b0d9e5f367aa/test/e2e/customType.ts)).
+224:- JSON-schema spec: https://tools.ietf.org/html/draft-zyp-json-schema-04</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-59-30-834Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-59-30-834Z" class="timestamp-link"><time datetime="2026-09-11T17:59:30.834Z" data-timestamp="2026-09-11T17:59:30.834Z">2026-09-11T17:59:30.834Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-59-30-840Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-59-30-840Z" class="timestamp-link"><time datetime="2026-09-11T17:59:30.840Z" data-timestamp="2026-09-11T17:59:30.840Z">2026-09-11T17:59:30.840Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>I'll confirm the <code>dev</code> container has git and can install the fork directly from GitHub without a build step, since that's the riskiest part of the plan.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T17-59-33-531Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T17-59-33-531Z" class="timestamp-link"><time datetime="2026-09-11T17:59:33.531Z" data-timestamp="2026-09-11T17:59:33.531Z">2026-09-11T17:59:33.531Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_013wzmYMotE7FNTKXtPey7tn">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Probe-install the fork inside the dev container and compile a sample</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">docker exec dev sh -c &#39;git --version; ls /src | head; rm -rf /tmp/j2ts-probe &amp;&amp; mkdir -p /tmp/j2ts-probe &amp;&amp; cd /tmp/j2ts-probe &amp;&amp; npm init -y &gt;/dev/null &amp;&amp; npm i --no-audit --no-fund github:LudaThomas/json-schema-to-typescript#release 2&gt;&amp;1 | tail -3 &amp;&amp; node -e &#34;const p=require(\&#34;json-schema-to-typescript/package.json\&#34;);console.log(\&#34;installed\&#34;,p.version, p._resolved||\&#34;\&#34;)&#34; &amp;&amp; ls node_modules/json-schema-to-typescript/dist/src | head -5 &amp;&amp; printf &#34;{\&#34;title\&#34;:\&#34;Probe\&#34;,\&#34;type\&#34;:\&#34;object\&#34;,\&#34;properties\&#34;:{\&#34;a\&#34;:{\&#34;description\&#34;:\&#34;annotated ref\&#34;,\&#34;\$ref\&#34;:\&#34;#/definitions/c\&#34;},\&#34;b\&#34;:{\&#34;\$ref\&#34;:\&#34;#/definitions/c\&#34;}},\&#34;additionalProperties\&#34;:false,\&#34;definitions\&#34;:{\&#34;c\&#34;:{\&#34;type\&#34;:\&#34;string\&#34;,\&#34;enum\&#34;:[\&#34;x\&#34;,\&#34;y\&#34;]}}}&#34; &gt; probe.json &amp;&amp; npx json2ts -i probe.json --no-bannerComment&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T18-00-05-375Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T18-00-05-375Z" class="timestamp-link"><time datetime="2026-09-11T18:00:05.375Z" data-timestamp="2026-09-11T18:00:05.375Z">2026-09-11T18:00:05.375Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>git version 2.39.5
+CLAUDE.md
+README.md
+plans
+service
+web
+
+added 13 packages in 28s
+installed 15.0.3 
+applySchemaTyping.d.ts
+applySchemaTyping.js
+cli.d.ts
+cli.js
+formatter.d.ts
+export type C = &quot;x&quot; | &quot;y&quot;;
+
+export interface Probe {
+  /**
+   * annotated ref
+   */
+  a?: C;
+  b?: C;
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T18-00-48-743Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T18-00-48-743Z" class="timestamp-link"><time datetime="2026-09-11T18:00:48.743Z" data-timestamp="2026-09-11T18:00:48.743Z">2026-09-11T18:00:48.743Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T18-00-48-749Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T18-00-48-749Z" class="timestamp-link"><time datetime="2026-09-11T18:00:48.749Z" data-timestamp="2026-09-11T18:00:48.749Z">2026-09-11T18:00:48.749Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div><p>Confirmed the fork installs fine from GitHub with no build step, and annotated <code>$ref</code>s compile to a single named type rather than duplicates. Now writing up the plan and cleaning up the probe directory from the container.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T18-02-11-404Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T18-02-11-404Z" class="timestamp-link"><time datetime="2026-09-11T18:02:11.404Z" data-timestamp="2026-09-11T18:02:11.404Z">2026-09-11T18:02:11.404Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_019YyZRkizPM7rTVv176Qhyx">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Write the plan file and clean up the container probe dir</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">mkdir -p Plans/development &amp;&amp; cat &gt; Plans/development/OKR_SCHEMA_PACKAGE.md &lt;&lt;&#39;EOF&#39;
+---
+tags:
+  - plan
+  - schema
+  - tooling
+  - web
+  - service
+status: development
+created: 2026-09-11
+---
+# Plan: Add a versioned `@okr-viewer/schema` package shared by web and service
+
+## Context
+
+The OKR tree shape is defined four times by hand and nowhere formally:
+
+- the README &#34;Node shape&#34; prose,
+- `web/src/lib/tree.js:8` (the hand-written data) and `web/src/lib/apply.js:6` (`EDITABLE` field list, `clamp01` at `:8`, add-defaults at `:49-62`),
+- `service/validate.js:5-7` (`LEVELS`, `TEXT_FIELDS`, `MAX_TEXT`) and `validateTree` at `:9-19`, which only checks &#34;nodes is an array of unique string ids&#34;,
+- `service/prompt.js:8-39` (`RESPOND_TOOL.input_schema`, already a JSON Schema, with `fields: { type: &#39;object&#39; }` left untyped).
+
+The tree lives only in browser memory and resets on reload (README &#34;Scope boundary&#34;). The next things we want, save/load and import/export of the tree, company structure data, and later a history of key result metrics and tree changes, all need one authoritative, versioned description of the data that both sides validate against. Neither package is TypeScript, so the types must arrive as generated `.d.ts` that plain JS consumers can use through JSDoc.
+
+Tooling constraint: host Node is v12; every `npm`/`node` command runs inside the `dev` container (`docker exec -w /src dev …`, `/src` = repo root, Node 24.4 / npm 11.4). Verified 2026-09-11 that the container has git 2.39 and that `npm i github:LudaThomas/json-schema-to-typescript#release` installs 15.0.3 with a committed `dist/` (no build step) and `json2ts` runs.
+
+## Goal
+
+A `schema/` workspace package, `@okr-viewer/schema@0.1.0`, that owns the JSON Schemas for the OKR document, builds TypeScript types with the `LudaThomas/json-schema-to-typescript#release` fork and precompiled Ajv validators, and is imported by both `service/` and `web/` to validate every tree that crosses a boundary and to import/export the tree as a versioned JSON document.
+
+## Decisions (locked in)
+
+1. **npm workspaces at the repo root**, packages `schema`, `web`, `service`. One root lockfile replaces `web/package-lock.json` and `service/package-lock.json`. Consumers depend on `&#34;@okr-viewer/schema&#34;: &#34;^0.1.0&#34;`; npm symlinks the workspace, so the package is versioned by its own `package.json` and `npm pack -w schema` produces an installable tarball if a consumer ever needs to pin an older build. No private registry.
+2. **Compiler is the fork, pinned to the branch:** `&#34;json-schema-to-typescript&#34;: &#34;github:LudaThomas/json-schema-to-typescript#release&#34;`. It is upstream 15.0.3 plus a fix that keeps a `$ref` with `title`/`description` siblings as a *named* reference instead of inlining and suffixing duplicates (`OkrNode1`), including across externally loaded files. Our schemas are multi-file and annotate every `$ref`, so upstream would produce duplicate types. Commit the `package-lock.json` so the resolved commit is pinned; bump by re-running `npm update json-schema-to-typescript -w schema`.
+3. **JSON Schema draft-07**, `definitions` not `$defs`, one file per concept, every file has an `$id` under `https://okr-viewer.dev/schema/v1/`. Draft-07 is the draft both the fork and Ajv&#39;s default class support without flags.
+4. **Ajv 8 validators are precompiled at build time** (`ajv/dist/standalone`, ESM output) into `schema/dist/validators.js`. Consumers never run Ajv&#39;s compiler: no `new Function` in the browser, smaller bundle, identical behaviour on both sides. `ajv` and `ajv-formats` stay runtime deps because standalone code imports their small runtime helpers.
+5. **Document envelope with an integer `schemaVersion`.** Export/import moves an `OkrDocument` `{ schemaVersion: 1, meta, company?, tree, history? }`. The `/api/chat` contract keeps sending the bare `tree: { nodes }` (README: &#34;one shape, don&#39;t add a second one&#34;). Breaking schema changes bump `schemaVersion` and the package major; additive changes bump the minor. A `migrations/` folder holds one function per major step (empty at v1).
+6. **Structural vs. semantic validation split.** JSON Schema covers shape only. Uniqueness of ids, parent existence, cycles, exactly one `company` root, are checked by a hand-written `checkTreeSemantics()` shipped in the same package and used by both sides. The level ladder (`kr → objective → company`) is reported as a *warning*, not an error, because `validateResponse` and `apply.js` allow free relinking today.
+7. **`schema/dist/` is not committed.** The root `.gitignore` already ignores `dist/`. A `prepare` script builds it on `npm install`; npm runs `prepare` for workspace packages.
+8. **History is schema-only in this plan.** `history.schema.json` is authored and referenced from the document so the envelope is stable, but nothing produces history yet.
+
+## Phase 1 — Workspace scaffolding
+
+1. Add root `package.json`: `{ &#34;name&#34;: &#34;okr-viewer&#34;, &#34;private&#34;: true, &#34;workspaces&#34;: [&#34;schema&#34;, &#34;web&#34;, &#34;service&#34;], &#34;scripts&#34;: { &#34;build:schema&#34;: &#34;npm run build -w schema&#34;, &#34;test:schema&#34;: &#34;npm test -w schema&#34;, &#34;dev:web&#34;: &#34;npm run dev -w web&#34;, &#34;dev:service&#34;: &#34;npm run dev -w service&#34; } }`.
+2. Delete `web/package-lock.json` and `service/package-lock.json`; run `docker exec -w /src dev npm install` to produce the root lockfile. Confirm `web/vite.config.js:8-11` needs no `server.fs.allow` change (Vite detects the workspace root from the root `package.json`).
+3. Add `schema/package.json`: name `@okr-viewer/schema`, version `0.1.0`, `&#34;type&#34;: &#34;module&#34;`, `&#34;exports&#34;: { &#34;.&#34;: { &#34;types&#34;: &#34;./index.d.ts&#34;, &#34;default&#34;: &#34;./index.js&#34; }, &#34;./json/*&#34;: &#34;./dist/json/*&#34; }`, `&#34;files&#34;: [&#34;index.js&#34;, &#34;index.d.ts&#34;, &#34;src&#34;, &#34;dist&#34;, &#34;migrations&#34;]`, scripts `build`, `prepare` (= build), `test` (`node --test test/`), `clean`. Deps: `ajv@^8.17`, `ajv-formats@^3`. DevDeps: the fork (Decision 2), `@apidevtools/json-schema-ref-parser@^11` (used for the tool schema in Phase 3), `typescript@^5` (only for `tsc --noEmit` over the generated types).
+4. Add `&#34;@okr-viewer/schema&#34;: &#34;^0.1.0&#34;` to `web/package.json` dependencies and `service/package.json` dependencies. Update the README &#34;Setup&#34; block: one `npm install` at the root, then the two `dev` scripts.
+
+## Phase 2 — Author the schemas (`schema/src/`)
+
+Every property carries a `description`; those descriptions are reused verbatim as the Claude tool&#39;s field descriptions in Phase 3, so write them for the model as well as for humans.
+
+| File | Title / root type | Notes |
+|---|---|---|
+| `okr-node.schema.json` | `OkrNode` | `id` (string, `^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$`), `level` enum `company\|objective\|kr`, `parent` string or null, `label` (1–400 chars), `owner`, `metric`, `target` (0–400 chars, match `MAX_TEXT` at `service/validate.js:7`), `contributes` number 0–1. Required: `id, level, parent, label`. `additionalProperties: false` (tree nodes never carry graph `x/y/z`; `Graph.svelte:45-56` copies before mutating). |
+| `okr-tree.schema.json` | `OkrTree` | `{ nodes: OkrNode[] }`, `maxItems: 500` (matches `service/validate.js:11`). No other properties. |
+| `company.schema.json` | `Company` | `{ name, units: [{ id, name, parent: string\|null, lead? }], people?: [{ id, name, unitId }] }`. Node `owner` stays free text in v1; a `unitId` on nodes is a future additive change. |
+| `history.schema.json` | `History` | `{ metricSamples: [{ nodeId, at (date-time), value (number), note? }], changes: [{ at, actor: &#39;user&#39;\|&#39;assistant&#39;\|&#39;import&#39;, reason?, actions: Action[] }] }`. Schema only (Decision 8). |
+| `action.schema.json` | `Action` | `oneOf` by `op`: `edit`/`relink` (`fields` ⊆ `label, owner, metric, target, contributes, parent`), `add` (`fields` additionally `level`, `label` required), `delete` (no `fields`). Encodes the rules currently spread over `service/validate.js:42-55` and `web/src/lib/apply.js:6`. |
+| `chat-request.schema.json` | `ChatRequest` | `{ tree: OkrTree, message (1–4000), selectedNodeId: string\|null, history: [{ role, content }] (max 50) }`. |
+| `chat-response.schema.json` | `ChatResponse` | `{ reply, actions: Action[], highlight: string[] }`. Also the tool&#39;s input shape. |
+| `okr-document.schema.json` | `OkrDocument` | Envelope from Decision 5. `meta`: `{ title?, period?, exportedAt (date-time), generator? }`. |
+| `index.schema.json` | `OkrSchemaIndex` | Synthetic root whose properties `$ref` every file above, so one `json2ts` run emits every named type exactly once. Never validated against. |
+
+Cross-file references use relative `$ref`s (`&#34;$ref&#34;: &#34;okr-node.schema.json&#34;`) with a `description` sibling; this is the exact case the fork fixes.
+
+## Phase 3 — Build pipeline (`schema/scripts/build.mjs`, plain Node ESM)
+
+Steps, each failing the build loudly:
+
+1. **Meta-validate**: load every `src/*.schema.json`, `ajv.validateSchema()` each against draft-07, register all by `$id`.
+2. **Types**: `compileFromFile(&#39;src/index.schema.json&#39;, { cwd: &#39;src&#39;, declareExternallyReferenced: true, additionalProperties: false, bannerComment: &lt;generated-by note naming the fork&gt;, style: { singleQuote: true, semi: true, printWidth: 120 } })` → `dist/types.d.ts`. Fail if the output contains `/\b\w+\d+\b/`-style suffixed duplicates (`OkrNode1`), which is the regression the fork exists to prevent.
+3. **Validators**: `new Ajv({ allErrors: true, strict: true, code: { source: true, esm: true } })` + `addFormats`; `standaloneCode(ajv, { validateOkrDocument: &#39;&lt;id&gt;&#39;, validateOkrTree, validateOkrNode, validateCompany, validateHistory, validateAction, validateChatRequest, validateChatResponse })` → `dist/validators.js`; write a matching `dist/validators.d.ts` (each export is `(data: unknown) =&gt; boolean` with an `errors` property).
+4. **Copies**: `src/*.schema.json` → `dist/json/`.
+5. **Tool schema**: `$RefParser.dereference(&#39;src/chat-response.schema.json&#39;)`, delete `$schema`, `$id`, `definitions`, add `required: [&#39;reply&#39;,&#39;actions&#39;,&#39;highlight&#39;]` → `dist/json/tool/respond-input.json`. Claude&#39;s `input_schema` cannot follow external `$ref`s, so it gets the flattened copy.
+6. **Type-check**: `tsc --noEmit --strict dist/types.d.ts index.d.ts`.
+
+Run with `docker exec -w /src dev npm run build:schema`.
+
+## Phase 4 — Package runtime API (`schema/index.js`, `schema/index.d.ts`)
+
+- `SCHEMA_VERSION = 1`, `PACKAGE_VERSION` (read from `package.json`).
+- `validate&lt;X&gt;(data)` wrappers returning `{ ok: true, value }` or `{ ok: false, errors: string[] }` with Ajv errors rendered as `instancePath: message` (never expose raw Ajv error objects to callers).
+- `checkTreeSemantics(tree)` → `{ errors: string[], warnings: string[] }` per Decision 6. Ports the id/duplicate logic from `service/validate.js:12-17` and the cycle walk from `web/src/lib/apply.js:28-32` into one place.
+- `createDocument({ tree, company?, history?, meta? })` → stamped `OkrDocument` with `schemaVersion` and `exportedAt`.
+- `parseDocument(text | object)` → `{ ok, document }` after: JSON parse, `schemaVersion` check (reject `&gt; SCHEMA_VERSION`, migrate `&lt;` via `migrations/`), `validateOkrDocument`, `checkTreeSemantics`.
+- Re-export the JSON (`RESPOND_INPUT_SCHEMA`) and the generated types from `index.d.ts` (`export type { OkrNode, OkrTree, … } from &#39;./dist/types.js&#39;`).
+- `schema/test/*.test.js` using `node:test`: fixtures under `test/fixtures/{valid,invalid}/`, round-trip `createDocument → JSON → parseDocument`, `web/src/lib/tree.js` `initialTree` validates with zero warnings, `respond-input.json` contains no `$ref`, every invalid fixture fails with the expected `instancePath`.
+
+## Phase 5 — Service adoption
+
+1. `service/index.js:18-24`: replace the ad-hoc checks with `validateChatRequest(req.body)`; on failure respond `400 { error, details: errors }`. Then `checkTreeSemantics(tree)`; errors → 400, warnings → `console.warn`. Keep the `selected` resolution at `:26`.
+2. `service/validate.js`: delete `validateTree` (`:9-19`), `LEVELS`/`TEXT_FIELDS`/`MAX_TEXT` (`:5-7`) and `cleanFields` (`:42-55`). Keep `sanitizeHistory`, `mergeTurns`, and `validateResponse`, but have `validateResponse` first run each action through `validateAction` and reject with `dropped.push({ action, reason })` on shape failure, then keep its existing id/parent/cycle referential checks (`:63-114`), which are tree-relative and belong here.
+3. `service/prompt.js:8-39`: `RESPOND_TOOL.input_schema` becomes `RESPOND_INPUT_SCHEMA` imported from the package. Keep `name` and `description` here. The `## Actions` prose at `:62-67` stays; it explains intent, the schema now enforces shape.
+4. Import path: `import { validateChatRequest, validateAction, checkTreeSemantics, RESPOND_INPUT_SCHEMA } from &#39;@okr-viewer/schema&#39;`.
+
+## Phase 6 — Web adoption and import/export
+
+1. `web/src/App.svelte:5-6`: import `validateChatResponse`, `createDocument`, `parseDocument`, `checkTreeSemantics`.
+2. `web/src/App.svelte:37`: validate the response before `applyActions`; on failure push an error message instead of applying. In dev only (`import.meta.env.DEV`), assert `initialTree` at `:10` with `validateOkrTree` + `checkTreeSemantics` so a bad hand edit to `tree.js` fails at boot rather than mid-demo.
+3. Add **Export** and **Import** buttons next to `:92-97`. Export: `createDocument({ tree, meta: { title: &#39;OKR Viewer export&#39; } })` → Blob download `okr-&lt;date&gt;.json`. Import: hidden `&lt;input type=file accept=.json&gt;`, `parseDocument(await file.text())`; on success push the current tree onto `undoStack` (same pattern as `reset()` at `:59-64`) and replace `tree`; on failure surface the first three errors in the chat panel as an error message. Warnings are shown but do not block.
+4. `web/src/lib/apply.js`: no behaviour change. Add JSDoc types (`/** @param {import(&#39;@okr-viewer/schema&#39;).OkrTree} tree */`) so editors pick up the generated types; same for `tree.js:8`.
+5. Vite: because the package is a symlinked workspace, Vite treats it as source and pre-bundles its CJS deps on discovery. If the browser logs `does not provide an export named default` for an `ajv/dist/runtime/*` module, add those paths to `optimizeDeps.include` in `web/vite.config.js`.
+
+## Verification
+
+- `docker exec -w /src dev npm install` succeeds from a clean checkout with `schema/dist/` absent and leaves it built (Decision 7).
+- `npm run build:schema` is idempotent and `dist/types.d.ts` contains each interface once (`grep -c &#39;export interface OkrNode&#39; == 1`, no `OkrNode1`).
+- `npm run test:schema` passes: fixtures, round-trip, `initialTree` clean, tool schema has no `$ref`.
+- Service: `curl -X POST :8787/api/chat -d &#39;{&#34;tree&#34;:{&#34;nodes&#34;:[{&#34;id&#34;:1}]},&#34;message&#34;:&#34;hi&#34;}&#39;` → 400 whose `details` names `/tree/nodes/0/id`. A valid request still returns `{ reply, actions, highlight }`; a fabricated action with `op: &#34;explode&#34;` appears in the `[chat] dropped` log line.
+- Web: run the 90-second demo script unchanged, then Export, Reset, Import the file, and confirm the edited tree and undo stack are back. Import a file with `schemaVersion: 2` and confirm a clear refusal.
+- `git status` shows no `schema/dist/` and a single root `package-lock.json`.
+
+## Out of scope
+
+- Converting `web/` or `service/` to TypeScript. Types are consumed via JSDoc only.
+- Producing history (recording metric samples or change logs). Schema only.
+- Persisting anything server-side; the service stays stateless.
+- Publishing the package to any registry; `npm pack` tarballs are the only &#34;release&#34; artefact.
+- Referencing `owner` to `company.units` (future additive `unitId`).
+- Prompt tuning beyond swapping in the shared tool schema.
+
+## Risks / rollback
+
+- **Git dependency drift.** `#release` is a moving branch. The lockfile pins the commit; a CI/clean install with a stale lock still resolves the same commit. If the fork disappears, vendor `dist/` from `node_modules` into `schema/vendor/` and point the dep at `file:vendor/json-schema-to-typescript`.
+- **Stricter request validation could reject trees the UI already holds** (for example `contributes` missing on hand-written nodes). Mitigation: `contributes` is optional in the schema with `default: 0.5`, matching `apply.js:8`, and the dev-time assertion in Phase 6 step 2 catches drift before a demo.
+- **Anthropic API rejecting the flattened tool schema.** `oneOf` on `Action` is supported by the tool-use JSON Schema subset, but if the API rejects it, fall back to the current loose `{ op, id, fields }` in `respond-input.json` while keeping strict validation server-side.
+- **Rollback**: delete `schema/`, restore the two per-package lockfiles from git, revert the four touched files. No data formats ship until Phase 6, so nothing persisted needs migrating.
+
+## Completion notes
+
+*(fill in at completion)*
+EOF
+wc -c Plans/development/OKR_SCHEMA_PACKAGE.md; docker exec dev rm -rf /tmp/j2ts-probe; git status --short</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T18-02-14-268Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T18-02-14-268Z" class="timestamp-link"><time datetime="2026-09-11T18:02:14.268Z" data-timestamp="2026-09-11T18:02:14.268Z">2026-09-11T18:02:14.268Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>   16599 Plans/development/OKR_SCHEMA_PACKAGE.md
+?? plans/</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T18-02-20-204Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T18-02-20-204Z" class="timestamp-link"><time datetime="2026-09-11T18:02:20.204Z" data-timestamp="2026-09-11T18:02:20.204Z">2026-09-11T18:02:20.204Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T18-02-20-205Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T18-02-20-205Z" class="timestamp-link"><time datetime="2026-09-11T18:02:20.205Z" data-timestamp="2026-09-11T18:02:20.205Z">2026-09-11T18:02:20.205Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T18-02-26-270Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T18-02-26-270Z" class="timestamp-link"><time datetime="2026-09-11T18:02:26.270Z" data-timestamp="2026-09-11T18:02:26.270Z">2026-09-11T18:02:26.270Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_017jZ6c3c43Rb6yPFR6ZvPUq">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Rename plans dir to Plans and insert TL;DR section</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">mv plans plans_tmp &amp;&amp; mv plans_tmp Plans &amp;&amp; python3 - &lt;&lt;&#39;EOF&#39;
+p=&#39;Plans/development/OKR_SCHEMA_PACKAGE.md&#39;
+s=open(p).read()
+tldr=&#39;&#39;&#39;# Plan: Add a versioned `@okr-viewer/schema` package shared by web and service
+
+## TL;DR
+
+Turn the repo into an npm workspace and add a `schema/` package that owns draft-07 JSON Schemas for the OKR node, tree, company structure, history (metric samples and tree changes), actions, the `/api/chat` request/response, and a versioned export document. Its build compiles TypeScript types with the `LudaThomas/json-schema-to-typescript#release` fork and precompiled Ajv validators; `service/` uses it to validate every request and to source the Claude tool schema, `web/` uses it to validate responses and to add Export/Import of the tree as a `schemaVersion`-stamped JSON file. History is schema-only for now; no TypeScript conversion of the consumers.
+&#39;&#39;&#39;
+s=s.replace(&#39;# Plan: Add a versioned `@okr-viewer/schema` package shared by web and service\n&#39;, tldr, 1)
+open(p,&#39;w&#39;).write(s)
+EOF
+ls -d Plans &amp;&amp; git status --short &amp;&amp; grep -n &#34;^## &#34; Plans/development/OKR_SCHEMA_PACKAGE.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-11T18-02-28-503Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-11T18-02-28-503Z" class="timestamp-link"><time datetime="2026-09-11T18:02:28.503Z" data-timestamp="2026-09-11T18:02:28.503Z">2026-09-11T18:02:28.503Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Plans
+?? Plans/
+13:## TL;DR
+17:## Context
+30:## Goal
+34:## Decisions (locked in)
+45:## Phase 1 — Workspace scaffolding
+52:## Phase 2 — Author the schemas (`schema/src/`)
+70:## Phase 3 — Build pipeline (`schema/scripts/build.mjs`, plain Node ESM)
+83:## Phase 4 — Package runtime API (`schema/index.js`, `schema/index.d.ts`)
+93:## Phase 5 — Service adoption
+100:## Phase 6 — Web adoption and import/export
+108:## Verification
+117:## Out of scope
+126:## Risks / rollback
+133:## Completion notes</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-11T18-02-39-194Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-11T18-02-39-194Z" class="timestamp-link"><time datetime="2026-09-11T18:02:39.194Z" data-timestamp="2026-09-11T18:02:39.194Z">2026-09-11T18:02:39.194Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>The plan is written to <a href="Plans/development/OKR_SCHEMA_PACKAGE.md">Plans/development/OKR_SCHEMA_PACKAGE.md</a>, following the workspace template with a TL;DR, locked decisions, six phases, verification, and rollback. It is not committed.</p>
+<p><strong>What it proposes</strong></p>
+<ul>
+<li><strong>Workspace layout.</strong> A root <code>package.json</code> with npm workspaces for <code>schema</code>, <code>web</code>, and <code>service</code>, one root lockfile, and both consumers depending on <code>@okr-viewer/schema@^0.1.0</code>. Versioning comes from the package itself, with <code>npm pack</code> as the tarball escape hatch.</li>
+<li><strong>Schemas.</strong> Nine draft-07 files under <code>schema/src/</code>: node, tree, company structure, history, action, chat request, chat response, a versioned export envelope with an integer <code>schemaVersion</code>, and a synthetic index root so one compiler run emits every type once. History is schema-only for now.</li>
+<li><strong>Build.</strong> A plain Node script that meta-validates the schemas, compiles types with the fork you specified, precompiles Ajv validators to ESM so neither side runs a compiler at runtime, and emits a flattened copy of the response schema for the Claude tool's input schema.</li>
+<li><strong>Adoption.</strong> The service validates every request and sources the tool schema from the package. The web validates responses, asserts the hand-written tree at boot in dev, and gains Export and Import buttons with undo integration.</li>
+</ul>
+<p><strong>Two things I verified rather than assumed</strong></p>
+<ul>
+<li>The fork installs from GitHub inside the <code>dev</code> container with no build step, because its <code>release</code> branch commits <code>dist/</code>.</li>
+<li>Its actual change is a resolver fix that keeps an annotated <code>$ref</code> as a named type instead of emitting suffixed duplicates. I compiled a sample and got a single <code>C</code> type. The plan's multi-file schemas with described <code>$ref</code>s are exactly the case this fixes, so the choice is justified in the Decisions block.</li>
+</ul>
+<p><strong>Two housekeeping notes</strong></p>
+<ul>
+<li>The <code>plans/</code> directory was lowercase on disk. I renamed it to <code>Plans/</code> to match the workspace convention.</li>
+<li>The "Current work" section of CLAUDE.md lists Agent Bonsai plans that do not exist in this repo. I left it alone, but you may want to point it at the new plan.</li>
+</ul></div></div></div>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 2</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 2/2</h1>
+        
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-001.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<span class="current">2</span>
+<span class="disabled">Next &rarr;</span>
+</div>
+
+        
+<div class="message user" id="msg-2026-09-12T01-20-06-780Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T01-20-06-780Z" class="timestamp-link"><time datetime="2026-09-12T01:20:06.780Z" data-timestamp="2026-09-12T01:20:06.780Z">2026-09-12T01:20:06.780Z</time></a></div><div class="message-content">
+<div class="user-content"><p>in this system can objectives have objectives</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-20-11-423Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-20-11-423Z" class="timestamp-link"><time datetime="2026-09-12T01:20:11.423Z" data-timestamp="2026-09-12T01:20:11.423Z">2026-09-12T01:20:11.423Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-20-13-662Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-20-13-662Z" class="timestamp-link"><time datetime="2026-09-12T01:20:13.662Z" data-timestamp="2026-09-12T01:20:13.662Z">2026-09-12T01:20:13.662Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Lp5r3WDqTLDRHqCJahfKDk">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check how the level ladder is enforced across the stack</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; grep -n &#34;LADDER\|hangs off&#34; schema/index.js | head; echo &#34;--- editor parent choices ---&#34;; grep -n -i &#34;allowedParents\|parentOptions\|ladder\|level ===\|LEVEL_NAME&#34; web/src/Detail.svelte | head; echo &#34;--- prompt ---&#34;; grep -n &#34;Levels:\|level&#34; service/prompt.js | head; echo &#34;--- service validate ---&#34;; grep -n &#34;level&#34; service/validate.js | head</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-20-13-855Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-20-13-855Z" class="timestamp-link"><time datetime="2026-09-12T01:20:13.855Z" data-timestamp="2026-09-12T01:20:13.855Z">2026-09-12T01:20:13.855Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>165:const LADDER = { company: 0, objective: 1, kr: 2 };
+205:    if (LADDER[n.level] !== LADDER[parent.level] + 1) {
+206:      warnings.push(`/nodes/${i}/level: &quot;${n.id}&quot; (${n.level}) hangs off &quot;${parent.id}&quot; (${parent.level})`);
+--- editor parent choices ---
+28:  const LEVEL_NAME = { company: &#x27;Company objective&#x27;, objective: &#x27;Team objective&#x27;, kr: &#x27;Key result&#x27; };
+117:    const wanted = node.level === &#x27;kr&#x27; ? &#x27;objective&#x27; : &#x27;company&#x27;;
+119:    const list = tree.nodes.filter((n) =&gt; n.level === wanted &amp;&amp; n.id !== node.id &amp;&amp; !below.has(n.id));
+141:  const childLevel = $derived(node.level === &#x27;company&#x27; ? &#x27;objective&#x27; : node.level === &#x27;objective&#x27; ? &#x27;kr&#x27; : null);
+155:    const id = freshId(childLevel === &#x27;objective&#x27; ? &#x27;obj&#x27; : &#x27;kr&#x27;);
+165:        label: childLevel === &#x27;objective&#x27; ? &#x27;New objective&#x27; : &#x27;New key result&#x27;,
+190:    &lt;span class=&quot;level {node.level}&quot;&gt;{LEVEL_NAME[node.level] ?? node.level}&lt;/span&gt;
+221:              title: `Interview: new ${childLevel === &#x27;objective&#x27; ? &#x27;objective&#x27; : &#x27;key result&#x27;}`
+224:          Interview me about a new {childLevel === &#x27;objective&#x27; ? &#x27;objective&#x27; : &#x27;key result&#x27;} here
+376:          + Add {childLevel === &#x27;objective&#x27; ? &#x27;objective&#x27; : &#x27;key result&#x27;}
+--- prompt ---
+83:      `Selected node: ${quoted(selected.id)} (${selected.level}${team}). &quot;This&quot;, &quot;it&quot; and &quot;the selected one&quot; mean this node.`
+162:You are interviewing the user about &quot;${node.label}&quot; (${node.level}${team}, id \`${node.id}\`). Right now ${has}.
+207:    ? `You are helping the user define a new key result under &quot;${parent.label}&quot; (${parent.level}, id \`${parent.id}\`). That parent is settled — do not ask what it supports; ask what the new key result is.`
+232:Nodes are flat with parent pointers. Levels: company (the single root) → objective (team-level) → kr (key result). \`contributes\` (0–1) is a hand-assessed score of how well a node supports its parent; anything below 0.4 is a misalignment worth calling out. A KR with an empty or vague \`metric\` or \`target\` is not measurable. A KR that describes an activity (&quot;run an offsite&quot;, &quot;attend events&quot;) rather than an outcome is weak even if it has a number.
+247:- { &quot;op&quot;: &quot;add&quot;, &quot;id&quot;, &quot;fields&quot;: { level, parent, label, unitId, metric, target, contributes } } — new ids must be unique and of the form &quot;kr-&lt;short-slug&gt;&quot; or &quot;obj-&lt;short-slug&gt;&quot;.
+252:- Never invent ids. Never change a node&#x27;s level. Never touch the company objective unless asked.
+--- service validate ---
+194:      if (!fields.level || fields.level === &#x27;company&#x27;) fields.level = &#x27;kr&#x27;;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-20-24-474Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-20-24-474Z" class="timestamp-link"><time datetime="2026-09-12T01:20:24.474Z" data-timestamp="2026-09-12T01:20:24.474Z">2026-09-12T01:20:24.474Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Not in practice, though the data format would tolerate it. The system is a strict three-rung ladder: company → objective → key result. Where that is enforced:</p>
+<ul>
+<li><strong>Schema semantics</strong>: <a href="schema/index.js:205">schema/index.js:205</a> checks that a child's level is exactly one rung below its parent. An objective under an objective is only a <em>warning</em>, not an error, so a hand-authored or imported file with nested objectives loads and renders.</li>
+<li><strong>Node editor</strong>: <a href="web/src/Detail.svelte:117">Detail.svelte:117</a> offers KRs only objectives as parents and objectives only the company root. The "Add child" button at <a href="web/src/Detail.svelte:141">Detail.svelte:141</a> creates an objective under the company and a KR under an objective, and offers nothing under a KR.</li>
+<li><strong>Prompt</strong>: <a href="service/prompt.js:232">prompt.js:232</a> describes the three levels and <a href="service/prompt.js:252">prompt.js:252</a> forbids changing a node's level. The model is not told nesting is possible.</li>
+<li><strong>Service validation</strong>: <a href="service/validate.js:194">validate.js:194</a> only guards against a second company root. A model-proposed <code>add</code> with <code>level: "objective"</code> and an objective parent would pass, but the prompt steers away from it.</li>
+<li><strong>3D layout</strong>: the DAG layout is level-agnostic, so nested objectives would display fine, just one rung deeper.</li>
+</ul>
+<p>So the answer today is: the file format allows it with a warning, the UI and prompt do not offer it, and nothing crashes if it appears.</p>
+<p>If you want objective-under-objective as a real feature (sub-objectives or multi-level org hierarchies), the changes are: relax the ladder check to "objective may hang off company or objective", widen the parent select and Add button in Detail, and tell the prompt. That is a small plan. Say so and I'll write it.</p></div></div></div>
+<div class="message user" id="msg-2026-09-12T01-26-07-286Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T01-26-07-286Z" class="timestamp-link"><time datetime="2026-09-12T01:26:07.286Z" data-timestamp="2026-09-12T01:26:07.286Z">2026-09-12T01:26:07.286Z</time></a></div><div class="message-content">
+<div class="user-content"><p>please ingest this point of view into the project documentation. <code>When Google and early OKR pioneers warned against individual OKRs or deep organizational hierarchies, they were protecting humans from "alignment fatigue." In a manual system, cascading goals down 4 or 5 levels requires endless meetings, spreadsheet formatting, and manual auditing to catch broken links.AI shifts the bottleneck from administrative capacity to strategic clarity. Here is how AI alters the landscape of multi-level OKRs:How AI Solves the "Exponential Math" ProblemAutomated Vertical Alignment: AI can instantly ingest top-level company OKRs and generate context-aware, highly specific sub-OKRs for engineering squads, marketing pods, or individuals, maintaining a perfect mathematical and semantic link up the chain.Continuous Dependency Auditing: Instead of waiting for end-of-quarter reviews, AI monitors data streams in real-time. It can flag a broken link instantly (e.g., "Team B changed their Key Result, which now leaves Company Objective 2 unvouched for").Context Preservation at Scale: AI prevents organizational drift. It ensures that a micro-metric tracked by a single engineer is still conceptually anchored to the CEO's five-year vision, translating high-level strategy into local daily tasks.The New Bottleneck: Human FocusWhile AI eliminates the math and tracking issues, it introduces a psychological constraint: human cognitive load.Manual Era ConstraintsAI Era ConstraintsAdministrative burden: Managing spreadsheet cells and broken links.Over-optimization: AI generating too many perfect metrics that dilute team focus.Rigid hierarchies: 3 levels max because humans can't track more.Analysis paralysis: Sifting through endless automated data signals.Infrequent updates: OKRs reviewed quarterly due to time constraints.Noise vs. Signal: Distinguishing between actual progress and AI-generated busywork.Even with AI handling the architecture, humans still need a narrow, highly focused set of priorities to execute effectively. AI can draft and track 5,000 hyper-aligned individual OKRs, but a human can still only focus on 3 to 5 core priorities at a time.</code></p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-26-15-602Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-26-15-602Z" class="timestamp-link"><time datetime="2026-09-12T01:26:15.602Z" data-timestamp="2026-09-12T01:26:15.602Z">2026-09-12T01:26:15.602Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-26-16-421Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-26-16-421Z" class="timestamp-link"><time datetime="2026-09-12T01:26:16.421Z" data-timestamp="2026-09-12T01:26:16.421Z">2026-09-12T01:26:16.421Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll capture this as a concept doc in the project's voice, then link it from the vision doc and CLAUDE.md, including what it implies for the three-level ladder we just discussed.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-26-54-360Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-26-54-360Z" class="timestamp-link"><time datetime="2026-09-12T01:26:54.360Z" data-timestamp="2026-09-12T01:26:54.360Z">2026-09-12T01:26:54.360Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_018qk5BDpkQZwyPqQwESBFhk">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Write the Depth and Focus concept doc and link it from the vision doc and CLAUDE.md</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; cat &gt; &#34;Concepts/Depth and Focus - Design.md&#34; &lt;&lt;&#39;EOF&#39;
+---
+tags:
+  - concept
+  - product
+  - okr
+  - agents
+created: 2026-09-11
+---
+# Depth and Focus - Design
+
+A point of view on why multi-level OKR hierarchies, long considered an anti-pattern, become
+viable when an AI carries the alignment work, and what that does to this product&#39;s job.
+Parent: [OKR Viewer - Product Vision](OKR%20Viewer%20-%20Product%20Vision.md). Related:
+[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md).
+
+## The received wisdom, and what it was protecting
+
+Google and the early OKR practitioners warned against individual OKRs and deep cascades. The
+warning was about **alignment fatigue** in a manual system: pushing goals down four or five
+levels meant endless meetings, spreadsheet formatting, and hand audits to find the links that
+had quietly broken. Three levels was not a law of strategy; it was the most a human
+organisation could keep honest.
+
+## What changes with AI in the loop
+
+The bottleneck moves from **administrative capacity** to **strategic clarity**. Three things
+that used to cost people-hours become cheap:
+
+- **Vertical alignment on demand.** Given the top-level objectives, a model can draft
+  context-aware sub-objectives and key results for a squad, a pod, or a person, and keep each
+  one semantically and numerically tied to the rung above it.
+- **Continuous dependency auditing.** Instead of the end-of-quarter review, the link check runs
+  on every change: &#34;Team B rewrote their key result, and Company Objective 2 is now unvouched
+  for.&#34; In this product that is already the shape of things: `contributes` is the link
+  strength, weak links are surfaced live, and every edit is an Action the assistant can react
+  to.
+- **Context preservation at scale.** A micro-metric owned by one engineer stays anchored to the
+  five-year vision because the model can always re-derive the chain, not because someone
+  remembers it.
+
+## The new bottleneck: human focus
+
+Removing the administrative ceiling exposes a psychological one. A model can draft and track
+thousands of perfectly aligned OKRs; a person can still hold three to five priorities.
+
+| Manual-era constraint | AI-era constraint |
+|---|---|
+| Administrative burden: spreadsheet cells and broken links. | Over-optimisation: too many perfect metrics that dilute focus. |
+| Rigid hierarchy: three levels because humans cannot track more. | Analysis paralysis: an endless stream of automated signals. |
+| Infrequent updates: quarterly, because that is all there was time for. | Noise versus signal: real progress versus AI-generated busywork. |
+
+## What this means for the product
+
+1. **Depth is a data-model decision, not a strategy decision.** The current ladder (company →
+   objective → key result) is enforced in the editor and the prompt and only *warned about* by
+   the schema (`schema/index.js:205`). That is the right posture: the format should tolerate
+   depth today, and a future plan can open the editor and the prompt to sub-objectives, team
+   trees that mirror the org chart, and individual key results, without a migration.
+2. **The product&#39;s job shifts from *drawing* the tree to *keeping it honest and small*.** Two
+   capabilities matter more than nesting:
+   - **Live alignment audit.** Every Action should be able to trigger &#34;what did this break?&#34;
+     The weak-link count in the topbar is the seed; the mature form is an assistant that
+     highlights the newly orphaned or diluted chain the moment a node changes.
+   - **A focus budget.** Per team (and later per person), the number of active key results is
+     something the UI shows and the assistant pushes back on. &#34;You now have nine KRs; which
+     three matter this quarter?&#34; is a better coaching move than generating a tenth.
+3. **Generation is cheap, so the interface must make *choosing* cheap.** Interview tabs and
+   &#34;interview me about a new OKR&#34; should produce candidates the user picks from, not a finished
+   subtree they must prune. Drafts are proposals; commits are decisions.
+4. **Signal over noise is a first-class concern for executors** (Horizon 2). An agent that can
+   report progress hourly must not; sampling cadence and &#34;what changed that matters&#34; summaries
+   are part of the executor design, not an afterthought.
+5. **Depth in the 3D scene is free.** The DAG layout is level-agnostic. A five-level tree renders
+   today; the scene&#39;s role becomes showing where focus is concentrated and where links are
+   thin, which is exactly what edge weight and colour already encode.
+
+## Principles to carry into plans
+
+- **AI drafts, humans decide.** No plan may auto-apply generated OKRs. Everything goes through
+  a visible commit the user can undo.
+- **Every rung must vouch for the one above it.** `contributes` stays required in spirit for
+  any node with a parent, at any depth.
+- **Few active priorities per owner.** When counting features, prefer ones that reduce what a
+  person must look at over ones that add what the system can produce.
+- **Audit on change, not on schedule.** Broken links are found at the edit, not at the review.
+
+## Alternatives considered
+
+- **Keep three levels as a hard rule.** Rejected as a principle, kept as today&#39;s default. The
+  rule protected against a cost the assistant now absorbs; enforcing it forever would encode a
+  workaround as doctrine.
+- **Open depth immediately.** Deferred. Without the focus budget and live audit, deeper trees
+  reintroduce the very fatigue the rule prevented, just with the model doing the typing.
+
+## When a plan should cite this doc
+
+- Any plan that relaxes the level ladder (sub-objectives, individual KRs, org-shaped trees).
+- Any plan that adds generation (bulk OKR drafting, cascade from a company objective).
+- The executor and dashboard plans, for cadence and signal-versus-noise decisions.
+EOF
+# link from vision doc: add to the intro list of related docs and the horizons seams
+perl -0pi -e &#39;s/Companion: \[Teams as Agents - Design\]\(Teams%20as%20Agents%20-%20Design\.md\)\./Companions: [Teams as Agents - Design](Teams%20as%20Agents%20-%20Design.md),\n[Agents as Executors - Design](Agents%20as%20Executors%20-%20Design.md), and\n[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md) (why the three-level ladder is a\ndefault, not a doctrine, and why focus is the constraint that replaces it)./&#39; &#34;Concepts/OKR Viewer - Product Vision.md&#34;
+perl -0pi -e &#39;s/- \*\*The service is stateless\*\* \(invariant 1\) until Horizon 3/- **The level ladder is a warning in the schema, a rule only in the editor and prompt.** Keep it\n  that way so depth can be opened later without a migration; see\n  [Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).\n- **The service is stateless** (invariant 1) until Horizon 3/&#39; &#34;Concepts/OKR Viewer - Product Vision.md&#34;
+perl -0pi -e &#39;s/\[Concepts\/Agents as Executors - Design\.md\]\(Concepts\/Agents%20as%20Executors%20-%20Design\.md\)\.\n/[Concepts\/Agents as Executors - Design.md](Concepts\/Agents%20as%20Executors%20-%20Design.md).\nWhy depth is allowed but focus is the real constraint:\n[Concepts\/Depth and Focus - Design.md](Concepts\/Depth%20and%20Focus%20-%20Design.md).\n/&#39; CLAUDE.md
+grep -n &#34;Depth and Focus&#34; &#34;Concepts/OKR Viewer - Product Vision.md&#34; CLAUDE.md; wc -c &#34;Concepts/Depth and Focus - Design.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-26-56-460Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-26-56-460Z" class="timestamp-link"><time datetime="2026-09-12T01:26:56.460Z" data-timestamp="2026-09-12T01:26:56.460Z">2026-09-12T01:26:56.460Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>Concepts/OKR Viewer - Product Vision.md:22:[Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md) (why the three-level ladder is a
+Concepts/OKR Viewer - Product Vision.md:160:  [Depth and Focus - Design](Depth%20and%20Focus%20-%20Design.md).
+    5789 Concepts/Depth and Focus - Design.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-26-58-330Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-26-58-330Z" class="timestamp-link"><time datetime="2026-09-12T01:26:58.330Z" data-timestamp="2026-09-12T01:26:58.330Z">2026-09-12T01:26:58.330Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-26-58-979Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-26-58-979Z" class="timestamp-link"><time datetime="2026-09-12T01:26:58.979Z" data-timestamp="2026-09-12T01:26:58.979Z">2026-09-12T01:26:58.979Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Xs7uE718zTYQHikRC38U1R">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check the CLAUDE.md pointer</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; tail -8 CLAUDE.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-26-59-015Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-26-59-015Z" class="timestamp-link"><time datetime="2026-09-12T01:26:59.015Z" data-timestamp="2026-09-12T01:26:59.015Z">2026-09-12T01:26:59.015Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>  modes are chosen and written up in the &quot;four discussion modes&quot; section of
+  [Concepts/Teams as Agents - Design.md](Concepts/Teams%20as%20Agents%20-%20Design.md); chat tabs
+  left `mode` an enum so they are additive. Nearest to hand.
+- **Agents that execute and measure OKRs**, and a progress dashboard reading what they record —
+  [Concepts/Agents as Executors - Design.md](Concepts/Agents%20as%20Executors%20-%20Design.md)
+  (Horizon 2 of the vision doc).
+- **A shared, realtime document** so a team edits and chats against one `OkrDocument` at once
+  (Horizon 3). Nothing persists today, tabs included.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-27-01-048Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-27-01-048Z" class="timestamp-link"><time datetime="2026-09-12T01:27:01.048Z" data-timestamp="2026-09-12T01:27:01.048Z">2026-09-12T01:27:01.048Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-27-03-515Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-27-03-515Z" class="timestamp-link"><time datetime="2026-09-12T01:27:03.515Z" data-timestamp="2026-09-12T01:27:03.515Z">2026-09-12T01:27:03.515Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01NKfrUSUSiPUp8LNAupwfvx">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Append the Depth and Focus pointer to CLAUDE.md</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; cat &gt;&gt; CLAUDE.md &lt;&lt;&#39;EOF&#39;
+- **Deeper hierarchies** (sub-objectives, individual KRs, org-shaped trees) once a focus budget
+  and live alignment audit exist. Why the three-level ladder is a default, not doctrine, and why
+  human focus is the constraint that replaces it:
+  [Concepts/Depth and Focus - Design.md](Concepts/Depth%20and%20Focus%20-%20Design.md).
+EOF
+tail -5 CLAUDE.md; git status --short</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-27-03-589Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-27-03-589Z" class="timestamp-link"><time datetime="2026-09-12T01:27:03.589Z" data-timestamp="2026-09-12T01:27:03.589Z">2026-09-12T01:27:03.589Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>  (Horizon 3). Nothing persists today, tabs included.
+- **Deeper hierarchies** (sub-objectives, individual KRs, org-shaped trees) once a focus budget
+  and live alignment audit exist. Why the three-level ladder is a default, not doctrine, and why
+  human focus is the constraint that replaces it:
+  [Concepts/Depth and Focus - Design.md](Concepts/Depth%20and%20Focus%20-%20Design.md).
+ M CLAUDE.md
+ M &quot;Concepts/OKR Viewer - Product Vision.md&quot;
+ M web/src/Graph.svelte
+?? Concepts/Depth and Focus - Design.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-27-12-182Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-27-12-182Z" class="timestamp-link"><time datetime="2026-09-12T01:27:12.182Z" data-timestamp="2026-09-12T01:27:12.182Z">2026-09-12T01:27:12.182Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Ingested. The point of view now lives in the project's concept layer, restated in the project's voice rather than pasted.</p>
+<p><strong>New: <a href="Concepts/Depth%20and%20Focus%20-%20Design.md">Concepts/Depth and Focus - Design.md</a></strong>
+- The argument: the three-level rule protected humans from alignment fatigue in a manual system. With a model absorbing vertical alignment, continuous link auditing and context preservation, the bottleneck moves from administrative capacity to strategic clarity, and then to human focus.
+- The manual-era versus AI-era constraints table.
+- What it means for this product, tied to real code: the ladder is already only a warning in the schema and a rule only in the editor and prompt, which is the right posture to keep. The product's job shifts from drawing the tree to keeping it honest and small: a live alignment audit on every change and a per-owner focus budget.
+- Four principles for future plans: AI drafts, humans decide. Every rung vouches for the one above. Few active priorities per owner. Audit on change, not on schedule.
+- Alternatives: keeping three levels as doctrine, or opening depth now before the focus tooling exists. Both rejected.</p>
+<p><strong>Links added</strong>
+- The vision doc lists it as a companion and adds a "keep the ladder a warning" seam under Horizons.
+- CLAUDE.md's future-work list gains a "deeper hierarchies" entry pointing at it.</p>
+<p>This also answers your earlier question about objectives under objectives: the doc records that depth is deliberately deferred, not forbidden, and names what has to exist first.</p>
+<p>Uncommitted: this doc, the vision and CLAUDE.md edits, and the earlier label size and position change in Graph.svelte.</p></div></div></div>
+<div class="message user" id="msg-2026-09-12T01-28-48-868Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T01-28-48-868Z" class="timestamp-link"><time datetime="2026-09-12T01:28:48.868Z" data-timestamp="2026-09-12T01:28:48.868Z">2026-09-12T01:28:48.868Z</time></a></div><div class="message-content">
+<div class="image-block"><img src="data:image/png;base64,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" style="max-width: 100%"></div>
+<div class="assistant-text"><p>Can you please write a plan to pull out this portion of node information into a new svelte component that can be displayed on node hover.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-28-51-821Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-28-51-821Z" class="timestamp-link"><time datetime="2026-09-12T01:28:51.821Z" data-timestamp="2026-09-12T01:28:51.821Z">2026-09-12T01:28:51.821Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-28-52-700Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-28-52-700Z" class="timestamp-link"><time datetime="2026-09-12T01:28:52.700Z" data-timestamp="2026-09-12T01:28:52.700Z">2026-09-12T01:28:52.700Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll re-read the current Detail and Graph code first, since both changed substantially when the plans landed, so the plan cites real lines.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-28-55-143Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-28-55-143Z" class="timestamp-link"><time datetime="2026-09-12T01:28:55.143Z" data-timestamp="2026-09-12T01:28:55.143Z">2026-09-12T01:28:55.143Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01ToGYr1hG4SN7Exn5H2QvSC">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read current Detail.svelte structure</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;=== Detail.svelte (script head + read-mode markup) ===&#34;; sed -n &#39;1,60p&#39; web/src/Detail.svelte; echo &#34;...&#34;; grep -n &#34;&lt;h2\|&lt;dl\|&lt;dt\|&lt;dd\|&lt;/dl&gt;\|owner\|metric\|target\|unitName\|onOpenTeam\|class=\&#34;link\&#34;&#34; web/src/Detail.svelte | sed -n &#39;1,60p&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-28-55-213Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-28-55-213Z" class="timestamp-link"><time datetime="2026-09-12T01:28:55.213Z" data-timestamp="2026-09-12T01:28:55.213Z">2026-09-12T01:28:55.213Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== Detail.svelte (script head + read-mode markup) ===
+&lt;script&gt;
+  import { tick } from &#x27;svelte&#x27;;
+  import { descendants } from &#x27;./lib/apply.js&#x27;;
+  import { unitName } from &#x27;./lib/company.js&#x27;;
+
+  let {
+    node,
+    tree,
+    company = null,
+    editing = false,
+    onSelect,
+    onClose,
+    onToggleEdit,
+    onEdit,
+    onOpenTeam,
+    onPreview = () =&gt; {},
+    onFocusField = () =&gt; {},
+    onNewChat = null
+  } = $props();
+
+  // The owner field is a team picker when there are teams to pick, and free
+  // text when there are not — an imported file without a `company` still has to
+  // be editable. `owner` itself is never typed while a team is chosen: the
+  // apply layer derives it from the team&#x27;s name.
+  const units = $derived(company?.units ?? []);
+  const ownerTeam = $derived(unitName(company, node.unitId));
+
+  const LEVEL_NAME = { company: &#x27;Company objective&#x27;, objective: &#x27;Team objective&#x27;, kr: &#x27;Key result&#x27; };
+  const parent = $derived(node.parent ? tree.nodes.find((n) =&gt; n.id === node.parent) ?? null : null);
+  const children = $derived(tree.nodes.filter((n) =&gt; n.parent === node.id));
+  // Nodes the owning team holds, for the hover preview on the owner link.
+  const teamNodes = $derived(
+    node.unitId ? tree.nodes.filter((n) =&gt; n.unitId === node.unitId).map((n) =&gt; n.id) : []
+  );
+
+  // Hovering or tabbing to a link points the 3D view at what it refers to.
+  const hover = (ids) =&gt; ({
+    onmouseenter: () =&gt; onPreview(ids),
+    onmouseleave: () =&gt; onPreview([]),
+    onfocus: () =&gt; onPreview(ids),
+    onblur: () =&gt; onPreview([])
+  });
+
+  const pct = (c) =&gt; Math.round((c ?? 0) * 100);
+  const tone = (c) =&gt; ((c ?? 0) &lt; 0.4 ? &#x27;bad&#x27; : (c ?? 0) &lt; 0.7 ? &#x27;meh&#x27; : &#x27;good&#x27;);
+
+  // ── editing ───────────────────────────────────────────────────────────────
+  //
+  // `node` stays the committed truth; `draft` is only what the inputs hold
+  // between keystroke and commit. Every commit leaves through onEdit as an
+  // Action — the same shape the model emits — so there is one mutation path.
+
+  let draft = $state({ label: &#x27;&#x27;, owner: &#x27;&#x27;, metric: &#x27;&#x27;, target: &#x27;&#x27;, contributes: 0.5 });
+  let invalidLabel = $state(false);
+  // What we last sent per field, because blur fires before the new `node`
+  // arrives and would otherwise re-send the edit Enter just committed.
+  let sent = {};
+  let labelEl = $state(null);
+
+  // Keyed on the node object: apply.js hands back a new one for every change,
+...
+4:  import { unitName } from &#x27;./lib/company.js&#x27;;
+15:    onOpenTeam,
+21:  // The owner field is a team picker when there are teams to pick, and free
+23:  // be editable. `owner` itself is never typed while a team is chosen: the
+26:  const ownerTeam = $derived(unitName(company, node.unitId));
+31:  // Nodes the owning team holds, for the hover preview on the owner link.
+53:  let draft = $state({ label: &#x27;&#x27;, owner: &#x27;&#x27;, metric: &#x27;&#x27;, target: &#x27;&#x27;, contributes: 0.5 });
+66:      owner: n.owner ?? &#x27;&#x27;,
+67:      metric: n.metric ?? &#x27;&#x27;,
+68:      target: n.target ?? &#x27;&#x27;,
+130:  // Only unitId is sent; applyDocumentActions fills `owner` in from the team&#x27;s
+160:      // `unitId` is sent and the apply layer derives `owner` from it; where
+161:      // there is not, the owner text carries over as it always did.
+166:        ...(node.unitId ? { unitId: node.unitId } : { owner: node.owner ?? &#x27;&#x27; }),
+247:    &lt;h2&gt;{node.label}&lt;/h2&gt;
+250:  &lt;dl&gt;
+251:    &lt;dt&gt;Owner&lt;/dt&gt;
+252:    &lt;dd&gt;
+257:          onfocus={() =&gt; onFocusField(&#x27;owner&#x27;)}
+268:          bind:value={draft.owner}
+269:          onfocus={() =&gt; onFocusField(&#x27;owner&#x27;)}
+271:            commitText(&#x27;owner&#x27;);
+274:          onkeydown={(e) =&gt; onFieldKey(e, &#x27;owner&#x27;)}
+277:      {:else if ownerTeam}
+278:        &lt;button class=&quot;link&quot; {...hover(teamNodes)} onclick={() =&gt; onOpenTeam?.(node.unitId)}&gt;{ownerTeam}&lt;/button&gt;
+280:        {node.owner || &#x27;—&#x27;}
+283:    &lt;dt&gt;Metric&lt;/dt&gt;
+284:    &lt;dd class:empty={!editing &amp;&amp; !node.metric}&gt;
+287:          bind:value={draft.metric}
+288:          onfocus={() =&gt; onFocusField(&#x27;metric&#x27;)}
+290:            commitText(&#x27;metric&#x27;);
+293:          onkeydown={(e) =&gt; onFieldKey(e, &#x27;metric&#x27;)}
+297:        {node.metric || &#x27;none — not measurable&#x27;}
+300:    &lt;dt&gt;Target&lt;/dt&gt;
+301:    &lt;dd class:empty={!editing &amp;&amp; !node.target}&gt;
+304:          bind:value={draft.target}
+305:          onfocus={() =&gt; onFocusField(&#x27;target&#x27;)}
+307:            commitText(&#x27;target&#x27;);
+310:          onkeydown={(e) =&gt; onFieldKey(e, &#x27;target&#x27;)}
+314:        {node.target || &#x27;none&#x27;}
+318:      &lt;dt&gt;Supports&lt;/dt&gt;
+319:      &lt;dd&gt;
+333:          &lt;button class=&quot;link&quot; {...hover([parent.id])} onclick={() =&gt; onSelect(parent.id)}&gt;{parent.label}&lt;/button&gt;
+336:      &lt;dt&gt;Fit&lt;/dt&gt;
+337:      &lt;dd class=&quot;fit&quot;&gt;
+358:  &lt;/dl&gt;
+365:          &lt;button class=&quot;link&quot; {...hover([c.id])} onclick={() =&gt; onSelect(c.id)}&gt;{c.label}&lt;/button&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-28-58-111Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-28-58-111Z" class="timestamp-link"><time datetime="2026-09-12T01:28:58.111Z" data-timestamp="2026-09-12T01:28:58.111Z">2026-09-12T01:28:58.111Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01TMTi9z8tpquY8KSnp2jqHo">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find current hover and tooltip handling in Graph and App</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;=== Graph.svelte hover/tooltip/props ===&#34;; grep -n &#34;nodeLabel\|onNodeHover\|hover\|tip\|\$props\|preview\|esc(&#34; web/src/Graph.svelte | head -40; echo &#34;=== App Graph usage + preview ===&#34;; grep -n &#34;preview\|&lt;Graph\|hoverId\|onHover&#34; web/src/App.svelte | head -20; echo &#34;=== css tooltip ===&#34;; grep -n &#34;scene-tooltip\|\.tip\b\|\.tip &#34; web/src/app.css; echo &#34;=== lib files ===&#34;; ls web/src web/src/lib</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-29-00-140Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-29-00-140Z" class="timestamp-link"><time datetime="2026-09-12T01:29:00.140Z" data-timestamp="2026-09-12T01:29:00.140Z">2026-09-12T01:29:00.140Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== Graph.svelte hover/tooltip/props ===
+13:    preview = [],
+24:  // Transient hover pointer from the side panel. Unlike `highlight` it never
+26:  let previewSet = new Set();
+104:    // Upside down: a straight lerp would pass through the origin, so nudge off the antipode.
+154:      const prev = previewSet.has(id);
+189:      .nodeLabel((n) =&gt; {
+191:        return `&lt;div class=&quot;tip&quot;&gt;&lt;b&gt;${esc(n.label)}&lt;/b&gt;&lt;span&gt;${esc(who)}${n.target ? &#x27; · &#x27; + esc(n.target) : &#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;`;
+253:    previewSet = new Set(preview);
+=== App Graph usage + preview ===
+53:  let preview = $state.raw([]);
+90:  // A hover preview belongs to the panel that raised it: swapping or closing
+95:    preview = [];
+522:      &lt;Graph {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} /&gt;
+531:          onPreview={(ids) =&gt; (preview = ids)}
+547:          onPreview={(ids) =&gt; (preview = ids)}
+561:          onPreview={(ids) =&gt; (preview = ids)}
+=== css tooltip ===
+94:.scene-tooltip .tip { background: rgba(18, 24, 38, 0.95); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px; max-width: 280px; font-size: 13px; }
+95:.scene-tooltip .tip span { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
+=== lib files ===
+web/src:
+App.svelte
+Chat.svelte
+Detail.svelte
+Graph.svelte
+TeamEditor.svelte
+TeamList.svelte
+app.css
+assets
+lib
+main.js
+
+web/src/lib:
+apply.js
+company.js
+datasets.js</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-29-04-601Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-29-04-601Z" class="timestamp-link"><time datetime="2026-09-12T01:29:04.601Z" data-timestamp="2026-09-12T01:29:04.601Z">2026-09-12T01:29:04.601Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-29-08-963Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-29-08-963Z" class="timestamp-link"><time datetime="2026-09-12T01:29:08.963Z" data-timestamp="2026-09-12T01:29:08.963Z">2026-09-12T01:29:08.963Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_018DPh47MLhJLkvpkcDqp1wP">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read Graph tooltip code, App stage markup, Detail read markup, and library hover APIs</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; echo &#34;=== Graph.svelte 180-200 ===&#34;; sed -n &#39;180,200p&#39; web/src/Graph.svelte; echo &#34;=== Graph.svelte onMount tail / effects 240-270 ===&#34;; sed -n &#39;240,275p&#39; web/src/Graph.svelte; echo &#34;=== App stage 515-580 ===&#34;; sed -n &#39;515,580p&#39; web/src/App.svelte; echo &#34;=== Detail read-mode markup 240-316 ===&#34;; sed -n &#39;240,250p&#39; web/src/Detail.svelte; echo &#34;=== css detail dl ===&#34;; grep -n &#34;^\.detail dl\|^\.detail dt\|^\.detail dd\|^\.detail h2\|^\.detail {&#34; web/src/app.css; echo &#34;=== 3dfg hover/screen APIs ===&#34;; grep -o &#34;onNodeHover\|graph2ScreenCoords\|screen2GraphCoords\|nodeLabel&#34; web/node_modules/3d-force-graph/dist/3d-force-graph.mjs | sort | uniq -c</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-29-09-066Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-29-09-066Z" class="timestamp-link"><time datetime="2026-09-12T01:29:09.066Z" data-timestamp="2026-09-12T01:29:09.066Z">2026-09-12T01:29:09.066Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== Graph.svelte 180-200 ===
+  onMount(() =&gt; {
+    graph = ForceGraph3D()(el)
+      .backgroundColor(&#x27;#0b0f17&#x27;)
+      .dagMode(&#x27;td&#x27;)
+      .dagLevelDistance(90)
+      .onDagError((loopIds) =&gt; console.warn(&#x27;DAG cycle, falling back to free layout&#x27;, loopIds))
+      .nodeId(&#x27;id&#x27;)
+      // The team&#x27;s name beats the owner text: they agree whenever unitId is
+      // set, and when it is not there is only the text.
+      .nodeLabel((n) =&gt; {
+        const who = unitName(company, n.unitId) ?? n.owner;
+        return `&lt;div class=&quot;tip&quot;&gt;&lt;b&gt;${esc(n.label)}&lt;/b&gt;&lt;span&gt;${esc(who)}${n.target ? &#x27; · &#x27; + esc(n.target) : &#x27;&#x27;}&lt;/span&gt;&lt;/div&gt;`;
+      })
+      .nodeThreeObject(makeNodeObject)
+      .linkWidth((l) =&gt; 0.5 + 2.8 * (l.contributes ?? 0.5))
+      .linkColor((l) =&gt; linkColor(l.contributes))
+      .linkOpacity(0.9)
+      .linkDirectionalParticles((l) =&gt; ((l.contributes ?? 0.5) &gt;= 0.4 ? 2 : 0))
+      .linkDirectionalParticleWidth(1.4)
+      .linkDirectionalParticleSpeed(0.005)
+      .d3VelocityDecay(0.3)
+=== Graph.svelte onMount tail / effects 240-270 ===
+      if (!label) continue;
+      const text = unitName(c, n.unitId) ?? n.owner ?? &#x27;&#x27;;
+      if (label.text !== text) label.text = text;
+      label.visible = on &amp;&amp; !!text;
+    }
+  });
+
+  $effect(() =&gt; {
+    highlightSet = new Set(highlight);
+    if (highlight.length) flyTo(highlight);
+  });
+
+  $effect(() =&gt; {
+    previewSet = new Set(preview);
+  });
+&lt;/script&gt;
+
+&lt;div class=&quot;graph&quot; bind:this={el}&gt;&lt;/div&gt;
+=== App stage 515-580 ===
+      &lt;button onclick={reset} class=&quot;ghost&quot;&gt;Reset&lt;/button&gt;
+      &lt;input bind:this={fileInput} onchange={importTree} type=&quot;file&quot; accept=&quot;application/json,.json&quot; hidden /&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;main&gt;
+    &lt;section class=&quot;stage&quot;&gt;
+      &lt;Graph {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} /&gt;
+      {#if panel?.kind === &#x27;node&#x27; &amp;&amp; selected}
+        &lt;Detail
+          node={selected}
+          {tree}
+          {company}
+          {editing}
+          onSelect={select}
+          onOpenTeam={openTeam}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onFocusField={focusField}
+          onNewChat={newChat}
+          onClose={() =&gt; {
+            selectedId = null;
+            editing = false;
+            panel = null;
+          }}
+          onToggleEdit={() =&gt; (editing = !editing)}
+          onEdit={(action) =&gt; commit([action], { actor: &#x27;user&#x27;, reason: describe(action) })}
+        /&gt;
+      {:else if panel?.kind === &#x27;teams&#x27;}
+        &lt;TeamList
+          {company}
+          {tree}
+          onOpen={openTeam}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onClose={() =&gt; (panel = null)}
+          onAdd={() =&gt; {
+            const action = { op: &#x27;addUnit&#x27;, id: freshUnitId(&#x27;New team&#x27;), fields: { name: &#x27;New team&#x27;, parent: null } };
+            commit([action], { actor: &#x27;user&#x27;, reason: describe(action) });
+            openTeam(action.id); // straight into the editor: a new team is all placeholder
+          }}
+        /&gt;
+      {:else if panel?.kind === &#x27;team&#x27; &amp;&amp; selectedUnit}
+        &lt;TeamEditor
+          unit={selectedUnit}
+          {company}
+          {tree}
+          onSelect={select}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onFocusField={focusField}
+          onNewChat={newChat}
+          onBack={showTeams}
+          onClose={() =&gt; (panel = null)}
+          onEdit={(action) =&gt; commit([action], { actor: &#x27;user&#x27;, reason: describe(action) })}
+        /&gt;
+      {/if}
+      &lt;div class=&quot;legend&quot;&gt;
+        &lt;span&gt;&lt;i class=&quot;sw company&quot;&gt;&lt;/i&gt; Company&lt;/span&gt;
+        &lt;span&gt;&lt;i class=&quot;sw objective&quot;&gt;&lt;/i&gt; Objective&lt;/span&gt;
+        &lt;span&gt;&lt;i class=&quot;sw kr&quot;&gt;&lt;/i&gt; Key result&lt;/span&gt;
+        &lt;span class=&quot;edge&quot;&gt;&lt;i class=&quot;sw line&quot;&gt;&lt;/i&gt; edge = how well it supports its parent&lt;/span&gt;
+        &lt;!-- the legend is pointer-events: none, so this control opts back in --&gt;
+        &lt;label class=&quot;toggle&quot;&gt;&lt;input type=&quot;checkbox&quot; bind:checked={showTeamLabels} /&gt; Team labels&lt;/label&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+    &lt;Chat
+      {chats}
+      {activeChatId}
+=== Detail read-mode markup 240-316 ===
+        commitText(&#x27;label&#x27;);
+        onFocusField(null);
+      }}
+      onkeydown={(e) =&gt; onFieldKey(e, &#x27;label&#x27;)}
+      aria-label=&quot;Label&quot;
+    &gt;&lt;/textarea&gt;
+  {:else}
+    &lt;h2&gt;{node.label}&lt;/h2&gt;
+  {/if}
+
+  &lt;dl&gt;
+=== css detail dl ===
+98:.detail {
+113:.detail h2 { font-size: 16px; margin: 8px 0 12px; line-height: 1.3; }
+115:.detail dl { display: grid; grid-template-columns: 64px 1fr; gap: 6px 10px; margin: 0; }
+116:.detail dt { color: var(--muted); }
+117:.detail dd { margin: 0; }
+118:.detail dd.empty { color: var(--bad); font-style: italic; }
+=== 3dfg hover/screen APIs ===
+   1 graph2ScreenCoords
+   1 nodeLabel
+   1 onNodeHover
+   1 screen2GraphCoords</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-29-34-541Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-29-34-541Z" class="timestamp-link"><time datetime="2026-09-12T01:29:34.541Z" data-timestamp="2026-09-12T01:29:34.541Z">2026-09-12T01:29:34.541Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-29-34-544Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-29-34-544Z" class="timestamp-link"><time datetime="2026-09-12T01:29:34.544Z" data-timestamp="2026-09-12T01:29:34.544Z">2026-09-12T01:29:34.544Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-30-18-022Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-30-18-022Z" class="timestamp-link"><time datetime="2026-09-12T01:30:18.022Z" data-timestamp="2026-09-12T01:30:18.022Z">2026-09-12T01:30:18.022Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01BJMQ2aodcVxzEMBdrXEDLa">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Write the NodeCard hover plan and link it from CLAUDE.md</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; cat &gt; Plans/development/NODE_HOVER_CARD.md &lt;&lt;&#39;EOF&#39;
+---
+tags:
+  - plan
+  - web
+  - graph
+  - components
+status: development
+created: 2026-09-11
+predecessors:
+  - completed/OKR_NODE_EDITOR.md
+  - completed/TEAM_MODEL_AND_EDITOR.md
+---
+# Plan: Extract the node summary into a NodeCard component and show it on 3D hover
+
+Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(one state, several surfaces; the panel and the scene should describe a node the same way).
+
+## Context
+
+The node summary the user sees in the Detail panel (label, owner, metric, target) is markup
+inside `web/src/Detail.svelte`: the `&lt;h2&gt;` at `:247` and the first three `&lt;dl&gt;` rows at
+`:250-316`, interleaved with the edit-mode inputs. Hovering a node in the 3D view shows
+something different: an HTML string built in `web/src/Graph.svelte:189-192` through
+3d-force-graph&#39;s `nodeLabel`, styled by `.scene-tooltip .tip` in `web/src/app.css:94-95`. It
+shows only label, owner and target, drops the metric, and cannot share styling, escaping or
+team-name resolution with the panel because it is a string, not a component.
+
+Graph already holds `company` (`Graph.svelte:13`) and resolves team names with `unitName`
+(`web/src/lib/company.js`). 3d-force-graph exposes `onNodeHover` and `graph2ScreenCoords`
+(`web/node_modules/3d-force-graph/dist/3d-force-graph.mjs`), which is enough to anchor a DOM
+element to a node without the library&#39;s tooltip.
+
+## Goal
+
+One `NodeCard.svelte` renders label, owner, metric and target; Detail uses it for its read
+view, and Graph shows it anchored to the hovered node in place of the library tooltip.
+
+## Decisions (locked in)
+
+1. **One component, two hosts.** `NodeCard` is presentational: it takes a node and a company
+   and renders the four fields. Detail composes it above the rows it keeps (Supports, Fit,
+   children); Graph renders it inside a hover anchor. No logic is duplicated.
+2. **Owner is a link only when the host provides a handler.** Detail passes `onOpenTeam` and
+   `onPreview`, so the owner stays a clickable, previewing link there. The hover card passes
+   neither, so the owner is plain text; a hover card is not a click target.
+3. **The library tooltip is switched off**, not layered under. `nodeLabel` returns `null`, and
+   the `.scene-tooltip .tip` CSS goes.
+4. **Anchored to the node, not the pointer.** The card&#39;s screen position comes from
+   `graph.graph2ScreenCoords(node.x, node.y, node.z)` and is updated imperatively in Graph&#39;s
+   existing `animate()` loop, so the card rides with the node during tumbling and fly-tos
+   without pushing 60 state updates a second through Svelte. Only *which* node is hovered is
+   Svelte state.
+5. **Short show delay, instant hide.** 150 ms before showing, so sweeping the pointer across
+   the tree while tumbling does not flash cards. Hidden immediately on leave, and never shown
+   for the node whose Detail panel is already open (it would repeat what is on screen).
+6. **Edit mode is untouched.** When Detail is editing, it renders its inputs as today; NodeCard
+   is the read view only.
+
+## Phase 1 — `NodeCard.svelte`
+
+1. Create `web/src/NodeCard.svelte`. Props:
+   `{ node, company = null, tree = null, onOpenTeam = null, onPreview = null }`.
+   Derived: `ownerTeam = unitName(company, node.unitId)`; `teamNodes` as in
+   `Detail.svelte:33-35` when `tree` and `onPreview` are given.
+2. Markup: `&lt;h2 class=&#34;card-label&#34;&gt;{node.label}&lt;/h2&gt;` then a `&lt;dl class=&#34;card-fields&#34;&gt;` with
+   Owner, Metric, Target rows, moved verbatim from the read branches at `Detail.svelte:277-281`,
+   `:297` and `:314` (including `class:empty` and the &#34;none — not measurable&#34; / &#34;none&#34; copy).
+   Owner renders the link button with the `hover(teamNodes)` spread only when `onOpenTeam` is
+   set; otherwise `{ownerTeam ?? node.owner ?? &#39;—&#39;}`.
+3. `web/src/app.css`: move the rules for `.detail h2` (`:113`) and `.detail dl/dt/dd` and
+   `dd.empty` (`:115-118`) to `.card-label` and `.card-fields` selectors so both hosts share
+   them; keep the `.detail` versions for the rows Detail still owns (Supports, Fit).
+
+## Phase 2 — Detail uses it
+
+1. `Detail.svelte:247` (read branch of the label) and the read branches of the three rows at
+   `:277-281`, `:297`, `:314`: replace with
+   `&lt;NodeCard {node} {company} {tree} onOpenTeam={onOpenTeam} onPreview={onPreview} /&gt;` placed
+   before the `&lt;dl&gt;`, and drop those read branches from the `{#if editing}` blocks so the
+   editing `&lt;dl&gt;` only renders inputs. The Supports and Fit rows (`:318-357`) stay in Detail&#39;s
+   own `&lt;dl&gt;`.
+2. Remove `ownerTeam` and `teamNodes` from Detail if nothing else uses them (`:26`, `:33-35`);
+   the `hover()` helper at `:38-43` stays for the parent and child links.
+
+## Phase 3 — Graph shows it on hover
+
+1. `Graph.svelte`: add `let hovered = $state(null)` (a node object from `graph.graphData()`),
+   `let hoverTimer`, `let anchorEl` (bound `div`). Add `onNodeHover` after `.onNodeClick`:
+   - on a node: clear the timer; `hoverTimer = setTimeout(() =&gt; (hovered = n), 150)`.
+   - on `null`: clear the timer; `hovered = null`.
+   - `el.style.cursor` is already managed by the library; leave it.
+2. `.nodeLabel(() =&gt; null)` replaces `:189-192`; delete the `esc` helper if it is no longer
+   used.
+3. In `animate()`: if `hovered &amp;&amp; anchorEl &amp;&amp; Number.isFinite(hovered.x)`, compute
+   `const { x, y } = graph.graph2ScreenCoords(hovered.x, hovered.y, hovered.z)` and set
+   `anchorEl.style.transform = \`translate(${x + 14}px, ${y - 10}px)\``. Clamp so the card stays
+   inside `el` (`el.clientWidth - anchorEl.offsetWidth - 8`, same for height); flip to the
+   left of the node when it would overflow right.
+4. Markup under the graph div:
+   ```svelte
+   {#if hovered &amp;&amp; hovered.id !== selectedId}
+     &lt;div class=&#34;hover-card&#34; bind:this={anchorEl}&gt;
+       &lt;NodeCard node={hovered} {company} /&gt;
+     &lt;/div&gt;
+   {/if}
+   ```
+   `hovered` is a graph node object (it carries `x/y/z` plus the OkrNode fields, see
+   `toGraphData`), which NodeCard reads like any node.
+5. Hide on data changes: in the `tree` effect, if `hovered` is no longer in the tree, set it
+   to `null`. Also set `hovered = null` inside `flyTo` so a card does not linger on a node the
+   camera is leaving.
+6. `app.css`: `.hover-card { position: absolute; top: 0; left: 0; pointer-events: none; width: 300px; background: rgba(18,24,38,0.95); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; backdrop-filter: blur(6px); will-change: transform; }`
+   and remove `.scene-tooltip .tip` rules (`:94-95`). `.graph` is `position: absolute; inset: 0`
+   (`app.css:65`) and the card is its sibling inside `.stage`, so coordinates from
+   `graph2ScreenCoords` (relative to the renderer&#39;s element) map directly.
+
+## Verification
+
+- Hover a KR: after a short pause a card with label, team name, metric and target appears
+  beside the sphere; it follows the node while tumbling; it disappears the instant the pointer
+  leaves the sphere. No library tooltip appears alongside it.
+- Hover `kr-7` (no metric): the metric row reads &#34;none — not measurable&#34; in red, identical to
+  the Detail panel.
+- Hover a node near the right edge of the stage: the card flips to the left and stays inside
+  the stage.
+- Click a node so Detail opens, then hover the same node: no card. Hover a different node: card.
+- Detail read mode renders the same four fields as before; the owner link still opens the team
+  editor and still previews the team&#39;s nodes on hover; edit mode is unchanged.
+- Rename a team in TeamEditor while a card is visible for one of its nodes: the card updates
+  (it reads `company` reactively).
+- Switch datasets while hovering: the card disappears, no console errors.
+
+## Out of scope
+
+- Hover cards for links or for team labels.
+- Making the hover card interactive (buttons, links).
+- Touch devices (no hover).
+- Any change to edit-mode inputs.
+
+## Risks / rollback
+
+- `graph2ScreenCoords` returns coordinates relative to the renderer&#39;s canvas; if the graph
+  container ever gets padding, the offset will show. It has none today.
+- `onNodeHover` fires with `null` on every frame the pointer is over empty space; the handler
+  must be cheap (it is: clear a timer, set state only when it changes).
+- Rollback: restore `nodeLabel` and the tooltip CSS; Detail&#39;s read markup is a mechanical
+  inline of NodeCard.
+EOF
+perl -0pi -e &#39;s/## Current work\n\n/## Current work\n\nActive: [Plans\/development\/NODE_HOVER_CARD.md](Plans\/development\/NODE_HOVER_CARD.md) — extract the\nnode summary into `NodeCard.svelte`, shared by Detail and a node-anchored hover card in the 3D view.\n\n/&#39; CLAUDE.md; grep -n &#34;NODE_HOVER_CARD&#34; CLAUDE.md; wc -c Plans/development/NODE_HOVER_CARD.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-30-20-485Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-30-20-485Z" class="timestamp-link"><time datetime="2026-09-12T01:30:20.485Z" data-timestamp="2026-09-12T01:30:20.485Z">2026-09-12T01:30:20.485Z</time></a></div><div class="message-content"><div class="tool-result tool-error"><div class="truncatable"><div class="truncatable-content"><pre>Exit code 1
+(eval):1: no such file or directory: Plans/development/NODE_HOVER_CARD.md
+161:Active: [Plans/development/NODE_HOVER_CARD.md](Plans/development/NODE_HOVER_CARD.md) — extract the
+wc: Plans/development/NODE_HOVER_CARD.md: open: No such file or directory</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-30-24-132Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-30-24-132Z" class="timestamp-link"><time datetime="2026-09-12T01:30:24.132Z" data-timestamp="2026-09-12T01:30:24.132Z">2026-09-12T01:30:24.132Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-30-24-134Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-30-24-134Z" class="timestamp-link"><time datetime="2026-09-12T01:30:24.134Z" data-timestamp="2026-09-12T01:30:24.134Z">2026-09-12T01:30:24.134Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-30-52-087Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-30-52-087Z" class="timestamp-link"><time datetime="2026-09-12T01:30:52.087Z" data-timestamp="2026-09-12T01:30:52.087Z">2026-09-12T01:30:52.087Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_018PpK2c29f52JseTUG1jUFF">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Write the NodeCard hover plan</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cd /Users/tmiv74/OKR-Display; mkdir -p Plans/development &amp;&amp; cat &gt; Plans/development/NODE_HOVER_CARD.md &lt;&lt;&#39;EOF&#39;
+---
+tags:
+  - plan
+  - web
+  - graph
+  - components
+status: development
+created: 2026-09-11
+predecessors:
+  - completed/OKR_NODE_EDITOR.md
+  - completed/TEAM_MODEL_AND_EDITOR.md
+---
+# Plan: Extract the node summary into a NodeCard component and show it on 3D hover
+
+Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(one state, several surfaces; the panel and the scene should describe a node the same way).
+
+## Context
+
+The node summary the user sees in the Detail panel (label, owner, metric, target) is markup
+inside `web/src/Detail.svelte`: the `&lt;h2&gt;` at `:247` and the first three `&lt;dl&gt;` rows at
+`:250-316`, interleaved with the edit-mode inputs. Hovering a node in the 3D view shows
+something different: an HTML string built in `web/src/Graph.svelte:189-192` through
+3d-force-graph&#39;s `nodeLabel`, styled by `.scene-tooltip .tip` in `web/src/app.css:94-95`. It
+shows only label, owner and target, drops the metric, and cannot share styling, escaping or
+team-name resolution with the panel because it is a string, not a component.
+
+Graph already holds `company` (`Graph.svelte:13`) and resolves team names with `unitName`
+(`web/src/lib/company.js`). 3d-force-graph exposes `onNodeHover` and `graph2ScreenCoords`
+(`web/node_modules/3d-force-graph/dist/3d-force-graph.mjs`), which is enough to anchor a DOM
+element to a node without the library&#39;s tooltip.
+
+## Goal
+
+One `NodeCard.svelte` renders label, owner, metric and target; Detail uses it for its read
+view, and Graph shows it anchored to the hovered node in place of the library tooltip.
+
+## Decisions (locked in)
+
+1. **One component, two hosts.** `NodeCard` is presentational: it takes a node and a company
+   and renders the four fields. Detail composes it above the rows it keeps (Supports, Fit,
+   children); Graph renders it inside a hover anchor. No logic is duplicated.
+2. **Owner is a link only when the host provides a handler.** Detail passes `onOpenTeam` and
+   `onPreview`, so the owner stays a clickable, previewing link there. The hover card passes
+   neither, so the owner is plain text; a hover card is not a click target.
+3. **The library tooltip is switched off**, not layered under. `nodeLabel` returns `null`, and
+   the `.scene-tooltip .tip` CSS goes.
+4. **Anchored to the node, not the pointer.** The card&#39;s screen position comes from
+   `graph.graph2ScreenCoords(node.x, node.y, node.z)` and is updated imperatively in Graph&#39;s
+   existing `animate()` loop, so the card rides with the node during tumbling and fly-tos
+   without pushing 60 state updates a second through Svelte. Only *which* node is hovered is
+   Svelte state.
+5. **Short show delay, instant hide.** 150 ms before showing, so sweeping the pointer across
+   the tree while tumbling does not flash cards. Hidden immediately on leave, and never shown
+   for the node whose Detail panel is already open (it would repeat what is on screen).
+6. **Edit mode is untouched.** When Detail is editing, it renders its inputs as today; NodeCard
+   is the read view only.
+
+## Phase 1 — `NodeCard.svelte`
+
+1. Create `web/src/NodeCard.svelte`. Props:
+   `{ node, company = null, tree = null, onOpenTeam = null, onPreview = null }`.
+   Derived: `ownerTeam = unitName(company, node.unitId)`; `teamNodes` as in
+   `Detail.svelte:33-35` when `tree` and `onPreview` are given.
+2. Markup: `&lt;h2 class=&#34;card-label&#34;&gt;{node.label}&lt;/h2&gt;` then a `&lt;dl class=&#34;card-fields&#34;&gt;` with
+   Owner, Metric, Target rows, moved verbatim from the read branches at `Detail.svelte:277-281`,
+   `:297` and `:314` (including `class:empty` and the &#34;none — not measurable&#34; / &#34;none&#34; copy).
+   Owner renders the link button with the `hover(teamNodes)` spread only when `onOpenTeam` is
+   set; otherwise `{ownerTeam ?? node.owner ?? &#39;—&#39;}`.
+3. `web/src/app.css`: move the rules for `.detail h2` (`:113`) and `.detail dl/dt/dd` and
+   `dd.empty` (`:115-118`) to `.card-label` and `.card-fields` selectors so both hosts share
+   them; keep the `.detail` versions for the rows Detail still owns (Supports, Fit).
+
+## Phase 2 — Detail uses it
+
+1. `Detail.svelte:247` (read branch of the label) and the read branches of the three rows at
+   `:277-281`, `:297`, `:314`: replace with
+   `&lt;NodeCard {node} {company} {tree} onOpenTeam={onOpenTeam} onPreview={onPreview} /&gt;` placed
+   before the `&lt;dl&gt;`, and drop those read branches from the `{#if editing}` blocks so the
+   editing `&lt;dl&gt;` only renders inputs. The Supports and Fit rows (`:318-357`) stay in Detail&#39;s
+   own `&lt;dl&gt;`.
+2. Remove `ownerTeam` and `teamNodes` from Detail if nothing else uses them (`:26`, `:33-35`);
+   the `hover()` helper at `:38-43` stays for the parent and child links.
+
+## Phase 3 — Graph shows it on hover
+
+1. `Graph.svelte`: add `let hovered = $state(null)` (a node object from `graph.graphData()`),
+   `let hoverTimer`, `let anchorEl` (bound `div`). Add `onNodeHover` after `.onNodeClick`:
+   - on a node: clear the timer; `hoverTimer = setTimeout(() =&gt; (hovered = n), 150)`.
+   - on `null`: clear the timer; `hovered = null`.
+   - `el.style.cursor` is already managed by the library; leave it.
+2. `.nodeLabel(() =&gt; null)` replaces `:189-192`; delete the `esc` helper if it is no longer
+   used.
+3. In `animate()`: if `hovered &amp;&amp; anchorEl &amp;&amp; Number.isFinite(hovered.x)`, compute
+   `const { x, y } = graph.graph2ScreenCoords(hovered.x, hovered.y, hovered.z)` and set
+   `anchorEl.style.transform = \`translate(${x + 14}px, ${y - 10}px)\``. Clamp so the card stays
+   inside `el` (`el.clientWidth - anchorEl.offsetWidth - 8`, same for height); flip to the
+   left of the node when it would overflow right.
+4. Markup under the graph div:
+   ```svelte
+   {#if hovered &amp;&amp; hovered.id !== selectedId}
+     &lt;div class=&#34;hover-card&#34; bind:this={anchorEl}&gt;
+       &lt;NodeCard node={hovered} {company} /&gt;
+     &lt;/div&gt;
+   {/if}
+   ```
+   `hovered` is a graph node object (it carries `x/y/z` plus the OkrNode fields, see
+   `toGraphData`), which NodeCard reads like any node.
+5. Hide on data changes: in the `tree` effect, if `hovered` is no longer in the tree, set it
+   to `null`. Also set `hovered = null` inside `flyTo` so a card does not linger on a node the
+   camera is leaving.
+6. `app.css`: `.hover-card { position: absolute; top: 0; left: 0; pointer-events: none; width: 300px; background: rgba(18,24,38,0.95); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; backdrop-filter: blur(6px); will-change: transform; }`
+   and remove the `.scene-tooltip .tip` rules (`:94-95`). `.graph` is `position: absolute; inset: 0`
+   (`app.css:65`) and the card is its sibling inside `.stage`, so coordinates from
+   `graph2ScreenCoords` (relative to the renderer&#39;s element) map directly.
+
+## Verification
+
+- Hover a KR: after a short pause a card with label, team name, metric and target appears
+  beside the sphere; it follows the node while tumbling; it disappears the instant the pointer
+  leaves the sphere. No library tooltip appears alongside it.
+- Hover `kr-7` (no metric): the metric row reads &#34;none — not measurable&#34; in red, identical to
+  the Detail panel.
+- Hover a node near the right edge of the stage: the card flips to the left and stays inside
+  the stage.
+- Click a node so Detail opens, then hover the same node: no card. Hover a different node: card.
+- Detail read mode renders the same four fields as before; the owner link still opens the team
+  editor and still previews the team&#39;s nodes on hover; edit mode is unchanged.
+- Rename a team in TeamEditor while a card is visible for one of its nodes: the card updates
+  (it reads `company` reactively).
+- Switch datasets while hovering: the card disappears, no console errors.
+
+## Out of scope
+
+- Hover cards for links or for team labels.
+- Making the hover card interactive (buttons, links).
+- Touch devices (no hover).
+- Any change to edit-mode inputs.
+
+## Risks / rollback
+
+- `graph2ScreenCoords` returns coordinates relative to the renderer&#39;s canvas; if the graph
+  container ever gets padding, the offset will show. It has none today.
+- `onNodeHover` fires with `null` on every frame the pointer is over empty space; the handler
+  must be cheap (it is: clear a timer, set state only when it changes).
+- Rollback: restore `nodeLabel` and the tooltip CSS; Detail&#39;s read markup is a mechanical
+  inline of NodeCard.
+EOF
+wc -c Plans/development/NODE_HOVER_CARD.md; sed -n &#39;159,163p&#39; CLAUDE.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T01-30-54-287Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T01-30-54-287Z" class="timestamp-link"><time datetime="2026-09-12T01:30:54.287Z" data-timestamp="2026-09-12T01:30:54.287Z">2026-09-12T01:30:54.287Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>    8315 Plans/development/NODE_HOVER_CARD.md
+## Current work
+
+Active: [Plans/development/NODE_HOVER_CARD.md](Plans/development/NODE_HOVER_CARD.md) — extract the
+node summary into `NodeCard.svelte`, shared by Detail and a node-anchored hover card in the 3D view.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T01-31-02-308Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T01-31-02-308Z" class="timestamp-link"><time datetime="2026-09-12T01:31:02.308Z" data-timestamp="2026-09-12T01:31:02.308Z">2026-09-12T01:31:02.308Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Plan written: <a href="Plans/development/NODE_HOVER_CARD.md">Plans/development/NODE_HOVER_CARD.md</a>, linked as active work in CLAUDE.md.</p>
+<p><strong>The shape of it</strong>
+- <strong>Phase 1</strong>: a new <code>NodeCard.svelte</code> that renders exactly the portion in your screenshot: label, owner, metric, target. It takes a node and the company so the owner shows the team name. The owner becomes a link only when the host passes a handler.
+- <strong>Phase 2</strong>: Detail's read view composes <code>NodeCard</code> above the rows it keeps (Supports, Fit, children). Edit mode is untouched.
+- <strong>Phase 3</strong>: Graph switches off the library's HTML-string tooltip and instead renders <code>NodeCard</code> in a hover card anchored to the node's projected screen position, updated in the existing animation loop so it rides with the node while tumbling.</p>
+<p><strong>Decisions I made that you may want to override</strong>
+- <strong>Anchored to the node, not the pointer.</strong> Steadier to read, and it tracks during fly-tos. Pointer-following is the simpler alternative if you prefer the conventional tooltip feel.
+- <strong>150 ms show delay, instant hide</strong>, so sweeping across the tree while tumbling doesn't flash cards.
+- <strong>No card for the node whose Detail panel is already open.</strong> It would repeat what's on screen.
+- <strong>The hover card is not interactive.</strong> Owner is plain text there; the link behaviour stays in Detail.</p>
+<p>Say go and I'll implement it, or tell me which of those to change first.</p></div></div></div>
+        
+
+<div class="pagination">
+<a href="index.html" class="index-link">Index</a>
+<a href="page-001.html">&larr; Prev</a>
+<a href="page-001.html">1</a>
+<span class="current">2</span>
+<span class="disabled">Next &rarr;</span>
+</div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>

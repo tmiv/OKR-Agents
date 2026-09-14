@@ -1,0 +1,1754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claude Code transcript - page 1</title>
+    <style>
+:root { --bg-color: #f5f5f5; --card-bg: #ffffff; --user-bg: #e3f2fd; --user-border: #1976d2; --assistant-bg: #f5f5f5; --assistant-border: #9e9e9e; --thinking-bg: #fff8e1; --thinking-border: #ffc107; --thinking-text: #666; --tool-bg: #f3e5f5; --tool-border: #9c27b0; --tool-result-bg: #e8f5e9; --tool-error-bg: #ffebee; --text-color: #212121; --text-muted: #757575; --code-bg: #263238; --code-text: #aed581; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 0; padding: 16px; line-height: 1.6; }
+.container { max-width: 800px; margin: 0 auto; }
+h1 { font-size: 1.5rem; margin-bottom: 24px; padding-bottom: 8px; border-bottom: 2px solid var(--user-border); }
+.header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; border-bottom: 2px solid var(--user-border); padding-bottom: 8px; margin-bottom: 24px; }
+.header-row h1 { border-bottom: none; padding-bottom: 0; margin-bottom: 0; flex: 1; min-width: 200px; }
+.message { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.message.user { background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.message.assistant { background: var(--card-bg); border-left: 4px solid var(--assistant-border); }
+.message.tool-reply { background: #fff8e1; border-left: 4px solid #ff9800; }
+.tool-reply .role-label { color: #e65100; }
+.tool-reply .tool-result { background: transparent; padding: 0; margin: 0; }
+.tool-reply .tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.message-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.role-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.user .role-label { color: var(--user-border); }
+time { color: var(--text-muted); font-size: 0.8rem; }
+.timestamp-link { color: inherit; text-decoration: none; }
+.timestamp-link:hover { text-decoration: underline; }
+.message:target { animation: highlight 2s ease-out; }
+@keyframes highlight { 0% { background-color: rgba(25, 118, 210, 0.2); } 100% { background-color: transparent; } }
+.message-content { padding: 16px; }
+.message-content p { margin: 0 0 12px 0; }
+.message-content p:last-child { margin-bottom: 0; }
+.thinking { background: var(--thinking-bg); border: 1px solid var(--thinking-border); border-radius: 8px; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: var(--thinking-text); }
+.thinking-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #f57c00; margin-bottom: 8px; }
+.thinking p { margin: 8px 0; }
+.assistant-text { margin: 8px 0; }
+.tool-use { background: var(--tool-bg); border: 1px solid var(--tool-border); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-header { font-weight: 600; color: var(--tool-border); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.tool-icon { font-size: 1.1rem; }
+.tool-description { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.tool-result { background: var(--tool-result-bg); border-radius: 8px; padding: 12px; margin: 12px 0; }
+.tool-result.tool-error { background: var(--tool-error-bg); }
+.file-tool { border-radius: 8px; padding: 12px; margin: 12px 0; }
+.write-tool { background: linear-gradient(135deg, #e3f2fd 0%, #e8f5e9 100%); border: 1px solid #4caf50; }
+.edit-tool { background: linear-gradient(135deg, #fff3e0 0%, #fce4ec 100%); border: 1px solid #ff9800; }
+.file-tool-header { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.write-header { color: #2e7d32; }
+.edit-header { color: #e65100; }
+.file-tool-icon { font-size: 1rem; }
+.file-tool-path { font-family: monospace; background: rgba(0,0,0,0.08); padding: 2px 8px; border-radius: 4px; }
+.file-tool-fullpath { font-family: monospace; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; word-break: break-all; }
+.file-content { margin: 0; }
+.edit-section { display: flex; margin: 4px 0; border-radius: 4px; overflow: hidden; }
+.edit-label { padding: 8px 12px; font-weight: bold; font-family: monospace; display: flex; align-items: flex-start; }
+.edit-old { background: #fce4ec; }
+.edit-old .edit-label { color: #b71c1c; background: #f8bbd9; }
+.edit-old .edit-content { color: #880e4f; }
+.edit-new { background: #e8f5e9; }
+.edit-new .edit-label { color: #1b5e20; background: #a5d6a7; }
+.edit-new .edit-content { color: #1b5e20; }
+.edit-content { margin: 0; flex: 1; background: transparent; font-size: 0.85rem; }
+.edit-replace-all { font-size: 0.75rem; font-weight: normal; color: var(--text-muted); }
+.write-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #e6f4ea); }
+.edit-tool .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff0e5); }
+.todo-list { background: linear-gradient(135deg, #e8f5e9 0%, #f1f8e9 100%); border: 1px solid #81c784; border-radius: 8px; padding: 12px; margin: 12px 0; }
+.todo-header { font-weight: 600; color: #2e7d32; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; font-size: 0.95rem; }
+.todo-items { list-style: none; margin: 0; padding: 0; }
+.todo-item { display: flex; align-items: flex-start; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(0,0,0,0.06); font-size: 0.9rem; }
+.todo-item:last-child { border-bottom: none; }
+.todo-icon { flex-shrink: 0; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-weight: bold; border-radius: 50%; }
+.todo-completed .todo-icon { color: #2e7d32; background: rgba(46, 125, 50, 0.15); }
+.todo-completed .todo-content { color: #558b2f; text-decoration: line-through; }
+.todo-in-progress .todo-icon { color: #f57c00; background: rgba(245, 124, 0, 0.15); }
+.todo-in-progress .todo-content { color: #e65100; font-weight: 500; }
+.todo-pending .todo-icon { color: #757575; background: rgba(0,0,0,0.05); }
+.todo-pending .todo-content { color: #616161; }
+pre { background: var(--code-bg); color: var(--code-text); padding: 12px; border-radius: 6px; overflow-x: auto; font-size: 0.85rem; line-height: 1.5; margin: 8px 0; white-space: pre-wrap; word-wrap: break-word; }
+pre.json { color: #e0e0e0; }
+code { background: rgba(0,0,0,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+pre code { background: none; padding: 0; }
+.user-content { margin: 0; }
+.truncatable { position: relative; }
+.truncatable.truncated .truncatable-content { max-height: 200px; overflow: hidden; }
+.truncatable.truncated::after { content: ''; position: absolute; bottom: 32px; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--card-bg)); pointer-events: none; }
+.message.user .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--user-bg)); }
+.message.tool-reply .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, #fff8e1); }
+.tool-use .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-bg)); }
+.tool-result .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--tool-result-bg)); }
+.expand-btn { display: none; width: 100%; padding: 8px 16px; margin-top: 4px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 6px; cursor: pointer; font-size: 0.85rem; color: var(--text-muted); }
+.expand-btn:hover { background: rgba(0,0,0,0.1); }
+.truncatable.truncated .expand-btn, .truncatable.expanded .expand-btn { display: block; }
+.pagination { display: flex; justify-content: center; gap: 8px; margin: 24px 0; flex-wrap: wrap; }
+.pagination a, .pagination span { padding: 5px 10px; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+.pagination a { background: var(--card-bg); color: var(--user-border); border: 1px solid var(--user-border); }
+.pagination a:hover { background: var(--user-bg); }
+.pagination .current { background: var(--user-border); color: white; }
+.pagination .disabled { color: var(--text-muted); border: 1px solid #ddd; }
+.pagination .index-link { background: var(--user-border); color: white; }
+details.continuation { margin-bottom: 16px; }
+details.continuation summary { cursor: pointer; padding: 12px 16px; background: var(--user-bg); border-left: 4px solid var(--user-border); border-radius: 12px; font-weight: 500; color: var(--text-muted); }
+details.continuation summary:hover { background: rgba(25, 118, 210, 0.15); }
+details.continuation[open] summary { border-radius: 12px 12px 0 0; margin-bottom: 0; }
+.index-item { margin-bottom: 16px; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); background: var(--user-bg); border-left: 4px solid var(--user-border); }
+.index-item a { display: block; text-decoration: none; color: inherit; }
+.index-item a:hover { background: rgba(25, 118, 210, 0.1); }
+.index-item-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; background: rgba(0,0,0,0.03); font-size: 0.85rem; }
+.index-item-number { font-weight: 600; color: var(--user-border); }
+.index-item-content { padding: 16px; }
+.index-item-stats { padding: 8px 16px 12px 32px; font-size: 0.85rem; color: var(--text-muted); border-top: 1px solid rgba(0,0,0,0.06); }
+.index-item-commit { margin-top: 6px; padding: 4px 8px; background: #fff3e0; border-radius: 4px; font-size: 0.85rem; color: #e65100; }
+.index-item-commit code { background: rgba(0,0,0,0.08); padding: 1px 4px; border-radius: 3px; font-size: 0.8rem; margin-right: 6px; }
+.commit-card { margin: 8px 0; padding: 10px 14px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 6px; }
+.commit-card a { text-decoration: none; color: #5d4037; display: block; }
+.commit-card a:hover { color: #e65100; }
+.commit-card-hash { font-family: monospace; color: #e65100; font-weight: 600; margin-right: 8px; }
+.index-commit { margin-bottom: 12px; padding: 10px 16px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.index-commit a { display: block; text-decoration: none; color: inherit; }
+.index-commit a:hover { background: rgba(255, 152, 0, 0.1); margin: -10px -16px; padding: 10px 16px; border-radius: 8px; }
+.index-commit-header { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; margin-bottom: 4px; }
+.index-commit-hash { font-family: monospace; color: #e65100; font-weight: 600; }
+.index-commit-msg { color: #5d4037; }
+.index-item-long-text { margin-top: 8px; padding: 12px; background: var(--card-bg); border-radius: 8px; border-left: 3px solid var(--assistant-border); }
+.index-item-long-text .truncatable.truncated::after { background: linear-gradient(to bottom, transparent, var(--card-bg)); }
+.index-item-long-text-content { color: var(--text-color); }
+#search-box { display: none; align-items: center; gap: 8px; }
+#search-box input { padding: 6px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; width: 180px; }
+#search-box button, #modal-search-btn, #modal-close-btn { background: var(--user-border); color: white; border: none; border-radius: 6px; padding: 6px 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+#search-box button:hover, #modal-search-btn:hover { background: #1565c0; }
+#modal-close-btn { background: var(--text-muted); margin-left: 8px; }
+#modal-close-btn:hover { background: #616161; }
+#search-modal[open] { border: none; border-radius: 12px; box-shadow: 0 4px 24px rgba(0,0,0,0.2); padding: 0; width: 90vw; max-width: 900px; height: 80vh; max-height: 80vh; display: flex; flex-direction: column; }
+#search-modal::backdrop { background: rgba(0,0,0,0.5); }
+.search-modal-header { display: flex; align-items: center; gap: 8px; padding: 16px; border-bottom: 1px solid var(--assistant-border); background: var(--bg-color); border-radius: 12px 12px 0 0; }
+.search-modal-header input { flex: 1; padding: 8px 12px; border: 1px solid var(--assistant-border); border-radius: 6px; font-size: 16px; }
+#search-status { padding: 8px 16px; font-size: 0.85rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+#search-results { flex: 1; overflow-y: auto; padding: 16px; }
+.search-result { margin-bottom: 16px; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+.search-result a { display: block; text-decoration: none; color: inherit; }
+.search-result a:hover { background: rgba(25, 118, 210, 0.05); }
+.search-result-page { padding: 6px 12px; background: rgba(0,0,0,0.03); font-size: 0.8rem; color: var(--text-muted); border-bottom: 1px solid rgba(0,0,0,0.06); }
+.search-result-content { padding: 12px; }
+.search-result mark { background: #fff59d; padding: 1px 2px; border-radius: 2px; }
+@media (max-width: 600px) { body { padding: 8px; } .message, .index-item { border-radius: 8px; } .message-content, .index-item-content { padding: 12px; } pre { font-size: 0.8rem; padding: 8px; } #search-box input { width: 120px; } #search-modal[open] { width: 95vw; height: 90vh; } }
+</style>
+</head>
+<body>
+    <div class="container">
+        <h1><a href="index.html" style="color: inherit; text-decoration: none;">Claude Code transcript</a> - page 1/1</h1>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+        
+<div class="message user" id="msg-2026-09-12T17-03-26-687Z"><div class="message-header"><span class="role-label">User</span><a href="#msg-2026-09-12T17-03-26-687Z" class="timestamp-link"><time datetime="2026-09-12T17:03:26.687Z" data-timestamp="2026-09-12T17:03:26.687Z">2026-09-12T17:03:26.687Z</time></a></div><div class="message-content">
+<div class="user-content"><p>make a new plan that changes the zoom in to frame the selected node and its parent and children.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-28-015Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-28-015Z" class="timestamp-link"><time datetime="2026-09-12T17:03:28.015Z" data-timestamp="2026-09-12T17:03:28.015Z">2026-09-12T17:03:28.015Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I'll look at how zoom/framing works today before writing the plan.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-29-675Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-29-675Z" class="timestamp-link"><time datetime="2026-09-12T17:03:29.675Z" data-timestamp="2026-09-12T17:03:29.675Z">2026-09-12T17:03:29.675Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01V6YQc4A1J5ZLouE5EhvQkv">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Survey repo layout</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls &amp;&amp; echo &#34;---PLANS---&#34; &amp;&amp; ls Plans/development Plans/completed Plans/followups 2&gt;/dev/null &amp;&amp; echo &#34;---WEB---&#34; &amp;&amp; find web/src -type f -name &#34;*.ts*&#34; | head -60</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-30-033Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-30-033Z" class="timestamp-link"><time datetime="2026-09-12T17:03:30.033Z" data-timestamp="2026-09-12T17:03:30.033Z">2026-09-12T17:03:30.033Z</time></a></div><div class="message-content"><div class="tool-result tool-error"><div class="truncatable"><div class="truncatable-content"><pre>Exit code 1
+CLAUDE.md
+Concepts
+Plans
+README.md
+node_modules
+package-lock.json
+package.json
+schema
+service
+web
+---PLANS---
+Plans/completed:
+BUNDLED_DATASETS.md
+CAMERA_LEVEL_AUTO_MOVES.md
+CHAT_CONTEXT.md
+CHAT_TABS_AND_INTERVIEWS.md
+CLEAR_HIGHLIGHT_ON_SELECT.md
+GRAPH_KEYBOARD_SHORTCUTS.md
+NODE_HOVER_CARD.md
+OKR_NODE_EDITOR.md
+OKR_SCHEMA_PACKAGE.md
+TEAM_MODEL_AND_EDITOR.md
+
+Plans/development:</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-31-579Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-31-579Z" class="timestamp-link"><time datetime="2026-09-12T17:03:31.579Z" data-timestamp="2026-09-12T17:03:31.579Z">2026-09-12T17:03:31.579Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-33-001Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-33-001Z" class="timestamp-link"><time datetime="2026-09-12T17:03:33.001Z" data-timestamp="2026-09-12T17:03:33.001Z">2026-09-12T17:03:33.001Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Rse6rNfQJJKSpHLDMFMs4N">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List web source files and zoom references</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">find web/src -type f \( -name &#34;*.ts&#34; -o -name &#34;*.tsx&#34; -o -name &#34;*.js&#34; \) | sort &amp;&amp; echo &#34;---&#34; &amp;&amp; grep -rn &#34;zoom&#34; web/src --include=*.ts --include=*.tsx -il</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-33-066Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-33-066Z" class="timestamp-link"><time datetime="2026-09-12T17:03:33.066Z" data-timestamp="2026-09-12T17:03:33.066Z">2026-09-12T17:03:33.066Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>web/src/lib/apply.js
+web/src/lib/company.js
+web/src/lib/datasets.js
+web/src/lib/navigate.js
+web/src/lib/navigate.test.js
+web/src/main.js
+---
+(eval):1: no matches found: --include=*.ts</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-35-587Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-35-587Z" class="timestamp-link"><time datetime="2026-09-12T17:03:35.587Z" data-timestamp="2026-09-12T17:03:35.587Z">2026-09-12T17:03:35.587Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01322438pXG8WMi6Vg8ER65j">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find zoom/camera code</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">wc -l web/src/*.js web/src/lib/*.js &amp;&amp; echo &#34;---ZOOM---&#34; &amp;&amp; grep -rn &#34;zoom\|camera\|frame\|fit&#34; web/src --include=&#34;*.js&#34; -i | head -60</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-35-641Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-35-641Z" class="timestamp-link"><time datetime="2026-09-12T17:03:35.641Z" data-timestamp="2026-09-12T17:03:35.641Z">2026-09-12T17:03:35.641Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>       5 web/src/main.js
+     161 web/src/lib/apply.js
+     142 web/src/lib/company.js
+      63 web/src/lib/datasets.js
+      47 web/src/lib/navigate.js
+      88 web/src/lib/navigate.test.js
+     506 total
+---ZOOM---
+web/src/lib/navigate.js:24:// re-flying the camera to where it already is.
+web/src/lib/apply.js:56: * Apply one action, returning a new tree. Anything that does not fit the tree</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-37-022Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-37-022Z" class="timestamp-link"><time datetime="2026-09-12T17:03:37.022Z" data-timestamp="2026-09-12T17:03:37.022Z">2026-09-12T17:03:37.022Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-37-982Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-37-982Z" class="timestamp-link"><time datetime="2026-09-12T17:03:37.982Z" data-timestamp="2026-09-12T17:03:37.982Z">2026-09-12T17:03:37.982Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01DjbP9X7KN8dJvUapUkSBiA">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List tracked files</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git ls-files | grep -v node_modules | head -100</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-38-033Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-38-033Z" class="timestamp-link"><time datetime="2026-09-12T17:03:38.033Z" data-timestamp="2026-09-12T17:03:38.033Z">2026-09-12T17:03:38.033Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>.gitignore
+CLAUDE.md
+Concepts/Agents as Executors - Design.md
+Concepts/Depth and Focus - Design.md
+Concepts/OKR Viewer - Product Vision.md
+Concepts/Teams as Agents - Design.md
+Plans/completed/BUNDLED_DATASETS.md
+Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md
+Plans/completed/CHAT_CONTEXT.md
+Plans/completed/CHAT_TABS_AND_INTERVIEWS.md
+Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md
+Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md
+Plans/completed/NODE_HOVER_CARD.md
+Plans/completed/OKR_NODE_EDITOR.md
+Plans/completed/OKR_SCHEMA_PACKAGE.md
+Plans/completed/TEAM_MODEL_AND_EDITOR.md
+README.md
+package-lock.json
+package.json
+schema/index.d.ts
+schema/index.js
+schema/migrations/index.js
+schema/package.json
+schema/scripts/build.mjs
+schema/scripts/clean.mjs
+schema/src/action.schema.json
+schema/src/chat-request.schema.json
+schema/src/chat-response.schema.json
+schema/src/company.schema.json
+schema/src/history.schema.json
+schema/src/index.schema.json
+schema/src/okr-document.schema.json
+schema/src/okr-node.schema.json
+schema/src/okr-tree.schema.json
+schema/test/build-output.test.js
+schema/test/datasets.test.js
+schema/test/document.test.js
+schema/test/errors.test.js
+schema/test/fixtures.test.js
+schema/test/fixtures/invalid/action.add-unit-without-name.json
+schema/test/fixtures/invalid/action.add-without-label.json
+schema/test/fixtures/invalid/action.delete-with-fields.json
+schema/test/fixtures/invalid/action.edit-empty-fields.json
+schema/test/fixtures/invalid/action.edit-unit-empty-fields.json
+schema/test/fixtures/invalid/action.edit-unknown-field.json
+schema/test/fixtures/invalid/action.relink-without-parent.json
+schema/test/fixtures/invalid/action.unknown-op.json
+schema/test/fixtures/invalid/chat-request.bad-history-role.json
+schema/test/fixtures/invalid/chat-request.bad-mode.json
+schema/test/fixtures/invalid/chat-request.bad-node-id.json
+schema/test/fixtures/invalid/chat-request.context-bad-panel-kind.json
+schema/test/fixtures/invalid/chat-request.empty-message.json
+schema/test/fixtures/invalid/chat-response.highlight-not-strings.json
+schema/test/fixtures/invalid/chat-response.missing-highlight.json
+schema/test/fixtures/invalid/company.charter-unknown-field.json
+schema/test/fixtures/invalid/company.unit-without-parent-key.json
+schema/test/fixtures/invalid/history.change-bad-actor.json
+schema/test/fixtures/invalid/history.sample-bad-timestamp.json
+schema/test/fixtures/invalid/okr-document.meta-without-exportedAt.json
+schema/test/fixtures/invalid/okr-document.missing-version.json
+schema/test/fixtures/invalid/okr-node.bad-level.json
+schema/test/fixtures/invalid/okr-node.contributes-out-of-range.json
+schema/test/fixtures/invalid/okr-node.empty-label.json
+schema/test/fixtures/invalid/okr-node.graph-coords.json
+schema/test/fixtures/invalid/okr-node.id-not-a-string.json
+schema/test/fixtures/invalid/okr-node.id-with-space.json
+schema/test/fixtures/invalid/okr-tree.node-missing-parent-key.json
+schema/test/fixtures/invalid/okr-tree.nodes-not-an-array.json
+schema/test/fixtures/valid/action.add-unit.json
+schema/test/fixtures/valid/action.add.json
+schema/test/fixtures/valid/action.delete-unit.json
+schema/test/fixtures/valid/action.delete.json
+schema/test/fixtures/valid/action.edit-unit.json
+schema/test/fixtures/valid/action.edit.json
+schema/test/fixtures/valid/action.relink.json
+schema/test/fixtures/valid/chat-request.interview-new-no-parent.json
+schema/test/fixtures/valid/chat-request.interview-node.json
+schema/test/fixtures/valid/chat-request.json
+schema/test/fixtures/valid/chat-request.no-optionals.json
+schema/test/fixtures/valid/chat-request.with-context.json
+schema/test/fixtures/valid/chat-response.json
+schema/test/fixtures/valid/company.chartered.json
+schema/test/fixtures/valid/company.json
+schema/test/fixtures/valid/history.json
+schema/test/fixtures/valid/history.user-change.json
+schema/test/fixtures/valid/okr-document.json
+schema/test/fixtures/valid/okr-node.json
+schema/test/fixtures/valid/okr-node.with-unit.json
+schema/test/fixtures/valid/okr-tree.full.json
+schema/test/fixtures/valid/okr-tree.minimal.json
+schema/test/semantics.test.js
+schema/tsconfig.check.json
+schema/version.js
+service/.env.example
+service/index.js
+service/package.json
+service/prompt.js
+service/validate.js
+web/index.html
+web/package.json</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-39-617Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-39-617Z" class="timestamp-link"><time datetime="2026-09-12T17:03:39.617Z" data-timestamp="2026-09-12T17:03:39.617Z">2026-09-12T17:03:39.617Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01QrCN8iTKFBbgjFwcCzJA9i">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">List remaining tracked files</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">git ls-files | grep -v node_modules | sed -n &#39;100,250p&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-39-674Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-39-674Z" class="timestamp-link"><time datetime="2026-09-12T17:03:39.674Z" data-timestamp="2026-09-12T17:03:39.674Z">2026-09-12T17:03:39.674Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>web/package.json
+web/src/App.svelte
+web/src/Chat.svelte
+web/src/Detail.svelte
+web/src/Graph.svelte
+web/src/NodeCard.svelte
+web/src/TeamEditor.svelte
+web/src/TeamList.svelte
+web/src/app.css
+web/src/assets/datasets/manifest.json
+web/src/assets/datasets/polaris-group-fy26.json
+web/src/assets/datasets/regional-clinic-network.json
+web/src/assets/datasets/starter.json
+web/src/assets/datasets/workflow-platform-fy26.json
+web/src/lib/apply.js
+web/src/lib/company.js
+web/src/lib/datasets.js
+web/src/lib/navigate.js
+web/src/lib/navigate.test.js
+web/src/main.js
+web/vite.config.js</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-41-900Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-41-900Z" class="timestamp-link"><time datetime="2026-09-12T17:03:41.900Z" data-timestamp="2026-09-12T17:03:41.900Z">2026-09-12T17:03:41.900Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01AuHFz5hCemKqafSZPcDfqr">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Inspect Graph.svelte camera code</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">wc -l web/src/*.svelte &amp;&amp; echo &#34;=== GRAPH zoom/camera ===&#34; &amp;&amp; grep -n &#34;zoom\|transform\|scale\|viewBox\|camera\|focus\|fit\|flyTo\|pan&#34; web/src/Graph.svelte | head -80</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-41-963Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-41-963Z" class="timestamp-link"><time datetime="2026-09-12T17:03:41.963Z" data-timestamp="2026-09-12T17:03:41.963Z">2026-09-12T17:03:41.963Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>     627 web/src/App.svelte
+     148 web/src/Chat.svelte
+     373 web/src/Detail.svelte
+     312 web/src/Graph.svelte
+      47 web/src/NodeCard.svelte
+     286 web/src/TeamEditor.svelte
+      74 web/src/TeamList.svelte
+    1867 total
+=== GRAPH zoom/camera ===
+6:  import { unitName } from &#x27;./lib/company.js&#x27;;
+11:    company = null,
+25:  // Transient hover pointer from the side panel. Unlike `highlight` it never
+26:  // moves the camera: the mouse is already where the user is looking.
+37:  // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
+41:    company: { color: &#x27;#f5c542&#x27;, size: 10 },
+68:    const text = unitName(company, node.unitId) ?? node.owner ?? &#x27;&#x27;;
+97:  // Trackball lets the user roll `camera.up` freely; every programmatic move
+101:    const cam = graph.camera();
+119:  export function flyTo(ids, ms = 1200) {
+133:    // Approach along the camera&#x27;s current bearing so the move feels continuous.
+134:    const cam = graph.cameraPosition();
+138:    graph.cameraPosition({ x: c.x + dir.x * dist, y: c.y + dir.y * dist, z: c.z + dir.z * dist }, c, ms);
+147:    graph.zoomToFit(ms, 60);
+153:      const cam = graph?.camera();
+180:      anchorEl.style.transform = `translate(${left}px, ${top}px)`;
+188:      mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.2);
+219:      // panel says, as the same component.
+230:      .onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })
+240:    // Inertia would keep rotating camera.up while we tween it; the tradeoff is
+283:    const c = company;
+296:    if (highlight.length) flyTo(highlight);
+306:&lt;!-- Never for the node whose Detail panel is already open: it would repeat what
+310:    &lt;NodeCard node={hovered} {company} /&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-43-459Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-43-459Z" class="timestamp-link"><time datetime="2026-09-12T17:03:43.459Z" data-timestamp="2026-09-12T17:03:43.459Z">2026-09-12T17:03:43.459Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_019KsoqqvoHfaQc93b5ATB5v">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read Graph.svelte head</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,160p&#39; web/src/Graph.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-43-506Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-43-506Z" class="timestamp-link"><time datetime="2026-09-12T17:03:43.506Z" data-timestamp="2026-09-12T17:03:43.506Z">2026-09-12T17:03:43.506Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>&lt;script&gt;
+  import { onMount, untrack } from &#x27;svelte&#x27;;
+  import ForceGraph3D from &#x27;3d-force-graph&#x27;;
+  import * as THREE from &#x27;three&#x27;;
+  import SpriteText from &#x27;three-spritetext&#x27;;
+  import { unitName } from &#x27;./lib/company.js&#x27;;
+  import NodeCard from &#x27;./NodeCard.svelte&#x27;;
+
+  let {
+    tree,
+    company = null,
+    selectedId = null,
+    highlight = [],
+    preview = [],
+    showTeamLabels = false,
+    onSelect
+  } = $props();
+
+  let el;
+  // The graph instance lives outside Svelte&#x27;s reactive system on purpose:
+  // 3d-force-graph mutates its own data and runs its own render loop.
+  let graph;
+  const meshes = new Map(); // node id → THREE.Mesh, for the pulse loop
+  let highlightSet = new Set();
+  // Transient hover pointer from the side panel. Unlike `highlight` it never
+  // moves the camera: the mouse is already where the user is looking.
+  let previewSet = new Set();
+  let raf;
+  // Which node the pointer is over — the only part of the hover card that is
+  // Svelte state. $state.raw because the force layout mutates these node objects
+  // every tick and we only ever swap which one is held, never write through it.
+  let hovered = $state.raw(null);
+  let hoverTimer;
+  let anchorEl = $state(null);
+  const HOVER_DELAY = 150; // long enough that sweeping across the tree does not flash cards
+  const WORLD_UP = new THREE.Vector3(0, 1, 0);
+  // { from, to, start, ms } while a programmatic move is re-levelling camera.up.
+  let upTween = null;
+
+  const LEVEL = {
+    company: { color: &#x27;#f5c542&#x27;, size: 10 },
+    objective: { color: &#x27;#4f9cff&#x27;, size: 6.5 },
+    kr: { color: &#x27;#5ad38a&#x27;, size: 3.6 }
+  };
+  const WHITE = new THREE.Color(&#x27;#ffffff&#x27;);
+  const RED = new THREE.Color(&#x27;#ff3b30&#x27;);
+
+  // contributes 0 → red, 1 → green
+  function linkColor(c) {
+    const t = Math.max(0, Math.min(1, c ?? 0.5));
+    return `hsl(${Math.round(120 * t)}, 75%, ${52 - 10 * t}%)`;
+  }
+
+  function makeNodeObject(node) {
+    const cfg = LEVEL[node.level] ?? LEVEL.kr;
+    const mesh = new THREE.Mesh(
+      new THREE.SphereGeometry(cfg.size, 24, 24),
+      new THREE.MeshLambertMaterial({ color: cfg.color, transparent: true, opacity: 0.95 })
+    );
+    mesh.userData.baseColor = new THREE.Color(cfg.color);
+
+    // The team label hangs under the sphere as a child of the mesh, so it
+    // follows the node without a second layout pass. It is created empty and
+    // hidden; the effect below fills it in, because node objects are reused
+    // across data updates and this function does not run again for them.
+    // (It is seeded here as well, because 3d-force-graph may build the object
+    // after the effect has already walked the meshes it knew about.)
+    const text = unitName(company, node.unitId) ?? node.owner ?? &#x27;&#x27;;
+    const label = new SpriteText(text, 6, &#x27;#e6ebf5&#x27;);
+    label.material.depthWrite = false;
+    // Anchor the sprite&#x27;s left edge just right of the sphere, vertically centred.
+    label.center.set(0, 0.5);
+    label.position.x = cfg.size + 3;
+    label.visible = showTeamLabels &amp;&amp; !!text;
+    mesh.add(label);
+    mesh.userData.label = label;
+
+    meshes.set(node.id, mesh);
+    return mesh;
+  }
+
+  // Reuse existing node objects (they carry x/y/z) so an edit nudges the
+  // layout instead of re-heating the whole simulation.
+  function toGraphData(t, prev) {
+    const prevById = new Map((prev?.nodes ?? []).map((n) =&gt; [n.id, n]));
+    const nodes = t.nodes.map((n) =&gt; {
+      const existing = prevById.get(n.id);
+      return existing ? Object.assign(existing, n) : { ...n };
+    });
+    const ids = new Set(nodes.map((n) =&gt; n.id));
+    const links = t.nodes
+      .filter((n) =&gt; n.parent &amp;&amp; ids.has(n.parent))
+      .map((n) =&gt; ({ source: n.parent, target: n.id, contributes: n.contributes ?? 0.5 }));
+    return { nodes, links };
+  }
+
+  // Trackball lets the user roll `camera.up` freely; every programmatic move
+  // tweens it back to world up over the flight so the view un-rolls smoothly.
+  function levelCamera(ms) {
+    if (!graph) return;
+    const cam = graph.camera();
+    const controls = graph.controls();
+    if (!cam || !controls) return;
+    const from = cam.up.clone().normalize();
+    const view = controls.target.clone().sub(cam.position).normalize();
+    // Looking (almost) straight down the tree makes lookAt with up = +Y undefined.
+    let to = WORLD_UP.clone();
+    if (Math.abs(view.dot(WORLD_UP)) &gt; 0.98) to = new THREE.Vector3(0, 0, -1);
+    if (from.distanceToSquared(to) &lt; 1e-6) { upTween = null; return; }
+    // Upside down: a straight lerp would pass through the origin, so nudge off the antipode.
+    if (from.dot(to) &lt; -0.999) {
+      const nudge = view.clone().cross(to);
+      if (nudge.lengthSq() &lt; 1e-6) nudge.set(1, 0, 0);
+      from.addScaledVector(nudge.normalize(), 0.01).normalize();
+    }
+    upTween = { from, to, start: performance.now(), ms };
+  }
+
+  export function flyTo(ids, ms = 1200) {
+    if (!graph || !ids?.length) return;
+    clearTimeout(hoverTimer);
+    hovered = null;
+    const want = new Set(ids);
+    const nodes = graph.graphData().nodes.filter((n) =&gt; want.has(n.id) &amp;&amp; Number.isFinite(n.x));
+    if (!nodes.length) return;
+    levelCamera(ms);
+    const c = { x: 0, y: 0, z: 0 };
+    for (const n of nodes) { c.x += n.x; c.y += n.y; c.z += n.z; }
+    c.x /= nodes.length; c.y /= nodes.length; c.z /= nodes.length;
+    let radius = 0;
+    for (const n of nodes) radius = Math.max(radius, Math.hypot(n.x - c.x, n.y - c.y, n.z - c.z));
+    const dist = Math.max(140, radius * 2.2 + 120);
+    // Approach along the camera&#x27;s current bearing so the move feels continuous.
+    const cam = graph.cameraPosition();
+    const dir = new THREE.Vector3(cam.x - c.x, cam.y - c.y, cam.z - c.z);
+    if (dir.length() &lt; 1) dir.set(0, 0.3, 1);
+    dir.normalize();
+    graph.cameraPosition({ x: c.x + dir.x * dist, y: c.y + dir.y * dist, z: c.z + dir.z * dist }, c, ms);
+  }
+
+  // Frames the whole tree and levels the horizon. The mount-time overview and
+  // the `f` shortcut share it so both moves look the same.
+  export function frameAll(ms = 900) {
+    if (!graph) return;
+    clearTimeout(hoverTimer);
+    hovered = null;
+    graph.zoomToFit(ms, 60);
+    levelCamera(ms);
+  }
+
+  function animate() {
+    if (upTween) {
+      const cam = graph?.camera();
+      if (!cam) {
+        upTween = null;
+      } else {
+        const t = Math.min(1, (performance.now() - upTween.start) / upTween.ms);
+        if (t &gt;= 1) {
+          cam.up.copy(upTween.to);
+          upTween = null;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-45-186Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-45-186Z" class="timestamp-link"><time datetime="2026-09-12T17:03:45.186Z" data-timestamp="2026-09-12T17:03:45.186Z">2026-09-12T17:03:45.186Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01WWp122qkxrcAxGv793yi4V">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read rest of Graph.svelte</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;160,312p&#39; web/src/Graph.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-45-224Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-45-224Z" class="timestamp-link"><time datetime="2026-09-12T17:03:45.224Z" data-timestamp="2026-09-12T17:03:45.224Z">2026-09-12T17:03:45.224Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>          upTween = null;
+        } else {
+          // Quadratic.Out, matching the library&#x27;s position tween.
+          const e = 1 - (1 - t) ** 2;
+          // Lerp + normalize is fine here: the arc is short and lookAt re-orthogonalises.
+          cam.up.copy(upTween.from).lerp(upTween.to, e).normalize();
+        }
+      }
+    }
+    // The card rides with its node: one style write a frame beats pushing 60
+    // state updates a second through Svelte.
+    if (hovered &amp;&amp; anchorEl &amp;&amp; Number.isFinite(hovered.x)) {
+      const { x, y } = graph.graph2ScreenCoords(hovered.x, hovered.y, hovered.z);
+      const w = anchorEl.offsetWidth;
+      const h = anchorEl.offsetHeight;
+      // Beside the sphere, flipped to its left when that would run off the stage.
+      let left = x + 14;
+      if (left + w &gt; el.clientWidth - 8) left = x - 14 - w;
+      left = Math.max(8, Math.min(left, el.clientWidth - w - 8));
+      const top = Math.max(8, Math.min(y - 10, el.clientHeight - h - 8));
+      anchorEl.style.transform = `translate(${left}px, ${top}px)`;
+    }
+    const pulse = 0.5 + 0.5 * Math.sin(performance.now() / 180);
+    for (const [id, mesh] of meshes) {
+      const hi = highlightSet.has(id);
+      const prev = previewSet.has(id);
+      const sel = id === selectedId;
+      const target = hi ? 1.3 + 0.35 * pulse : prev ? 1.5 : sel ? 1.35 : 1;
+      mesh.scale.setScalar(mesh.scale.x + (target - mesh.scale.x) * 0.2);
+      const mat = mesh.material;
+      if (hi) {
+        mat.color.copy(RED).lerp(WHITE, 0.25 * pulse);
+        mat.emissive.copy(RED);
+        mat.emissiveIntensity = 0.3 + 0.7 * pulse;
+      } else if (prev) {
+        // Steady white bloom, no pulse — a pointer, not an alarm.
+        mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.85);
+        mat.emissive.copy(WHITE);
+        mat.emissiveIntensity = 0.9;
+      } else if (sel) {
+        mat.color.copy(mesh.userData.baseColor).lerp(WHITE, 0.5);
+        mat.emissive.copy(mesh.userData.baseColor);
+        mat.emissiveIntensity = 0.5;
+      } else {
+        mat.color.copy(mesh.userData.baseColor);
+        mat.emissiveIntensity = 0;
+      }
+    }
+    raf = requestAnimationFrame(animate);
+  }
+
+  onMount(() =&gt; {
+    graph = ForceGraph3D()(el)
+      .backgroundColor(&#x27;#0b0f17&#x27;)
+      .dagMode(&#x27;td&#x27;)
+      .dagLevelDistance(90)
+      .onDagError((loopIds) =&gt; console.warn(&#x27;DAG cycle, falling back to free layout&#x27;, loopIds))
+      .nodeId(&#x27;id&#x27;)
+      // No library tooltip: the hover card below says the same things the Detail
+      // panel says, as the same component.
+      .nodeLabel(() =&gt; null)
+      .nodeThreeObject(makeNodeObject)
+      .linkWidth((l) =&gt; 0.5 + 2.8 * (l.contributes ?? 0.5))
+      .linkColor((l) =&gt; linkColor(l.contributes))
+      .linkOpacity(0.9)
+      .linkDirectionalParticles((l) =&gt; ((l.contributes ?? 0.5) &gt;= 0.4 ? 2 : 0))
+      .linkDirectionalParticleWidth(1.4)
+      .linkDirectionalParticleSpeed(0.005)
+      .d3VelocityDecay(0.3)
+      .warmupTicks(80)
+      .onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })
+      // Fires with null on every frame the pointer is over empty space, so it
+      // stays cheap: clear a timer, and touch state only on the way in or out.
+      .onNodeHover((n) =&gt; {
+        clearTimeout(hoverTimer);
+        if (n) hoverTimer = setTimeout(() =&gt; (hovered = n), HOVER_DELAY);
+        else if (hovered) hovered = null;
+      })
+      .onBackgroundClick(() =&gt; onSelect?.(null));
+    graph.d3Force(&#x27;charge&#x27;).strength(-160);
+    // Inertia would keep rotating camera.up while we tween it; the tradeoff is
+    // that user tumbling no longer coasts.
+    graph.controls().staticMoving = true;
+    if (import.meta.env.DEV) window.__graph = graph;
+
+    graph.graphData(toGraphData(tree, null));
+    const ro = new ResizeObserver(() =&gt; graph.width(el.clientWidth).height(el.clientHeight));
+    ro.observe(el);
+    setTimeout(() =&gt; frameAll(900), 700);
+    animate();
+
+    return () =&gt; {
+      cancelAnimationFrame(raf);
+      clearTimeout(hoverTimer);
+      ro.disconnect();
+      graph._destructor?.();
+    };
+  });
+
+  $effect(() =&gt; {
+    const t = tree;
+    if (!graph) return;
+    graph.graphData(toGraphData(t, graph.graphData()));
+    const alive = new Set(t.nodes.map((n) =&gt; n.id));
+    for (const id of [...meshes.keys()]) if (!alive.has(id)) meshes.delete(id);
+    // A hovered node may have been edited away or edited in place; re-point at
+    // whatever the new data holds for it, which also refreshes the card.
+    //
+    // untrack, and it matters: a tracked read of `hovered` would make this
+    // effect depend on the pointer, and graphData() re-heats the force layout
+    // (alpha 1, then 80 warmup ticks). Hovering a node would shove the whole
+    // tree — the node slid out from under the cursor, the hover cleared, and
+    // the clear re-heated it again.
+    untrack(() =&gt; {
+      if (hovered) hovered = graph.graphData().nodes.find((n) =&gt; n.id === hovered.id) ?? null;
+    });
+  });
+
+  // Node objects survive data updates (see toGraphData), so makeNodeObject does
+  // not run again for an existing node and the label text has to be rewritten
+  // in place — on a tree edit, a team rename, and a dataset switch alike.
+  $effect(() =&gt; {
+    const t = tree;
+    const c = company;
+    const on = showTeamLabels;
+    for (const n of t.nodes) {
+      const label = meshes.get(n.id)?.userData.label;
+      if (!label) continue;
+      const text = unitName(c, n.unitId) ?? n.owner ?? &#x27;&#x27;;
+      if (label.text !== text) label.text = text;
+      label.visible = on &amp;&amp; !!text;
+    }
+  });
+
+  $effect(() =&gt; {
+    highlightSet = new Set(highlight);
+    if (highlight.length) flyTo(highlight);
+  });
+
+  $effect(() =&gt; {
+    previewSet = new Set(preview);
+  });
+&lt;/script&gt;
+
+&lt;div class=&quot;graph&quot; bind:this={el}&gt;&lt;/div&gt;
+
+&lt;!-- Never for the node whose Detail panel is already open: it would repeat what
+     is on screen. --&gt;
+{#if hovered &amp;&amp; hovered.id !== selectedId}
+  &lt;div class=&quot;hover-card&quot; bind:this={anchorEl}&gt;
+    &lt;NodeCard node={hovered} {company} /&gt;
+  &lt;/div&gt;
+{/if}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-46-663Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-46-663Z" class="timestamp-link"><time datetime="2026-09-12T17:03:46.663Z" data-timestamp="2026-09-12T17:03:46.663Z">2026-09-12T17:03:46.663Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-47-924Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-47-924Z" class="timestamp-link"><time datetime="2026-09-12T17:03:47.924Z" data-timestamp="2026-09-12T17:03:47.924Z">2026-09-12T17:03:47.924Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Su2nqu4dXxskygozgTnBP8">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find flyTo callers and navigate helpers</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;flyTo\|frameAll\|graphRef\|bind:this&#34; web/src/App.svelte &amp;&amp; echo &#34;=== navigate.js ===&#34; &amp;&amp; cat web/src/lib/navigate.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-48-165Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-48-165Z" class="timestamp-link"><time datetime="2026-09-12T17:03:48.165Z" data-timestamp="2026-09-12T17:03:48.165Z">2026-09-12T17:03:48.165Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>498:    graph?.flyTo([next.id], 600);
+505:    { keys: [&#x27;f&#x27;], hint: &#x27;F frame tree&#x27;, run: () =&gt; graph?.frameAll(), repeat: false },
+551:      &lt;input bind:this={fileInput} onchange={importTree} type=&quot;file&quot; accept=&quot;application/json,.json&quot; hidden /&gt;
+557:      &lt;Graph bind:this={graph} {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} /&gt;
+=== navigate.js ===
+// Pure tree walking for the keyboard shortcuts: no Svelte, no three, so the
+// arrow keys can be tested without a browser. `App.svelte` holds no tree logic
+// beyond calling `step()`.
+//
+// The tree is flat with `parent` pointers, and its nodes are &quot;in no particular
+// order&quot; per the schema, so `tree.nodes` order *is* the sibling order — it is
+// what the Detail panel lists beneath a node, and left/right walk that list.
+
+const byId = (tree, id) =&gt; tree.nodes.find((n) =&gt; n.id === id) ?? null;
+
+// Exactly one node in a tree has a null parent.
+export const rootOf = (tree) =&gt; tree.nodes.find((n) =&gt; n.parent === null) ?? null;
+
+export function parentOf(tree, id) {
+  const n = byId(tree, id);
+  return n?.parent ? byId(tree, n.parent) : null;
+}
+
+export const firstChildOf = (tree, id) =&gt; tree.nodes.find((n) =&gt; n.parent === id) ?? null;
+
+// step: -1 | +1, wrapping: right on the last sibling lands on the first, left
+// on the first lands on the last. An only child still returns null, so a key
+// that cannot go anywhere stays a no-op rather than re-selecting the node and
+// re-flying the camera to where it already is.
+export function siblingOf(tree, id, step) {
+  const n = byId(tree, id);
+  if (!n) return null;
+  const sibs = tree.nodes.filter((s) =&gt; s.parent === n.parent);
+  if (sibs.length &lt; 2) return null;
+  const i = sibs.findIndex((s) =&gt; s.id === id);
+  if (i &lt; 0) return null;
+  // step is ±1, so i + step + length is never negative.
+  return sibs[(i + step + sibs.length) % sibs.length];
+}
+
+// The one entry point for the four arrows. With nothing selected any arrow
+// selects the root, which is also the way in from a Teams panel.
+export function step(tree, selectedId, dir) {
+  if (!selectedId || !byId(tree, selectedId)) return rootOf(tree);
+  switch (dir) {
+    case &#x27;up&#x27;: return parentOf(tree, selectedId);
+    case &#x27;down&#x27;: return firstChildOf(tree, selectedId);
+    case &#x27;left&#x27;: return siblingOf(tree, selectedId, -1);
+    case &#x27;right&#x27;: return siblingOf(tree, selectedId, 1);
+    default: return null;
+  }
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-50-073Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-50-073Z" class="timestamp-link"><time datetime="2026-09-12T17:03:50.073Z" data-timestamp="2026-09-12T17:03:50.073Z">2026-09-12T17:03:50.073Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_011rMJS3AkGzYr8zsGxcgh4d">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read App.svelte select and shortcuts</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;470,520p&#39; web/src/App.svelte &amp;&amp; echo &#34;=== select() ===&#34; &amp;&amp; grep -n &#34;function select&#34; -A 15 web/src/App.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-50-119Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-50-119Z" class="timestamp-link"><time datetime="2026-09-12T17:03:50.119Z" data-timestamp="2026-09-12T17:03:50.119Z">2026-09-12T17:03:50.119Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>  }
+
+  // apply.js turns an addUnit with an id that already exists into an editUnit,
+  // so the id has to be new. Slugged from the name, because a unit id is read
+  // by the model in charters and in `dependsOn`.
+  function freshUnitId(name) {
+    const base = name.toLowerCase().replace(/[^a-z0-9]+/g, &#x27;-&#x27;).replace(/^-|-$/g, &#x27;&#x27;).slice(0, 40) || &#x27;team&#x27;;
+    if (!company.units.some((u) =&gt; u.id === base)) return base;
+    for (let i = 2; i &lt; 100; i++) if (!company.units.some((u) =&gt; u.id === `${base}-${i}`)) return `${base}-${i}`;
+    return `${base}-${Date.now().toString(36)}`;
+  }
+
+  function recall(ids) {
+    highlight = [...ids]; // new array so the graph effect re-runs
+  }
+
+  // ── keyboard ──────────────────────────────────────────────────────────────
+  //
+  // One table, one lookup. A new binding is a new entry; the hint text in the
+  // legend is rendered from the same array, so there is one source of truth.
+
+  // An arrow step is exactly a sphere click (Graph.svelte&#x27;s onNodeClick): the
+  // panel opens on the node, edit mode ends, the assistant&#x27;s highlight clears.
+  // Shorter flight than a click&#x27;s 800 ms, because hops are short and repeat.
+  function go(dir) {
+    const next = step(tree, selectedId, dir);
+    if (!next) return;
+    select(next.id);
+    graph?.flyTo([next.id], 600);
+  }
+
+  const SHORTCUTS = [
+    { keys: [&#x27;z&#x27;], mod: true, hint: &#x27;⌘Z undo&#x27;, run: undo },
+    // Framing is a view gesture, not a pointer: it moves the camera only, and
+    // holding the key should not restart the flight every 30 ms.
+    { keys: [&#x27;f&#x27;], hint: &#x27;F frame tree&#x27;, run: () =&gt; graph?.frameAll(), repeat: false },
+    { keys: [&#x27;ArrowUp&#x27;], hint: &#x27;↑ parent&#x27;, run: () =&gt; go(&#x27;up&#x27;) },
+    { keys: [&#x27;ArrowDown&#x27;], hint: &#x27;↓ first child&#x27;, run: () =&gt; go(&#x27;down&#x27;) },
+    { keys: [&#x27;ArrowLeft&#x27;], hint: &#x27;← previous sibling&#x27;, run: () =&gt; go(&#x27;left&#x27;) },
+    { keys: [&#x27;ArrowRight&#x27;], hint: &#x27;→ next sibling&#x27;, run: () =&gt; go(&#x27;right&#x27;) }
+  ];
+
+  function onKey(e) {
+    const t = e.target;
+    const tag = t?.tagName;
+    if (tag === &#x27;INPUT&#x27; || tag === &#x27;TEXTAREA&#x27; || tag === &#x27;SELECT&#x27; || t?.isContentEditable) return;
+    // A plain binding never fires with a modifier held, so ⌘← (back) and ⌘F
+    // (find) keep working; preventDefault runs only when a binding actually
+    // ran, so arrows stop scrolling the page but nothing else is swallowed.
+    const mod = e.metaKey || e.ctrlKey;
+    const hit = SHORTCUTS.find((s) =&gt; s.keys.includes(e.key) &amp;&amp; !!s.mod === mod &amp;&amp; !e.altKey);
+=== select() ===
+449:  function select(id, keepEditing = false) {
+450-    selectedId = id;
+451-    if (!keepEditing) editing = false;
+452-    // One panel slot: selecting a node takes it, and a background click (id
+453-    // null) empties it, which closes a team panel too. One thing at a time.
+454-    panel = id ? { kind: &#x27;node&#x27; } : null;
+455-    if (highlight.length) highlight = []; // a user selection supersedes the assistant&#x27;s pointer
+456-  }
+457-
+458-  // ── teams ─────────────────────────────────────────────────────────────────
+459-
+460-  function showTeams() {
+461-    panel = { kind: &#x27;teams&#x27; };
+462-    selectedId = null;
+463-    editing = false;
+464-  }</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-51-859Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-51-859Z" class="timestamp-link"><time datetime="2026-09-12T17:03:51.859Z" data-timestamp="2026-09-12T17:03:51.859Z">2026-09-12T17:03:51.859Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-03-53-437Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-03-53-437Z" class="timestamp-link"><time datetime="2026-09-12T17:03:53.437Z" data-timestamp="2026-09-12T17:03:53.437Z">2026-09-12T17:03:53.437Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_0189jDw6F7JNLUBCXW5C5JBb">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read camera plan</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,60p&#39; Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md &amp;&amp; echo &#34;======TAIL======&#34; &amp;&amp; tail -25 Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-03-53-484Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-03-53-484Z" class="timestamp-link"><time datetime="2026-09-12T17:03:53.484Z" data-timestamp="2026-09-12T17:03:53.484Z">2026-09-12T17:03:53.484Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>---
+tags:
+  - plan
+  - web
+  - graph
+status: completed
+created: 2026-09-11
+completed_on: 2026-09-11
+---
+# Plan: Level the camera to world up during programmatic moves
+
+Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(invariant 5: &quot;the scene never disorients the user on its own&quot;). Spike plan, one file.
+
+## Context
+
+`3d-force-graph` defaults to `TrackballControls`
+(`web/node_modules/three-render-objects/dist/three-render-objects.mjs:486` and `:603-607`).
+Trackball rotates `camera.up` freely (`web/node_modules/three/examples/jsm/controls/TrackballControls.js:510`),
+so after the user tumbles, the camera carries a roll. Every programmatic move (`flyTo` at
+`web/src/Graph.svelte:58-75`, `zoomToFit` at `:125`) goes through `cameraPosition()`
+(`three-render-objects.mjs:306-340`), which tweens position and `controls.target` but never
+touches `camera.up`. `TrackballControls.update()` then calls `object.lookAt(target)`
+(`TrackballControls.js:381`) with the rolled up vector, so the whole flight is tilted, and the
+roll about the view axis visibly changes as the lookAt target moves.
+
+The layout is `dagMode(&#x27;td&#x27;)` (`Graph.svelte:104`): world +Y is the tree&#x27;s top, so &quot;level&quot; has
+a real meaning.
+
+## Goal
+
+Every programmatic camera move ends with screen-up equal to world +Y, the roll is removed
+smoothly over the flight, and user tumbling stays free (trackball, may roll).
+
+## Decisions (locked in)
+
+1. **Keep trackball.** Users can still roll. Only programmatic moves re-level. (Interview,
+   2026-09-11.)
+2. **Re-level, don&#x27;t just preserve.** The move tweens `camera.up` from its current value to
+   world +Y over the same duration as the position tween with the same `Quadratic.Out` easing,
+   so a rolled camera un-rolls during the flight rather than snapping.
+3. **Implemented in `Graph.svelte`, no library patch.** `graph.camera()`
+   (`web/node_modules/3d-force-graph/dist/3d-force-graph.mjs:276`) exposes the THREE camera and
+   `graph.controls()` (`:285`) the trackball. `camera.up` is read by trackball&#x27;s `lookAt` every
+   frame, so driving it from our own `animate()` loop (`Graph.svelte:77-99`) is enough.
+4. **Degenerate view guarded.** If the view direction is within ~11° of world ±Y (looking
+   straight down the tree), `lookAt` with up = +Y is undefined. Level toward world −Z instead.
+5. **Trackball inertia off.** `staticMoving` defaults to `false` (`TrackballControls.js:147`),
+   so a flick before a fly-to keeps rotating `camera.up` while we tween it. Set
+   `staticMoving = true`. This also removes inertia from user tumbling; that is the tradeoff
+   that makes programmatic moves deterministic. The alternative (zeroing the private
+   `_lastAngle`) is version-fragile.
+
+## Phase 1 — `levelCamera(ms)` in Graph.svelte
+
+1. Next to `Graph.svelte:12-14` add `const WORLD_UP = new THREE.Vector3(0, 1, 0);` and
+   `let upTween = null;`.
+2. Add `function levelCamera(ms)`:
+   - `const cam = graph.camera(); const from = cam.up.clone().normalize();`
+   - `const view = graph.controls().target.clone().sub(cam.position).normalize();`
+======TAIL======
+- The `dist` / `radius` heuristics in `flyTo` (`Graph.svelte:66-68`).
+
+## Completion notes
+
+- **Planned vs. actual:** every phase landed as written, in one file
+  (`web/src/Graph.svelte`). All `file:line` citations — `flyTo` at `:58-75`, `animate()` at
+  `:77-99`, `zoomToFit` at `:125`, `d3Force` at `:120`, and the four library references under
+  `web/node_modules/` — were re-verified against `main` before editing and were all accurate.
+  `graph.controls()` and `graph.camera()` are both populated synchronously by
+  `ForceGraph3D()(el)` (`3d-force-graph.mjs:325-328`), so the `staticMoving` assignment is safe
+  where the plan put it.
+- **Mid-flight adjustments:** two small hardenings beyond the plan text. The antipodal nudge
+  normalises `view × to` before scaling and falls back to `(1,0,0)` when that cross product is
+  degenerate (view parallel to `to`), otherwise the nudge magnitude would depend on the angle
+  between them and could be zero. `levelCamera` also returns early if `graph.camera()` or
+  `graph.controls()` is missing, and the `animate()` block drops a stale tween if the graph has
+  been torn down.
+- **Surprises / residual risks:** none in the math — a headless harness replaying the exact
+  `levelCamera` + tween code against real `three` confirmed a rolled view converges to
+  `(0.000, 1.000, 0.000)`, the straight-down case to `(0.000, 0.000, -1.000)`, the upside-down
+  case to `(0.000, 1.000, 0.000)`, and an already-level camera creates no tween, with no NaN or
+  denormalised `up` and a finite `lookAt` matrix on every frame. The remaining risk is purely
+  perceptual and was **not** verified in a browser: that the un-roll *looks* smooth rather than
+  abrupt, and that losing trackball inertia (Decision 5) is an acceptable tradeoff in the hand.
+  Both need a human at the app.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-19-509Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-19-509Z" class="timestamp-link"><time datetime="2026-09-12T17:04:19.509Z" data-timestamp="2026-09-12T17:04:19.509Z">2026-09-12T17:04:19.509Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-20-270Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-20-270Z" class="timestamp-link"><time datetime="2026-09-12T17:04:20.270Z" data-timestamp="2026-09-12T17:04:20.270Z">2026-09-12T17:04:20.270Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_013tpJoW3FmFat2Hbpqyi4yU">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read App.svelte markup and styles</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;540,627p&#39; web/src/App.svelte</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-20-308Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-20-308Z" class="timestamp-link"><time datetime="2026-09-12T17:04:20.308Z" data-timestamp="2026-09-12T17:04:20.308Z">2026-09-12T17:04:20.308Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>        {/each}
+      &lt;/select&gt;
+      &lt;button onclick={showTeams} class=&quot;ghost&quot; class:on={panel?.kind === &#x27;teams&#x27; || panel?.kind === &#x27;team&#x27;} title=&quot;The teams the tree hangs off, and what each one is for&quot;&gt;
+        Teams{company.units.length ? ` (${company.units.length})` : &#x27;&#x27;}
+      &lt;/button&gt;
+      &lt;button onclick={undo} disabled={!undoStack.length} title=&quot;⌘Z&quot;&gt;
+        ↶ Undo{undoStack.length ? ` (${undoStack.length})` : &#x27;&#x27;}
+      &lt;/button&gt;
+      &lt;button onclick={exportTree} class=&quot;ghost&quot; title=&quot;Download the tree as a versioned JSON document&quot;&gt;Export&lt;/button&gt;
+      &lt;button onclick={() =&gt; fileInput.click()} class=&quot;ghost&quot; title=&quot;Replace the tree from a JSON document&quot;&gt;Import&lt;/button&gt;
+      &lt;button onclick={reset} class=&quot;ghost&quot;&gt;Reset&lt;/button&gt;
+      &lt;input bind:this={fileInput} onchange={importTree} type=&quot;file&quot; accept=&quot;application/json,.json&quot; hidden /&gt;
+    &lt;/div&gt;
+  &lt;/header&gt;
+
+  &lt;main&gt;
+    &lt;section class=&quot;stage&quot;&gt;
+      &lt;Graph bind:this={graph} {tree} {company} {selectedId} {highlight} {preview} {showTeamLabels} onSelect={select} /&gt;
+      {#if panel?.kind === &#x27;node&#x27; &amp;&amp; selected}
+        &lt;Detail
+          node={selected}
+          {tree}
+          {company}
+          {editing}
+          onSelect={select}
+          onOpenTeam={openTeam}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onFocusField={focusField}
+          onNewChat={newChat}
+          onClose={() =&gt; {
+            selectedId = null;
+            editing = false;
+            panel = null;
+          }}
+          onToggleEdit={() =&gt; (editing = !editing)}
+          onEdit={(action) =&gt; commit([action], { actor: &#x27;user&#x27;, reason: describe(action) })}
+        /&gt;
+      {:else if panel?.kind === &#x27;teams&#x27;}
+        &lt;TeamList
+          {company}
+          {tree}
+          onOpen={openTeam}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onClose={() =&gt; (panel = null)}
+          onAdd={() =&gt; {
+            const action = { op: &#x27;addUnit&#x27;, id: freshUnitId(&#x27;New team&#x27;), fields: { name: &#x27;New team&#x27;, parent: null } };
+            commit([action], { actor: &#x27;user&#x27;, reason: describe(action) });
+            openTeam(action.id); // straight into the editor: a new team is all placeholder
+          }}
+        /&gt;
+      {:else if panel?.kind === &#x27;team&#x27; &amp;&amp; selectedUnit}
+        &lt;TeamEditor
+          unit={selectedUnit}
+          {company}
+          {tree}
+          onSelect={select}
+          onPreview={(ids) =&gt; (preview = ids)}
+          onFocusField={focusField}
+          onNewChat={newChat}
+          onBack={showTeams}
+          onClose={() =&gt; (panel = null)}
+          onEdit={(action) =&gt; commit([action], { actor: &#x27;user&#x27;, reason: describe(action) })}
+        /&gt;
+      {/if}
+      &lt;div class=&quot;legend&quot;&gt;
+        &lt;span&gt;&lt;i class=&quot;sw company&quot;&gt;&lt;/i&gt; Company&lt;/span&gt;
+        &lt;span&gt;&lt;i class=&quot;sw objective&quot;&gt;&lt;/i&gt; Objective&lt;/span&gt;
+        &lt;span&gt;&lt;i class=&quot;sw kr&quot;&gt;&lt;/i&gt; Key result&lt;/span&gt;
+        &lt;span class=&quot;edge&quot;&gt;&lt;i class=&quot;sw line&quot;&gt;&lt;/i&gt; edge = how well it supports its parent&lt;/span&gt;
+        &lt;!-- the legend is pointer-events: none, so this control opts back in --&gt;
+        &lt;label class=&quot;toggle&quot;&gt;&lt;input type=&quot;checkbox&quot; bind:checked={showTeamLabels} /&gt; Team labels&lt;/label&gt;
+        &lt;!-- one source of truth for the hints: the registry itself --&gt;
+        &lt;span class=&quot;keys&quot;&gt;{SHORTCUTS.map((s) =&gt; s.hint).join(&#x27; · &#x27;)}&lt;/span&gt;
+      &lt;/div&gt;
+    &lt;/section&gt;
+    &lt;Chat
+      {chats}
+      {activeChatId}
+      onSelectChat={(id) =&gt; (activeChatId = id)}
+      onCloseChat={closeChat}
+      onNewChat={newChat}
+      onSend={send}
+      onRecall={recall}
+      onUndo={undo}
+      canUndo={!!undoStack.length}
+    /&gt;
+  &lt;/main&gt;
+&lt;/div&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-22-893Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-22-893Z" class="timestamp-link"><time datetime="2026-09-12T17:04:22.893Z" data-timestamp="2026-09-12T17:04:22.893Z">2026-09-12T17:04:22.893Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01X3zLHqamodY2ddZDpQhU7r">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check stage/panel layout</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;\.stage\|position: absolute\|\.detail\|aside&#34; -A 8 web/src/App.svelte | sed -n &#39;1,40p&#39;; echo &#34;=== Detail css ===&#34;; grep -n &#34;^  \.panel\|position&#34; web/src/Detail.svelte | head</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-22-958Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-22-958Z" class="timestamp-link"><time datetime="2026-09-12T17:04:22.958Z" data-timestamp="2026-09-12T17:04:22.958Z">2026-09-12T17:04:22.958Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>295:        throw new Error(body.details?.length ? `${why} (${body.details.slice(0, 3).join(&#x27;; &#x27;)})` : why);
+296-      }
+297-      // The service validates what it sends, but this is the boundary the tree
+298-      // crosses before it reaches the renderer — so check it here too, and
+299-      // refuse to apply anything from a response we do not recognise.
+300-      const checked = validateChatResponse(await res.json());
+301-      if (!checked.ok) {
+302-        throw new Error(`the service sent a response this app can&#x27;t read (${checked.errors.slice(0, 3).join(&#x27;; &#x27;)})`);
+303-      }
+=== Detail css ===</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-25-351Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-25-351Z" class="timestamp-link"><time datetime="2026-09-12T17:04:25.351Z" data-timestamp="2026-09-12T17:04:25.351Z">2026-09-12T17:04:25.351Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01LKkBSktmPPKWD9HNZGvawg">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check stage CSS and panel overlay</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;stage&#34; web/src/App.svelte; echo &#34;---&#34;; awk &#39;/&lt;style&gt;/,0&#39; web/src/App.svelte | grep -n &#34;stage&#34; -A 10; echo &#34;=== Detail panel css ===&#34;; awk &#39;/&lt;style&gt;/,0&#39; web/src/Detail.svelte | head -25</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-26-587Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-26-587Z" class="timestamp-link"><time datetime="2026-09-12T17:04:26.587Z" data-timestamp="2026-09-12T17:04:26.587Z">2026-09-12T17:04:26.587Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>86:  // One panel slot over the stage, so the app never shows a node and a team at
+556:    &lt;section class=&quot;stage&quot;&gt;
+---
+=== Detail panel css ===</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-28-332Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-28-332Z" class="timestamp-link"><time datetime="2026-09-12T17:04:28.332Z" data-timestamp="2026-09-12T17:04:28.332Z">2026-09-12T17:04:28.332Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01MLKMUKse2b9HWRCtDygdai">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find stage layout in app.css</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;stage\|\.panel&#34; -A 12 web/src/app.css | head -60</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-28-378Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-28-378Z" class="timestamp-link"><time datetime="2026-09-12T17:04:28.378Z" data-timestamp="2026-09-12T17:04:28.378Z">2026-09-12T17:04:28.378Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>77:.stage { position: relative; flex: 1; min-width: 0; }
+78-.graph { position: absolute; inset: 0; }
+79-
+80-.legend {
+81-  /* clear of the bottom 19px, where three-render-objects prints its own
+82-     mouse-control hint; the shortcut row would otherwise sit on top of it */
+83-  position: absolute; right: 14px; bottom: 24px;
+84-  display: flex; gap: 14px; flex-wrap: wrap;
+85-  color: var(--muted); font-size: 12px;
+86-  pointer-events: none;
+87-}
+88-.legend span { display: flex; align-items: center; gap: 6px; }
+89-.legend .sw { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-30-604Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-30-604Z" class="timestamp-link"><time datetime="2026-09-12T17:04:30.604Z" data-timestamp="2026-09-12T17:04:30.604Z">2026-09-12T17:04:30.604Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01M9xQG8EMk57euRv1eLnpLd">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check panel CSS overlay</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;panel&#34; -A 10 web/src/app.css | sed -n &#39;1,45p&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-30-652Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-30-652Z" class="timestamp-link"><time datetime="2026-09-12T17:04:30.652Z" data-timestamp="2026-09-12T17:04:30.652Z">2026-09-12T17:04:30.652Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>3:  --panel: #121826;
+4:  --panel-2: #182033;
+5-  --border: #243049;
+6-  --text: #e6ebf5;
+7-  --muted: #8b96ad;
+8-  --accent: #4f9cff;
+9-  --company: #f5c542;
+10-  --objective: #4f9cff;
+11-  --kr: #5ad38a;
+12-  --bad: #ff5a4e;
+13-  --meh: #f5c542;
+14-  --good: #5ad38a;
+--
+32:  background: var(--panel-2);
+33-  border: 1px solid var(--border);
+34-  border-radius: 8px;
+35-  padding: 6px 12px;
+36-  cursor: pointer;
+37-}
+38-button:hover:not(:disabled) { border-color: var(--accent); }
+39-button:disabled { opacity: 0.45; cursor: default; }
+40-button.ghost { background: transparent; }
+41-button.link {
+42-  background: none; border: 0; padding: 0; text-align: left;
+--
+53:  background: var(--panel);
+54-  border-bottom: 1px solid var(--border);
+55-}
+56-.topbar .brand { font-weight: 600; display: flex; align-items: center; gap: 8px; }
+57-.topbar .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--company); box-shadow: 0 0 10px var(--company); }
+58-.topbar .stats { color: var(--muted); }
+59-.topbar .stats .warn { color: var(--bad); }
+60-.topbar .buttons { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+61-/* the dataset picker, dressed as button.ghost so the topbar stays one row of controls */
+62-.topbar select {
+63-  font: inherit;
+--
+73:.topbar select option { background: var(--panel-2); color: var(--text); }
+74-
+75-main { flex: 1; display: flex; min-height: 0; }
+76-
+77-.stage { position: relative; flex: 1; min-width: 0; }
+78-.graph { position: absolute; inset: 0; }
+79-
+80-.legend {</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-33-220Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-33-220Z" class="timestamp-link"><time datetime="2026-09-12T17:04:33.220Z" data-timestamp="2026-09-12T17:04:33.220Z">2026-09-12T17:04:33.220Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01QqmYgPfjbcoHgySWxjwRnZ">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find detail panel positioning</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;side\|aside\|\.detail\|overlay\|right: &#34; web/src/app.css | head -20; echo &#34;=== Detail.svelte root ===&#34;; grep -n &#34;^&lt;&#34; web/src/Detail.svelte | head; sed -n &#39;/&lt;style&gt;/,/&lt;\/style&gt;/p&#39; web/src/Detail.svelte | head -20</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-34-679Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-34-679Z" class="timestamp-link"><time datetime="2026-09-12T17:04:34.679Z" data-timestamp="2026-09-12T17:04:34.679Z">2026-09-12T17:04:34.679Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>83:  position: absolute; right: 14px; bottom: 24px;
+112:.detail {
+121:.detail header { display: flex; align-items: center; justify-content: space-between; }
+122:.detail .level { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+123:.detail .level.company { color: var(--company); }
+124:.detail .level.objective { color: var(--objective); }
+125:.detail .level.kr { color: var(--kr); }
+126:.detail .close { background: none; border: 0; font-size: 20px; line-height: 1; padding: 0 4px; color: var(--muted); }
+127:.detail h2,
+129:.detail h3 { font-size: 12px; color: var(--muted); margin: 14px 0 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+130:.detail dl,
+132:.detail dt,
+134:.detail dd,
+136:.detail dd.empty,
+139:.detail .card-fields { margin-bottom: 6px; }
+140:.detail .fit { display: flex; align-items: center; gap: 8px; }
+141:.detail .bar { flex: 1; height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; }
+142:.detail .bar span { display: block; height: 100%; }
+143:.detail ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+144:.detail li { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+=== Detail.svelte root ===
+1:&lt;script&gt;
+181:&lt;/script&gt;
+183:&lt;aside class=&quot;detail&quot; class:editing&gt;
+373:&lt;/aside&gt;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-36-269Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-36-269Z" class="timestamp-link"><time datetime="2026-09-12T17:04:36.269Z" data-timestamp="2026-09-12T17:04:36.269Z">2026-09-12T17:04:36.269Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01NZkCxGn6EfpbBNpUHC3oEL">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read .detail positioning</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;108,125p&#39; web/src/app.css</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-36-299Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-36-299Z" class="timestamp-link"><time datetime="2026-09-12T17:04:36.299Z" data-timestamp="2026-09-12T17:04:36.299Z">2026-09-12T17:04:36.299Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>}
+.hover-card .card-label { margin-top: 0; }
+
+/* ── detail panel ───────────────────────────────────────────────────── */
+.detail {
+  position: absolute; left: 14px; top: 14px;
+  width: 320px; max-height: calc(100% - 28px); overflow: auto;
+  background: rgba(18, 24, 38, 0.94);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  backdrop-filter: blur(6px);
+}
+.detail header { display: flex; align-items: center; justify-content: space-between; }
+.detail .level { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+.detail .level.company { color: var(--company); }
+.detail .level.objective { color: var(--objective); }
+.detail .level.kr { color: var(--kr); }</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-40-675Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-40-675Z" class="timestamp-link"><time datetime="2026-09-12T17:04:40.675Z" data-timestamp="2026-09-12T17:04:40.675Z">2026-09-12T17:04:40.675Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-42-256Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-42-256Z" class="timestamp-link"><time datetime="2026-09-12T17:04:42.256Z" data-timestamp="2026-09-12T17:04:42.256Z">2026-09-12T17:04:42.256Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01JYaCk2Z6pq1h5cmuvMETVG">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Inspect camera fov and zoomToFit</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -rn &#34;PerspectiveCamera\|fov&#34; web/node_modules/three-render-objects/dist/three-render-objects.mjs | head; echo &#34;=== zoomToFit impl ===&#34;; grep -n &#34;fitToBbox\|zoomToFit&#34; -A 25 web/node_modules/three-render-objects/dist/three-render-objects.mjs | sed -n &#39;1,60p&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-42-317Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-42-317Z" class="timestamp-link"><time datetime="2026-09-12T17:04:42.317Z" data-timestamp="2026-09-12T17:04:42.317Z">2026-09-12T17:04:42.317Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>web/node_modules/three-render-objects/dist/three-render-objects.mjs:1:import { SphereGeometry, Color, TextureLoader, SRGBColorSpace, MeshBasicMaterial, BackSide, Vector2, WebGLRenderer, Mesh, Timer, PerspectiveCamera, Scene, Raycaster, Vector3, Box3 } from &#x27;three&#x27;;
+web/node_modules/three-render-objects/dist/three-render-objects.mjs:158:  PerspectiveCamera: PerspectiveCamera,
+web/node_modules/three-render-objects/dist/three-render-objects.mjs:395:        // find distance that fits whole bbox within padded fov
+web/node_modules/three-render-objects/dist/three-render-objects.mjs:396:        var paddedFov = (1 - padding * 2 / state.height) * camera.fov;
+web/node_modules/three-render-objects/dist/three-render-objects.mjs:477:      camera: new three.PerspectiveCamera(),
+=== zoomToFit impl ===
+371:    zoomToFit: function zoomToFit(state) {
+372-      var transitionDuration = arguments.length &gt; 1 &amp;&amp; arguments[1] !== undefined ? arguments[1] : 0;
+373-      var padding = arguments.length &gt; 2 &amp;&amp; arguments[2] !== undefined ? arguments[2] : 10;
+374-      for (var _len = arguments.length, bboxArgs = new Array(_len &gt; 3 ? _len - 3 : 0), _key = 3; _key &lt; _len; _key++) {
+375-        bboxArgs[_key - 3] = arguments[_key];
+376-      }
+377:      return this.fitToBbox(this.getBbox.apply(this, bboxArgs), transitionDuration, padding);
+378-    },
+379:    fitToBbox: function fitToBbox(state, bbox) {
+380-      var transitionDuration = arguments.length &gt; 2 &amp;&amp; arguments[2] !== undefined ? arguments[2] : 0;
+381-      var padding = arguments.length &gt; 3 &amp;&amp; arguments[3] !== undefined ? arguments[3] : 10;
+382-      // based on https://discourse.threejs.org/t/camera-zoom-to-fit-object/936/24
+383-      var camera = state.camera;
+384-      if (bbox) {
+385-        var center = new three.Vector3(0, 0, 0); // reset camera aim to center
+386-        var maxBoxSide = Math.max.apply(Math, _toConsumableArray(Object.entries(bbox).map(function (_ref) {
+387-          var _ref2 = _slicedToArray(_ref, 2),
+388-            coordType = _ref2[0],
+389-            coords = _ref2[1];
+390-          return Math.max.apply(Math, _toConsumableArray(coords.map(function (c) {
+391-            return Math.abs(center[coordType] - c);
+392-          })));
+393-        }))) * 2;
+394-
+395-        // find distance that fits whole bbox within padded fov
+396-        var paddedFov = (1 - padding * 2 / state.height) * camera.fov;
+397-        var fitHeightDistance = maxBoxSide / Math.atan(paddedFov * Math.PI / 180);
+398-        var fitWidthDistance = fitHeightDistance / camera.aspect;
+399-        var distance = Math.max(fitHeightDistance, fitWidthDistance);
+400-        if (distance &gt; 0) {
+401-          var newCameraPosition = center.clone().sub(camera.position).normalize().multiplyScalar(-distance);
+402-          this.cameraPosition(newCameraPosition, center, transitionDuration);
+403-        }
+404-      }</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-47-022Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-47-022Z" class="timestamp-link"><time datetime="2026-09-12T17:04:47.022Z" data-timestamp="2026-09-12T17:04:47.022Z">2026-09-12T17:04:47.022Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-49-195Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-49-195Z" class="timestamp-link"><time datetime="2026-09-12T17:04:49.195Z" data-timestamp="2026-09-12T17:04:49.195Z">2026-09-12T17:04:49.195Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Ci5mWmd25qMATb3a8bNJst">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check getBbox and default fov</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;getBbox&#34; -A 20 web/node_modules/three-render-objects/dist/three-render-objects.mjs | sed -n &#39;1,35p&#39;; echo &#34;=== camera fov default ===&#34;; grep -n &#34;camera.fov\|fov =&#34; web/node_modules/three-render-objects/dist/three-render-objects.mjs | head; grep -n &#34;class PerspectiveCamera&#34; -A 6 web/node_modules/three/build/three.module.js | head -12</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-49-272Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-49-272Z" class="timestamp-link"><time datetime="2026-09-12T17:04:49.272Z" data-timestamp="2026-09-12T17:04:49.272Z">2026-09-12T17:04:49.272Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>377:      return this.fitToBbox(this.getBbox.apply(this, bboxArgs), transitionDuration, padding);
+378-    },
+379-    fitToBbox: function fitToBbox(state, bbox) {
+380-      var transitionDuration = arguments.length &gt; 2 &amp;&amp; arguments[2] !== undefined ? arguments[2] : 0;
+381-      var padding = arguments.length &gt; 3 &amp;&amp; arguments[3] !== undefined ? arguments[3] : 10;
+382-      // based on https://discourse.threejs.org/t/camera-zoom-to-fit-object/936/24
+383-      var camera = state.camera;
+384-      if (bbox) {
+385-        var center = new three.Vector3(0, 0, 0); // reset camera aim to center
+386-        var maxBoxSide = Math.max.apply(Math, _toConsumableArray(Object.entries(bbox).map(function (_ref) {
+387-          var _ref2 = _slicedToArray(_ref, 2),
+388-            coordType = _ref2[0],
+389-            coords = _ref2[1];
+390-          return Math.max.apply(Math, _toConsumableArray(coords.map(function (c) {
+391-            return Math.abs(center[coordType] - c);
+392-          })));
+393-        }))) * 2;
+394-
+395-        // find distance that fits whole bbox within padded fov
+396-        var paddedFov = (1 - padding * 2 / state.height) * camera.fov;
+397-        var fitHeightDistance = maxBoxSide / Math.atan(paddedFov * Math.PI / 180);
+--
+407:    getBbox: function getBbox(state) {
+408-      var objFilter = arguments.length &gt; 1 &amp;&amp; arguments[1] !== undefined ? arguments[1] : function () {
+409-        return true;
+410-      };
+411-      var box = new three.Box3(new three.Vector3(0, 0, 0), new three.Vector3(0, 0, 0));
+412-      var objs = state.objects.filter(objFilter);
+413-      if (!objs.length) return null;
+414-      objs.forEach(function (obj) {
+415-        return box.expandByObject(obj);
+416-      });
+417-
+418-      // extract global x,y,z min/max
+419-      return Object.assign.apply(Object, _toConsumableArray([&#x27;x&#x27;, &#x27;y&#x27;, &#x27;z&#x27;].map(function (c) {
+=== camera fov default ===
+396:        var paddedFov = (1 - padding * 2 / state.height) * camera.fov;
+ugrep: warning: web/node_modules/three/build/three.module.js: No such file or directory</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-52-055Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-52-055Z" class="timestamp-link"><time datetime="2026-09-12T17:04:52.055Z" data-timestamp="2026-09-12T17:04:52.055Z">2026-09-12T17:04:52.055Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_012BNDZPXLMEncw1ni2H4yFC">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check fov defaults</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -rn &#34;fov&#34; web/node_modules/3d-force-graph/dist/3d-force-graph.mjs | head; echo &#34;=== three PerspectiveCamera default ===&#34;; grep -rn &#34;fov = 50\|constructor( fov = 50&#34; web/node_modules/three/build/*.js | head -3; ls web/node_modules/three/build | head</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-52-114Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-52-114Z" class="timestamp-link"><time datetime="2026-09-12T17:04:52.114Z" data-timestamp="2026-09-12T17:04:52.114Z">2026-09-12T17:04:52.114Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>=== three PerspectiveCamera default ===
+(eval):1: no matches found: web/node_modules/three/build/*.js
+ls: web/node_modules/three/build: No such file or directory</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-53-930Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-53-930Z" class="timestamp-link"><time datetime="2026-09-12T17:04:53.930Z" data-timestamp="2026-09-12T17:04:53.930Z">2026-09-12T17:04:53.930Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_015q8BA3KSSvKht71VJ5cPcF">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Locate three build and fov default</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls web/node_modules/three; grep -rn &#34;fov = 50&#34; web/node_modules/three/ 2&gt;/dev/null | head -3</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-53-977Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-53-977Z" class="timestamp-link"><time datetime="2026-09-12T17:04:53.977Z" data-timestamp="2026-09-12T17:04:53.977Z">2026-09-12T17:04:53.977Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>ls: web/node_modules/three: No such file or directory</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-56-524Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-56-524Z" class="timestamp-link"><time datetime="2026-09-12T17:04:56.524Z" data-timestamp="2026-09-12T17:04:56.524Z">2026-09-12T17:04:56.524Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01H8ceYQsASftVGZq5otJUVT">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Find three package root</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">ls node_modules/three 2&gt;/dev/null | head; grep -rn &#34;fov = 50&#34; node_modules/three/src/cameras/PerspectiveCamera.js 2&gt;/dev/null | head -3; grep -rn &#34;camera().fov\|\.fov&#34; web/node_modules/three-render-objects/dist/three-render-objects.mjs | head</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-56-588Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-56-588Z" class="timestamp-link"><time datetime="2026-09-12T17:04:56.588Z" data-timestamp="2026-09-12T17:04:56.588Z">2026-09-12T17:04:56.588Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>LICENSE
+README.md
+build
+examples
+package.json
+src
+node_modules/three/src/cameras/PerspectiveCamera.js:33:	constructor( fov = 50, aspect = 1, near = 0.1, far = 2000 ) {
+web/node_modules/three-render-objects/dist/three-render-objects.mjs:396:        var paddedFov = (1 - padding * 2 / state.height) * camera.fov;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-58-206Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-58-206Z" class="timestamp-link"><time datetime="2026-09-12T17:04:58.206Z" data-timestamp="2026-09-12T17:04:58.206Z">2026-09-12T17:04:58.206Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-04-59-388Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-04-59-388Z" class="timestamp-link"><time datetime="2026-09-12T17:04:59.388Z" data-timestamp="2026-09-12T17:04:59.388Z">2026-09-12T17:04:59.388Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01StF2tSkPj8FJwiLJe7Bzqu">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check camera init params</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;camera\b.*=\|\.near\|\.far\|aspect&#34; web/node_modules/three-render-objects/dist/three-render-objects.mjs | sed -n &#39;1,30p&#39;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-04-59-423Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-04-59-423Z" class="timestamp-link"><time datetime="2026-09-12T17:04:59.423Z" data-timestamp="2026-09-12T17:04:59.423Z">2026-09-12T17:04:59.423Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>307:      var camera = state.camera;
+354:        if (x !== undefined) camera.position.x = x;
+355:        if (y !== undefined) camera.position.y = y;
+356:        if (z !== undefined) camera.position.z = z;
+383:      var camera = state.camera;
+398:        var fitWidthDistance = fitHeightDistance / camera.aspect;
+632:    state.camera.aspect = state.width / state.height;
+634:    state.camera.position.z = 1000;
+653:      state.camera.aspect = w / h;
+657:      }) &amp;&amp; (_state$camera = state.camera).setViewOffset.apply(_state$camera, [w, h].concat(_toConsumableArray(o), [w, h]));
+671:      state.camera.far = state.skyRadius * 2.5;</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-05-25-530Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-05-25-530Z" class="timestamp-link"><time datetime="2026-09-12T17:05:25.530Z" data-timestamp="2026-09-12T17:05:25.530Z">2026-09-12T17:05:25.530Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-05-26-659Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-05-26-659Z" class="timestamp-link"><time datetime="2026-09-12T17:05:26.659Z" data-timestamp="2026-09-12T17:05:26.659Z">2026-09-12T17:05:26.659Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01BdWUfRdQ1YxN8sji9uEXxx">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read test style and scripts</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;1,30p&#39; web/src/lib/navigate.test.js; echo &#34;=== package.json ===&#34;; cat web/package.json; echo &#34;=== root pkg ===&#34;; cat package.json</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-05-26-708Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-05-26-708Z" class="timestamp-link"><time datetime="2026-09-12T17:05:26.708Z" data-timestamp="2026-09-12T17:05:26.708Z">2026-09-12T17:05:26.708Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>import test from &#x27;node:test&#x27;;
+import assert from &#x27;node:assert/strict&#x27;;
+import { rootOf, parentOf, firstChildOf, siblingOf, step } from &#x27;./navigate.js&#x27;;
+
+// Six nodes: a root, two objectives, three KRs under the first objective.
+// Deliberately not in tree order in the array — sibling order is array order,
+// and the interleaving proves the filters, not the layout, pick the siblings.
+const tree = {
+  nodes: [
+    { id: &#x27;root&#x27;, parent: null },
+    { id: &#x27;obj-a&#x27;, parent: &#x27;root&#x27; },
+    { id: &#x27;kr-1&#x27;, parent: &#x27;obj-a&#x27; },
+    { id: &#x27;obj-b&#x27;, parent: &#x27;root&#x27; },
+    { id: &#x27;kr-2&#x27;, parent: &#x27;obj-a&#x27; },
+    { id: &#x27;kr-3&#x27;, parent: &#x27;obj-a&#x27; }
+  ]
+};
+
+test(&#x27;rootOf finds the one node with a null parent&#x27;, () =&gt; {
+  assert.equal(rootOf(tree).id, &#x27;root&#x27;);
+  assert.equal(rootOf({ nodes: [] }), null);
+});
+
+test(&#x27;parent of a KR is its objective, and the root has no parent&#x27;, () =&gt; {
+  assert.equal(parentOf(tree, &#x27;kr-2&#x27;).id, &#x27;obj-a&#x27;);
+  assert.equal(parentOf(tree, &#x27;root&#x27;), null);
+});
+
+test(&#x27;first child is the first in array order&#x27;, () =&gt; {
+  assert.equal(firstChildOf(tree, &#x27;root&#x27;).id, &#x27;obj-a&#x27;);
+=== package.json ===
+{
+  &quot;name&quot;: &quot;okr-viewer-web&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;scripts&quot;: {
+    &quot;dev&quot;: &quot;vite&quot;,
+    &quot;build&quot;: &quot;vite build&quot;,
+    &quot;preview&quot;: &quot;vite preview&quot;,
+    &quot;test&quot;: &quot;node --test \&quot;src/**/*.test.js\&quot;&quot;
+  },
+  &quot;dependencies&quot;: {
+    &quot;@okr-viewer/schema&quot;: &quot;^0.1.0&quot;,
+    &quot;3d-force-graph&quot;: &quot;^1.80.0&quot;,
+    &quot;three&quot;: &quot;&gt;=0.179 &lt;1&quot;,
+    &quot;three-spritetext&quot;: &quot;^1.10.0&quot;
+  },
+  &quot;devDependencies&quot;: {
+    &quot;@sveltejs/vite-plugin-svelte&quot;: &quot;^7.3.0&quot;,
+    &quot;svelte&quot;: &quot;^5.57.0&quot;,
+    &quot;vite&quot;: &quot;^8.3.0&quot;
+  }
+}
+=== root pkg ===
+{
+  &quot;name&quot;: &quot;okr-viewer&quot;,
+  &quot;private&quot;: true,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;type&quot;: &quot;module&quot;,
+  &quot;workspaces&quot;: [
+    &quot;schema&quot;,
+    &quot;web&quot;,
+    &quot;service&quot;
+  ],
+  &quot;scripts&quot;: {
+    &quot;build:schema&quot;: &quot;npm run build -w schema&quot;,
+    &quot;test:schema&quot;: &quot;npm test -w schema&quot;,
+    &quot;dev:web&quot;: &quot;npm run dev -w web&quot;,
+    &quot;dev:service&quot;: &quot;npm run dev -w service&quot;
+  }
+}</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-05-29-984Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-05-29-984Z" class="timestamp-link"><time datetime="2026-09-12T17:05:29.984Z" data-timestamp="2026-09-12T17:05:29.984Z">2026-09-12T17:05:29.984Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-05-32-790Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-05-32-790Z" class="timestamp-link"><time datetime="2026-09-12T17:05:32.790Z" data-timestamp="2026-09-12T17:05:32.790Z">2026-09-12T17:05:32.790Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01JnDJ4istDcLzSeyP1ZFMEo">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Collect exact line citations</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;export function flyTo\|export function frameAll\|const LEVEL\|function levelCamera\|onNodeClick\|const dist = \|highlight.length) flyTo\|function animate&#34; web/src/Graph.svelte; echo &#34;--- App ---&#34;; grep -n &#34;function go(dir)\|graph?.flyTo\|hint: &#39;F frame tree&#39;\|function select(id&#34; web/src/App.svelte; echo &#34;--- navigate ---&#34;; grep -n &#34;export&#34; web/src/lib/navigate.js; echo &#34;--- test count ---&#34;; grep -n &#34;^test(&#34; web/src/lib/navigate.test.js</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-05-32-862Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-05-32-862Z" class="timestamp-link"><time datetime="2026-09-12T17:05:32.862Z" data-timestamp="2026-09-12T17:05:32.862Z">2026-09-12T17:05:32.862Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>40:  const LEVEL = {
+99:  function levelCamera(ms) {
+119:  export function flyTo(ids, ms = 1200) {
+132:    const dist = Math.max(140, radius * 2.2 + 120);
+143:  export function frameAll(ms = 900) {
+151:  function animate() {
+230:      .onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })
+296:    if (highlight.length) flyTo(highlight);
+--- App ---
+449:  function select(id, keepEditing = false) {
+494:  function go(dir) {
+498:    graph?.flyTo([next.id], 600);
+505:    { keys: [&#x27;f&#x27;], hint: &#x27;F frame tree&#x27;, run: () =&gt; graph?.frameAll(), repeat: false },
+--- navigate ---
+12:export const rootOf = (tree) =&gt; tree.nodes.find((n) =&gt; n.parent === null) ?? null;
+14:export function parentOf(tree, id) {
+19:export const firstChildOf = (tree, id) =&gt; tree.nodes.find((n) =&gt; n.parent === id) ?? null;
+25:export function siblingOf(tree, id, step) {
+38:export function step(tree, selectedId, dir) {
+--- test count ---
+19:test(&#x27;rootOf finds the one node with a null parent&#x27;, () =&gt; {
+24:test(&#x27;parent of a KR is its objective, and the root has no parent&#x27;, () =&gt; {
+29:test(&#x27;first child is the first in array order&#x27;, () =&gt; {
+35:test(&#x27;siblings walk array order&#x27;, () =&gt; {
+41:test(&#x27;siblings wrap at both ends&#x27;, () =&gt; {
+48:test(&#x27;a full lap returns to where it started&#x27;, () =&gt; {
+56:test(&#x27;an only child has nowhere to wrap to, so left and right are no-ops&#x27;, () =&gt; {
+66:test(&#x27;with nothing selected every arrow selects the root&#x27;, () =&gt; {
+72:test(&#x27;a selection that is no longer in the tree falls back to the root&#x27;, () =&gt; {
+76:test(&#x27;step maps the four arrows onto the walk&#x27;, () =&gt; {
+83:test(&#x27;up and down still stop at the ends; left and right wrap&#x27;, () =&gt; {</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-05-34-435Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-05-34-435Z" class="timestamp-link"><time datetime="2026-09-12T17:05:34.435Z" data-timestamp="2026-09-12T17:05:34.435Z">2026-09-12T17:05:34.435Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-05-35-496Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-05-35-496Z" class="timestamp-link"><time datetime="2026-09-12T17:05:35.496Z" data-timestamp="2026-09-12T17:05:35.496Z">2026-09-12T17:05:35.496Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_0163eRVbjxzgqwm1qjqgQu3m">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Check vision invariants</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">grep -n &#34;invariant\|^[0-9]\.&#34; -i &#34;Concepts/OKR Viewer - Product Vision.md&#34; | head -30</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-05-35-541Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-05-35-541Z" class="timestamp-link"><time datetime="2026-09-12T17:05:35.541Z" data-timestamp="2026-09-12T17:05:35.541Z">2026-09-12T17:05:35.541Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>45:## Invariants (the load-bearing rules)
+47:1. **The service is stateless.** The browser sends the whole document every time. Teams,
+50:2. **One endpoint, one shape, grown additively.** `POST /api/chat` gains optional fields
+53:3. **Every mutation is an Action through one commit path.** The assistant, the node editor, the
+58:4. **The document is the unit of truth.** Bundled datasets, exports and imports are all
+60:5. **The scene never disorients the user on its own.** Programmatic camera moves level to world
+63:6. **Teams are data the model can be handed.** A team&#x27;s charter (mission, process, ownership
+146:- **The document is the unit of truth** (invariant 4). A JSON-document realtime store
+149:- **Every mutation is an Action with an actor** (invariant 3). Horizon 2 adds `actor: &quot;agent&quot;`
+161:- **The service is stateless** (invariant 1) until Horizon 3 deliberately changes it. An agent</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-05-37-342Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-05-37-342Z" class="timestamp-link"><time datetime="2026-09-12T17:05:37.342Z" data-timestamp="2026-09-12T17:05:37.342Z">2026-09-12T17:05:37.342Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_013h75nPUy4YWif1dPPfM3nW">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Read invariant 5</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">sed -n &#39;58,66p&#39; &#34;Concepts/OKR Viewer - Product Vision.md&#34;</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-05-37-372Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-05-37-372Z" class="timestamp-link"><time datetime="2026-09-12T17:05:37.372Z" data-timestamp="2026-09-12T17:05:37.372Z">2026-09-12T17:05:37.372Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>4. **The document is the unit of truth.** Bundled datasets, exports and imports are all
+   `OkrDocument`s. A bundled dataset is just a file someone exported by hand.
+5. **The scene never disorients the user on its own.** Programmatic camera moves level to world
+   up; user gestures (tumble, click) take precedence over assistant pointers (highlights clear on
+   selection). The user always feels in control of the view.
+6. **Teams are data the model can be handed.** A team&#x27;s charter (mission, process, ownership
+   domain, dependencies) is written so it can be dropped into a system prompt verbatim. That is
+   the bridge to agents; see the companion doc.</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-06-11-915Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-06-11-915Z" class="timestamp-link"><time datetime="2026-09-12T17:06:11.915Z" data-timestamp="2026-09-12T17:06:11.915Z">2026-09-12T17:06:11.915Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-06-13-264Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-06-13-264Z" class="timestamp-link"><time datetime="2026-09-12T17:06:13.264Z" data-timestamp="2026-09-12T17:06:13.264Z">2026-09-12T17:06:13.264Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>I have what I need: <code>flyTo</code> at <a href="web/src/Graph.svelte:119">Graph.svelte:119</a> frames a centroid with a <code>radius * 2.2 + 120</code> heuristic, and both callers pass a single id. Writing the plan.</p></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-07-15-780Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-07-15-780Z" class="timestamp-link"><time datetime="2026-09-12T17:07:15.780Z" data-timestamp="2026-09-12T17:07:15.780Z">2026-09-12T17:07:15.780Z</time></a></div><div class="message-content">
+<div class="tool-use bash-tool" data-tool-id="toolu_01Wp6DUE3QZnvmgQci628yMP">
+<div class="tool-header"><span class="tool-icon">$</span> Bash</div>
+<div class="tool-description">Write the plan</div><div class="truncatable"><div class="truncatable-content"><pre class="bash-command">cat &gt; Plans/development/FRAME_NODE_NEIGHBORHOOD.md &lt;&lt;&#39;PLAN&#39;
+---
+tags:
+  - plan
+  - web
+  - graph
+  - camera
+status: development
+created: 2026-09-12
+---
+# Plan: Frame the selected node with its parent and children
+
+Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
+(invariant 5: &#34;the scene never disorients the user on its own&#34;).
+Predecessor: [CAMERA_LEVEL_AUTO_MOVES](../completed/CAMERA_LEVEL_AUTO_MOVES.md) —
+this plan reuses `levelCamera` untouched.
+
+## Context
+
+Selecting a node flies the camera to that node alone. Both gestures that select do it:
+
+- `web/src/Graph.svelte:230` — `.onNodeClick((n) =&gt; { onSelect?.(n.id); flyTo([n.id], 800); })`
+- `web/src/App.svelte:498` — `graph?.flyTo([next.id], 600)` inside `go(dir)`, the arrow-key step.
+
+`flyTo` (`web/src/Graph.svelte:119-139`) takes a set of ids, averages their positions, measures a
+radius about that centroid, and picks `dist = Math.max(140, radius * 2.2 + 120)`
+(`Graph.svelte:132`). With one id the radius is 0, so the flight always ends at the floor of 140
+world units from a single sphere. The node fills the view and its context — the objective it rolls
+up to, the key results that roll into it — is off-screen or at the edge. The user then has to
+tumble or press `f` (`App.svelte:505`) to re-establish where they are, which is exactly the
+re-orienting work the scene is supposed to do for them.
+
+The layout is `dagMode(&#39;td&#39;)` with `dagLevelDistance(90)` (`Graph.svelte:212-213`), so a node&#39;s
+parent sits ~90 units above it and its children ~90 below plus lateral spread. A frame that holds
+one level up and one level down is a bounded, predictable amount of scene.
+
+`zoomToFit`/`fitToBbox` cannot do this job: it hard-codes the aim point to the world origin
+(`web/node_modules/three-render-objects/dist/three-render-objects.mjs:385`,
+`// reset camera aim to center`), so it only ever frames things about the centre of the scene.
+A local frame has to be computed here. `frameAll` (`Graph.svelte:143`) keeps using it and is
+unchanged.
+
+## Goal
+
+Selecting a node — by click or by arrow key — ends with that node centred and its parent and all
+its direct children inside the frame.
+
+## Decisions (locked in)
+
+1. **Neighbourhood = the node, its parent, its direct children.** No siblings, no grandchildren.
+   That is the ask, and it is the unit that makes a node&#39;s alignment readable: what it supports,
+   and what supports it.
+2. **Aim at the selected node, not at the neighbourhood centroid.** The neighbourhood is
+   asymmetric (one parent up, n children down and spread), so a centroid aim would leave the
+   selected sphere off-centre and would visibly drift as the user arrow-steps through a chain.
+   Centring the selection costs distance — the fit radius is measured from the selected node
+   rather than from the tightest centre — and buys a stable eye position.
+3. **One framing function, a real perspective fit.** `flyTo` and the new focus share it, and it
+   replaces the `radius * 2.2 + 120` guess with the distance at which a bounding sphere of radius
+   `R` about the aim point fills the padded frame: `R / sin(min(halfVFov, halfHFov))`. The camera
+   is a default-fov `PerspectiveCamera` (three-render-objects never sets `fov`, so 50°;
+   `aspect` is maintained at `three-render-objects.mjs:632,653`). This also means the assistant&#39;s
+   highlight frame (`Graph.svelte:296`) gets the corrected distance — accepted, it is more
+   correct, and it is the same code path.
+4. **The tree-walking lives in `navigate.js`.** It is the pure, browser-free module the keyboard
+   shortcuts already use, and it is where `parentOf`/`firstChildOf` already are
+   (`web/src/lib/navigate.js:14,19`). `Graph.svelte` imports it; the neighbourhood is then covered
+   by `node --test` rather than only by eye.
+5. **Keep the current-bearing approach**, clamped off the tree&#39;s axis. The flight still comes in
+   along the bearing the user left the camera on (`Graph.svelte:134-137`), but a bearing within
+   20° of world ±Y projects parent and children on top of each other and makes the frame
+   meaningless. Phase 4 clamps it. This is a bounded override of the user&#39;s bearing on a move
+   that already re-levels `camera.up`, so it is in keeping with invariant 5 rather than against it.
+6. **Only the two gestures that move the camera today keep moving it.** Clicking a related node in
+   the Detail panel still selects without flying (`App.svelte:449` `select()` moves no camera).
+   Changing that is a separate question.
+
+## Phase 1 — `neighborhoodOf` in `navigate.js`
+
+1. `web/src/lib/navigate.js:19` — next to `firstChildOf`, add
+   `export const childrenOf = (tree, id) =&gt; tree.nodes.filter((n) =&gt; n.parent === id);`
+2. Below `siblingOf` (`navigate.js:25-36`), add:
+   ```js
+   // The frame a selection deserves: the node, what it rolls up to, and what rolls
+   // into it. Ids, in no particular order — the camera only averages positions.
+   // Returns [] for an id that is not in the tree, so a stale selection is a no-op.
+   export function neighborhoodOf(tree, id) {
+     const n = tree.nodes.find((x) =&gt; x.id === id);
+     if (!n) return [];
+     const p = parentOf(tree, id);
+     return [id, ...(p ? [p.id] : []), ...childrenOf(tree, id).map((c) =&gt; c.id)];
+   }
+   ```
+3. `web/src/lib/navigate.test.js` — the fixture at `:8-17` already has a root with two objectives
+   and three KRs under `obj-a`. Add tests against it:
+   - `neighborhoodOf(tree, &#39;obj-a&#39;)` → `root`, `obj-a`, `kr-1`, `kr-2`, `kr-3` (compare as sets;
+     array order is not a contract here).
+   - `neighborhoodOf(tree, &#39;kr-2&#39;)` → `kr-2`, `obj-a` — a leaf frames itself and its parent.
+   - `neighborhoodOf(tree, &#39;root&#39;)` → `root`, `obj-a`, `obj-b` — the root has no parent to add.
+   - `neighborhoodOf(tree, &#39;gone&#39;)` → `[]`.
+   - `childrenOf(tree, &#39;obj-b&#39;)` → `[]`.
+
+## Phase 2 — one framing function in `Graph.svelte`
+
+1. Add near `LEVEL` (`Graph.svelte:40-44`):
+   ```js
+   const FRAME_MARGIN = 1.15; // breathing room around the bounding sphere
+   const MIN_DIST = 140;      // a lone node must not fill the screen
+   ```
+2. Add a `nodeRadius` helper — `LEVEL[n.level]?.size ?? LEVEL.kr.size` — so the fit accounts for
+   the spheres themselves, not just their centres (the company sphere is 10 units across the
+   radius; ignoring it crops the root).
+3. Replace the body of `flyTo` (`Graph.svelte:119-139`) with a call into a new internal
+   `frame(nodes, aim, ms)`, keeping `flyTo(ids, ms = 1200)` exported with its current signature
+   and its centroid aim:
+   ```js
+   // Distance at which a sphere of radius r about the aim point fills the frame.
+   function fitDistance(r) {
+     const cam = graph.camera();
+     const halfV = (cam.fov * Math.PI) / 360;
+     const halfH = Math.atan(Math.tan(halfV) * cam.aspect);
+     return r / Math.sin(Math.min(halfV, halfH));
+   }
+
+   function frame(nodes, aim, ms) {
+     levelCamera(ms);
+     let r = 0;
+     for (const n of nodes) {
+       r = Math.max(r, Math.hypot(n.x - aim.x, n.y - aim.y, n.z - aim.z) + nodeRadius(n));
+     }
+     const dist = Math.max(MIN_DIST, fitDistance(r * FRAME_MARGIN));
+     const cam = graph.cameraPosition();
+     const dir = new THREE.Vector3(cam.x - aim.x, cam.y - aim.y, cam.z - aim.z);
+     if (dir.length() &lt; 1) dir.set(0, 0.3, 1);
+     dir.normalize();
+     graph.cameraPosition(
+       { x: aim.x + dir.x * dist, y: aim.y + dir.y * dist, z: aim.z + dir.z * dist }, aim, ms
+     );
+   }
+   ```
+   `flyTo` keeps its own guards ahead of the call: the `graph`/`ids` check, `clearTimeout`,
+   `hovered = null`, the `Number.isFinite(n.x)` filter (a node added this frame has no position
+   yet), and the empty-after-filter bail.
+
+## Phase 3 — `focusNode`, and its two callers
+
+1. `Graph.svelte`, beside `flyTo` — import `neighborhoodOf` from `./lib/navigate.js` (the `tree`
+   prop is already in scope, `Graph.svelte:10`) and add:
+   ```js
+   // Selecting a node frames its neighbourhood but keeps the node itself centred:
+   // the selection is what the panel is about, so it is what the eye holds.
+   export function focusNode(id, ms = 800) {
+     if (!graph || !id) return;
+     clearTimeout(hoverTimer);
+     hovered = null;
+     const want = new Set(neighborhoodOf(tree, id));
+     const nodes = graph.graphData().nodes.filter((n) =&gt; want.has(n.id) &amp;&amp; Number.isFinite(n.x));
+     const self = nodes.find((n) =&gt; n.id === id);
+     if (!self) return; // no position yet: leave the camera where it is
+     frame(nodes, { x: self.x, y: self.y, z: self.z }, ms);
+   }
+   ```
+2. `Graph.svelte:230` — `.onNodeClick((n) =&gt; { onSelect?.(n.id); focusNode(n.id, 800); })`
+3. `App.svelte:498` — `graph?.focusNode(next.id, 600)`. The comment above `go` at
+   `App.svelte:492-493` says an arrow step &#34;is exactly a sphere click&#34;; it still is, so it needs
+   no rewrite, but the line about flight length stays accurate — keep 600 ms.
+4. Leave `Graph.svelte:296` (`if (highlight.length) flyTo(highlight)`) on `flyTo`: an assistant
+   highlight is an arbitrary set with no single subject to centre.
+
+## Phase 4 — keep the bearing off the tree&#39;s axis
+
+In `frame`, after `dir.normalize()`:
+
+```js
+// dagMode(&#39;td&#39;) puts parent and children directly above and below. Looking down
+// the tree&#39;s axis collapses that separation, so come in at least 20° off it.
+const MAX_Y = Math.cos((20 * Math.PI) / 180);
+if (Math.abs(dir.y) &gt; MAX_Y) {
+  const h = new THREE.Vector3(dir.x, 0, dir.z);
+  if (h.lengthSq() &lt; 1e-6) h.set(0, 0, 1);
+  h.normalize().multiplyScalar(Math.sqrt(1 - MAX_Y ** 2));
+  dir.set(h.x, Math.sign(dir.y) * MAX_Y, h.z);
+}
+```
+
+Azimuth is preserved, so the move still reads as &#34;from where I was&#34;. Independently shippable, and
+droppable if it feels like the camera is fighting the user.
+
+## Verification
+
+- `docker exec dev sh -c &#39;cd /src/web &amp;&amp; npm test&#39;` — Phase 1&#39;s tests plus the eleven existing
+  `navigate` tests. (Host Node is 12; the tests need the dev container.)
+- `docker exec dev sh -c &#39;cd /src/web &amp;&amp; npm run dev&#39;`, then in the browser:
+  - Click a key result: its objective is in frame above it, the KR is centred.
+  - Click an objective on `polaris-group-fy26`: parent and every KR in frame, nothing clipped at
+    the edges; check a wide objective (most children) and a narrow one.
+  - Click the company root: the objectives ring it, and the frame is not the whole tree.
+  - Arrow ↓ then ↑ through three levels: the selected sphere stays centred across the chain and no
+    flight overshoots.
+  - `f` still frames the whole tree, and the horizon is level after each move (invariant 5).
+  - Ask the assistant something that highlights several nodes: the frame still holds them all, at
+    the new (slightly further) distance.
+  - Phase 4: tumble to look straight down the tree, then arrow-step — the camera tilts off the
+    axis and parent/child separation is visible.
+
+## Out of scope
+
+- The Detail panel occludes the left 334 px of the stage (`web/src/app.css:112-114`); a frame
+  centred on the canvas puts the selection partly under it. Offsetting the aim for the panel is a
+  real follow-up, not this plan.
+- Camera moves for selections made from the Detail panel&#39;s related-node lists or from a team
+  panel (Decision 6).
+- Siblings, grandchildren, or a configurable frame depth.
+- Framing the team label sprites (`Graph.svelte:69-73`), which extend to the right of a sphere by
+  an amount that depends on text length.
+- `frameAll` and `zoomToFit`.
+
+## Risks / rollback
+
+- **It may read as &#34;zoomed out&#34;.** A leaf KR goes from 140 units to roughly 2.7 × (90 + radius) ≈
+  270. `FRAME_MARGIN` and `MIN_DIST` are the two knobs and sit together at the top of the file;
+  rollback is `focusNode` → `flyTo` at the two call sites in Phase 3.
+- **A node whose children were just added has no layout position yet**, so they are filtered out
+  and the frame is tighter than intended for one move. Acceptable: the next selection is correct.
+  Not worth waiting on the force simulation.
+- **Phase 3 imports `navigate.js` into `Graph.svelte`**, which previously held no tree logic. The
+  import is one pure function and keeps the walk testable; the alternative — deriving the
+  neighbourhood from `graph.graphData().links` — would duplicate it against a different source.
+PLAN
+wc -c Plans/development/FRAME_NODE_NEIGHBORHOOD.md</pre></div><button class="expand-btn">Show more</button></div>
+</div></div></div>
+<div class="message tool-reply" id="msg-2026-09-12T17-07-17-398Z"><div class="message-header"><span class="role-label">Tool reply</span><a href="#msg-2026-09-12T17-07-17-398Z" class="timestamp-link"><time datetime="2026-09-12T17:07:17.398Z" data-timestamp="2026-09-12T17:07:17.398Z">2026-09-12T17:07:17.398Z</time></a></div><div class="message-content"><div class="tool-result"><div class="truncatable"><div class="truncatable-content"><pre>   12261 Plans/development/FRAME_NODE_NEIGHBORHOOD.md</pre></div><button class="expand-btn">Show more</button></div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-07-19-434Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-07-19-434Z" class="timestamp-link"><time datetime="2026-09-12T17:07:19.434Z" data-timestamp="2026-09-12T17:07:19.434Z">2026-09-12T17:07:19.434Z</time></a></div><div class="message-content">
+<div class="thinking"><div class="thinking-label">Thinking</div></div></div></div>
+<div class="message assistant" id="msg-2026-09-12T17-07-30-018Z"><div class="message-header"><span class="role-label">Assistant</span><a href="#msg-2026-09-12T17-07-30-018Z" class="timestamp-link"><time datetime="2026-09-12T17:07:30.018Z" data-timestamp="2026-09-12T17:07:30.018Z">2026-09-12T17:07:30.018Z</time></a></div><div class="message-content">
+<div class="assistant-text"><p>Plan written: <a href="Plans/development/FRAME_NODE_NEIGHBORHOOD.md">Plans/development/FRAME_NODE_NEIGHBORHOOD.md</a> (~12k chars, standard tier, 4 phases).</p>
+<p>What it says, in short:</p>
+<ul>
+<li><strong>Today</strong> — both selection gestures call <code>flyTo([id])</code> (<a href="web/src/Graph.svelte:230">Graph.svelte:230</a>, <a href="web/src/App.svelte:498">App.svelte:498</a>). With one id the measured radius is 0, so every flight ends at the <code>Math.max(140, …)</code> floor (<a href="web/src/Graph.svelte:132">Graph.svelte:132</a>) with the node filling the view and its context off-screen.</li>
+<li><strong>Phase 1</strong> — <code>neighborhoodOf(tree, id)</code> (node + parent + direct children) in <a href="web/src/lib/navigate.js">navigate.js</a>, the pure module the arrow keys already use, with tests against the existing fixture.</li>
+<li><strong>Phase 2</strong> — one internal <code>frame(nodes, aim, ms)</code> in <code>Graph.svelte</code> that replaces the <code>radius * 2.2 + 120</code> guess with the real perspective fit, <code>R / sin(min(halfVFov, halfHFov))</code>. <code>flyTo</code> keeps its signature and centroid aim and routes through it.</li>
+<li><strong>Phase 3</strong> — a new <code>focusNode(id, ms)</code> export that frames the neighbourhood but <strong>aims at the selected node</strong>, so it stays centred as you arrow-step a chain; the two call sites switch to it. The assistant's highlight frame stays on <code>flyTo</code> — an arbitrary set has no subject to centre.</li>
+<li><strong>Phase 4</strong> — clamp the approach bearing 20° off world ±Y. With <code>dagMode('td')</code> a top-down bearing collapses parent and children onto each other, which would make the whole frame pointless. Independently droppable.</li>
+</ul>
+<p>Two things I found worth flagging while reading:</p>
+<ul>
+<li><code>zoomToFit</code>/<code>fitToBbox</code> can't be reused for this — it hard-codes the aim to the world origin (<code>three-render-objects.mjs:385</code>), so it only frames about the centre of the scene. The plan says so in Context so nobody re-derives it.</li>
+<li>The Detail panel overlays the left 334px of the stage (<a href="web/src/app.css:112">app.css:112</a>), so a canvas-centred frame puts the selection partly under it. That's pre-existing and I left it out of scope, noted as a follow-up rather than quietly widening this plan.</li>
+</ul>
+<p>CLAUDE.md's "Current work" section still says <code>development/</code> is empty — want me to add a line there pointing at this plan?</p></div></div></div>
+        
+
+<div class="pagination"><a href="index.html" class="index-link">Index</a></div>
+
+    </div>
+    <script>
+document.querySelectorAll('time[data-timestamp]').forEach(function(el) {
+    const timestamp = el.getAttribute('data-timestamp');
+    const date = new Date(timestamp);
+    const now = new Date();
+    const isToday = date.toDateString() === now.toDateString();
+    const timeStr = date.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    if (isToday) { el.textContent = timeStr; }
+    else { el.textContent = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) + ' ' + timeStr; }
+});
+document.querySelectorAll('pre.json').forEach(function(el) {
+    let text = el.textContent;
+    text = text.replace(/"([^"]+)":/g, '<span style="color: #ce93d8">"$1"</span>:');
+    text = text.replace(/: "([^"]*)"/g, ': <span style="color: #81d4fa">"$1"</span>');
+    text = text.replace(/: (\d+)/g, ': <span style="color: #ffcc80">$1</span>');
+    text = text.replace(/: (true|false|null)/g, ': <span style="color: #f48fb1">$1</span>');
+    el.innerHTML = text;
+});
+document.querySelectorAll('.truncatable').forEach(function(wrapper) {
+    const content = wrapper.querySelector('.truncatable-content');
+    const btn = wrapper.querySelector('.expand-btn');
+    if (content.scrollHeight > 250) {
+        wrapper.classList.add('truncated');
+        btn.addEventListener('click', function() {
+            if (wrapper.classList.contains('truncated')) { wrapper.classList.remove('truncated'); wrapper.classList.add('expanded'); btn.textContent = 'Show less'; }
+            else { wrapper.classList.remove('expanded'); wrapper.classList.add('truncated'); btn.textContent = 'Show more'; }
+        });
+    }
+});
+</script>
+</body>
+</html>
