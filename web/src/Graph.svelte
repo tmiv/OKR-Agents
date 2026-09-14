@@ -96,6 +96,12 @@
     const text = unitName(company, node.unitId) ?? node.owner ?? '';
     const label = new SpriteText(text, 6, '#e6ebf5');
     label.material.depthWrite = false;
+    // Labels read over the scene rather than being swallowed by spheres and
+    // links in front of them: skipping the depth test draws the sprite
+    // regardless of what occludes it, and a high renderOrder puts it last in
+    // the transparent pass so it also wins against the other labels' sprites.
+    label.material.depthTest = false;
+    label.renderOrder = 10;
     // Anchor the sprite's left edge just right of the sphere, vertically centred.
     label.center.set(0, 0.5);
     label.position.x = cfg.size + 3;
