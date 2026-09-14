@@ -10,7 +10,7 @@
 // Sorted, so the model's ordering inside one finding never splits the key.
 
 /**
- * @typedef {import('@okr-viewer/schema').Finding} Finding
+ * @typedef {import('@okr-agents/schema').Finding} Finding
  */
 
 /**

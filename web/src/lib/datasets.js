@@ -9,7 +9,7 @@
 // loading state and no 404 path: if a file is here, it is in the bundle.
 
 import manifest from '../assets/datasets/manifest.json';
-import { parseDocument } from '@okr-viewer/schema';
+import { parseDocument } from '@okr-agents/schema';
 
 const files = import.meta.glob('../assets/datasets/*.json', { eager: true, import: 'default' });
 

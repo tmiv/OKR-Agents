@@ -18,7 +18,7 @@
     validateAction,
     validateChatResponse,
     validateHistory
-  } from '@okr-viewer/schema';
+  } from '@okr-agents/schema';
 
   // datasets.js validates every bundled document at boot in dev.
   let datasetId = $state(DEFAULT_DATASET_ID);

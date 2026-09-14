@@ -4,13 +4,13 @@
 //
 // Two layers, and the split matters:
 //
-//   @okr-viewer/schema's validateAction()  — shape. Is this an action at all?
+//   @okr-agents/schema's validateAction()  — shape. Is this an action at all?
 //   the checks below                       — reference. Does it fit *this* tree?
 //
 // Shape lives in the package because the browser needs the same answer. The
 // referential checks are tree-relative and stay here.
 
-import { validateAction } from '@okr-viewer/schema';
+import { validateAction } from '@okr-agents/schema';
 
 // Keep only well-formed turns, cap the length, and merge consecutive
 // same-role turns so the API always sees strict user/assistant alternation.

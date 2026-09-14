@@ -1,8 +1,8 @@
 /**
- * Public types for @okr-viewer/schema.
+ * Public types for @okr-agents/schema.
  *
  * The data-shape types are generated from schema/src/ into dist/types.d.ts and
- * re-exported here, so `import('@okr-viewer/schema').OkrTree` works from plain
+ * re-exported here, so `import('@okr-agents/schema').OkrTree` works from plain
  * JS via JSDoc without either consumer adopting TypeScript.
  */
 
@@ -88,7 +88,7 @@ export type ValidationResult<T> = { ok: true; value: T } | { ok: false; errors: 
 /** Document format version this build reads and writes. */
 export declare const SCHEMA_VERSION: number;
 
-/** Version of the @okr-viewer/schema package itself. */
+/** Version of the @okr-agents/schema package itself. */
 export declare const PACKAGE_VERSION: string;
 
 /** The `respond` tool's `input_schema`: chat-response with every `$ref` flattened. */

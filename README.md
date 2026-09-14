@@ -180,7 +180,7 @@ docker compose up --build                     # → http://localhost:8080
 
 **Both images build from the repo root**, even though the Dockerfiles live in
 their packages — there is one lockfile for all three workspaces, and both
-packages import `@okr-viewer/schema`, so a package-scoped context cannot see
+packages import `@okr-agents/schema`, so a package-scoped context cannot see
 what it needs:
 
 ```bash
@@ -288,7 +288,7 @@ okr-agents/
 ├── package.json                npm workspace root; one lockfile for all three
 ├── docker-compose.yml          web → service, the pair in one command
 ├── .dockerignore               build context for both images (keeps .env out)
-├── schema/                     @okr-viewer/schema — the shape, owned in one place
+├── schema/                     @okr-agents/schema — the shape, owned in one place
 │   ├── src/*.schema.json       draft-07 schemas: node, tree, company, history,
 │   │                           action, chat request/response, document envelope
 │   ├── scripts/build.mjs       → dist/types.d.ts, dist/validators.js, tool schema

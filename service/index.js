@@ -3,7 +3,7 @@ import express from 'express';
 import Anthropic from '@anthropic-ai/sdk';
 import { MODEL, respondTool, systemPrompt } from './prompt.js';
 import { sanitizeContext, sanitizeHistory, mergeTurns, resolveTab, validateResponse } from './validate.js';
-import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
+import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from '@okr-agents/schema';
 
 const PORT = Number(process.env.PORT) || 8787;
 

@@ -1,4 +1,4 @@
-import { RESPOND_INPUT_SCHEMA } from '@okr-viewer/schema';
+import { RESPOND_INPUT_SCHEMA } from '@okr-agents/schema';
 
 // The model ID lives here and only here.
 // Check https://docs.claude.com/en/docs/about-claude/models for the current

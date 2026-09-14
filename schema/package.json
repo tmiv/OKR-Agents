@@ -1,5 +1,5 @@
 {
-  "name": "@okr-viewer/schema",
+  "name": "@okr-agents/schema",
   "version": "0.1.0",
   "description": "Versioned JSON Schemas for the OKR document, shared by web/ and service/.",
   "type": "module",

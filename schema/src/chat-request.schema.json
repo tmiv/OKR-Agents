@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://okr-viewer.dev/schema/v1/chat-request.schema.json",
+  "$id": "https://okr-agents.dev/schema/v1/chat-request.schema.json",
   "title": "ChatRequest",
   "description": "The body the browser POSTs to /api/chat. It carries the whole tree every time; the service is stateless.",
   "type": "object",

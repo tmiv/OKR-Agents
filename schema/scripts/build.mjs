@@ -58,7 +58,7 @@ const VALIDATORS = {
   validateDeleteUnitAction: 'action.schema.json#/definitions/deleteUnitAction'
 };
 
-const BASE = 'https://okr-viewer.dev/schema/v1/';
+const BASE = 'https://okr-agents.dev/schema/v1/';
 
 rmSync(DIST, { recursive: true, force: true });
 mkdirSync(join(DIST, 'json', 'tool'), { recursive: true });

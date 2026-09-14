@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://okr-viewer.dev/schema/v1/history.schema.json",
+  "$id": "https://okr-agents.dev/schema/v1/history.schema.json",
   "title": "History",
   "description": "What has happened to the tree over time: readings of key-result metrics, and the batches of edits that changed the structure. Schema only in v1 — nothing writes this yet.",
   "type": "object",

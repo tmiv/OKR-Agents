@@ -10,7 +10,7 @@
     "test": "node --test \"src/**/*.test.js\""
   },
   "dependencies": {
-    "@okr-viewer/schema": "^0.1.0",
+    "@okr-agents/schema": "^0.1.0",
     "3d-force-graph": "^1.80.0",
     "three": ">=0.179 <1",
     "three-spritetext": "^1.10.0"

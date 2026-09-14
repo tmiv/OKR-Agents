@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://okr-viewer.dev/schema/v1/okr-node.schema.json",
+  "$id": "https://okr-agents.dev/schema/v1/okr-node.schema.json",
   "title": "OkrNode",
   "description": "One node in the OKR tree. Nodes are flat and carry a parent pointer; the tree is reconstructed from those pointers, never from nesting.",
   "type": "object",

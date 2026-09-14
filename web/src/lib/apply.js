@@ -3,15 +3,15 @@
 // Pure: never mutates the input. Untouched node objects are reused by
 // reference so the graph can diff by identity and keep its layout warm.
 //
-// The JSDoc types come from @okr-viewer/schema's generated declarations, so an
+// The JSDoc types come from @okr-agents/schema's generated declarations, so an
 // editor checks this file against the same schema the service validates with,
 // without either package adopting TypeScript.
 
 /**
- * @typedef {import('@okr-viewer/schema').OkrTree} OkrTree
- * @typedef {import('@okr-viewer/schema').OkrNode} OkrNode
- * @typedef {import('@okr-viewer/schema').Company} Company
- * @typedef {import('@okr-viewer/schema').Action} Action
+ * @typedef {import('@okr-agents/schema').OkrTree} OkrTree
+ * @typedef {import('@okr-agents/schema').OkrNode} OkrNode
+ * @typedef {import('@okr-agents/schema').Company} Company
+ * @typedef {import('@okr-agents/schema').Action} Action
  */
 
 import { applyUnitAction, unitName } from './company.js';

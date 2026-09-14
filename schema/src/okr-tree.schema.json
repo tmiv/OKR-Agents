@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://okr-viewer.dev/schema/v1/okr-tree.schema.json",
+  "$id": "https://okr-agents.dev/schema/v1/okr-tree.schema.json",
   "title": "OkrTree",
   "description": "The whole OKR tree as a flat node list. Structure lives in the parent pointers; uniqueness, parent existence and acyclicity are checked separately by checkTreeSemantics().",
   "type": "object",

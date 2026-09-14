@@ -30,7 +30,11 @@ export function auditKey(tree, company) {
   return digest({ v: AUDIT_CACHE_VERSION, tree, company });
 }
 
-const DB_NAME = 'okr-viewer';
+// Renamed with the product. The old `okr-viewer` database is orphaned rather
+// than migrated — it is a 14-day cache, so the cost is one fresh audit — and a
+// browser that wants the space back can drop it with
+// `indexedDB.deleteDatabase('okr-viewer')` from the console.
+const DB_NAME = 'okr-agents';
 const DB_VERSION = 1;
 const STORE = 'audits';
 const LIMIT = 40;

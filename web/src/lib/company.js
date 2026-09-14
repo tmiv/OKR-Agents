@@ -9,9 +9,9 @@
 // is ignored, a parent that would make a cycle is dropped rather than thrown.
 
 /**
- * @typedef {import('@okr-viewer/schema').Company} Company
- * @typedef {import('@okr-viewer/schema').CompanyUnit} CompanyUnit
- * @typedef {import('@okr-viewer/schema').Action} Action
+ * @typedef {import('@okr-agents/schema').Company} Company
+ * @typedef {import('@okr-agents/schema').CompanyUnit} CompanyUnit
+ * @typedef {import('@okr-agents/schema').Action} Action
  */
 
 const CHARTER_KEYS = ['mission', 'process', 'owns', 'dependsOn'];

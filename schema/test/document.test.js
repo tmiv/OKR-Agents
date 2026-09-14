@@ -38,7 +38,7 @@ test('createDocument stamps version, timestamp and generator', () => {
   const doc = createDocument({ tree: defaultTree });
   assert.equal(doc.schemaVersion, SCHEMA_VERSION);
   assert.equal(doc.generator, undefined, 'generator belongs under meta');
-  assert.equal(doc.meta.generator, `@okr-viewer/schema ${PACKAGE_VERSION}`);
+  assert.equal(doc.meta.generator, `@okr-agents/schema ${PACKAGE_VERSION}`);
   assert.ok(Date.parse(doc.meta.exportedAt) >= before - 1000);
   assert.equal('company' in doc, false, 'absent sections stay absent rather than becoming undefined');
   assert.equal('history' in doc, false);

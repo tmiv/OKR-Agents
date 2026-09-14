@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://okr-viewer.dev/schema/v1/okr-document.schema.json",
+  "$id": "https://okr-agents.dev/schema/v1/okr-document.schema.json",
   "title": "OkrDocument",
   "description": "The unit of export and import: everything the viewer knows about one company's OKRs, stamped with the schema version that wrote it.",
   "type": "object",
@@ -52,7 +52,7 @@
         },
         "generator": {
           "type": "string",
-          "description": "What wrote it, for example \"@okr-viewer/schema 0.1.0\".",
+          "description": "What wrote it, for example \"@okr-agents/schema 0.1.0\".",
           "maxLength": 200
         }
       },

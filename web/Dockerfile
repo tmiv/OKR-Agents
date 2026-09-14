@@ -5,7 +5,7 @@
 #   docker build -f web/Dockerfile -t okr-agents-web .
 #
 # There is one lockfile for all three workspace packages, and web/ imports
-# @okr-viewer/schema, so neither is visible from a web/-scoped context.
+# @okr-agents/schema, so neither is visible from a web/-scoped context.
 #
 # The `ctx` stage below is the ONLY thing that reads the build context, and that
 # is load-bearing. BuildKit resolves every context COPY in a Dockerfile eagerly
@@ -36,7 +36,7 @@ RUN if [ ! -f /ctx/package-lock.json ] || [ ! -d /ctx/schema ]; then \
       echo "  Wrong build context: no package-lock.json and no schema/ in it."; \
       echo; \
       echo "  This image builds from the repo root. One lockfile covers all"; \
-      echo "  three workspaces, and web/ imports @okr-viewer/schema, so"; \
+      echo "  three workspaces, and web/ imports @okr-agents/schema, so"; \
       echo "  neither is reachable from a web/-scoped context."; \
       echo; \
       echo "      docker build -f web/Dockerfile -t okr-agents-web ."; \

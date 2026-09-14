@@ -1,4 +1,4 @@
-// @okr-viewer/schema — the one authoritative description of the OKR document,
+// @okr-agents/schema — the one authoritative description of the OKR document,
 // shared by web/ and service/.
 //
 // Two layers, kept apart on purpose (see the plan's Decision 6):
@@ -40,7 +40,7 @@ import {
 export { SCHEMA_VERSION };
 
 /**
- * `PACKAGE_VERSION` — version of @okr-viewer/schema itself.
+ * `PACKAGE_VERSION` — version of @okr-agents/schema itself.
  * `RESPOND_INPUT_SCHEMA` — the `respond` tool's input_schema, with every $ref flattened.
  */
 export { PACKAGE_VERSION, RESPOND_INPUT_SCHEMA };
@@ -342,7 +342,7 @@ export function createDocument({ tree, company, history, meta } = {}) {
     meta: {
       ...meta,
       exportedAt: meta?.exportedAt ?? new Date().toISOString(),
-      generator: meta?.generator ?? `@okr-viewer/schema ${PACKAGE_VERSION}`
+      generator: meta?.generator ?? `@okr-agents/schema ${PACKAGE_VERSION}`
     },
     tree
   };
