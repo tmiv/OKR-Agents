@@ -17,7 +17,7 @@ predecessors:
 Concept: [OKR Viewer - Product Vision](../../Concepts/OKR%20Viewer%20-%20Product%20Vision.md)
 (renamed by Phase 1 to `OKR Agents - Product Vision.md`) and
 [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md).
-Sibling: [BABYLONJS_PROJECT_DATASET](BABYLONJS_PROJECT_DATASET.md), the project-shaped dataset
+Sibling: [BABYLONJS_PROJECT_DATASET](../completed/BABYLONJS_PROJECT_DATASET.md), the project-shaped dataset
 with an issue-triage team that the README's first screen points at.
 
 ## TL;DR

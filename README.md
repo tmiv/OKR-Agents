@@ -129,6 +129,16 @@ Called with `tool_choice: { type: 'tool', name: 'respond' }`. Guaranteed structu
 
 ## Setup
 
+It boots on a bundled dataset and ships five of them, switchable from the top
+bar. The default, **Babylon.js, an illustrative 9.x cycle**, is the one that is
+not a company: an open-source monorepo whose sub-libraries — core, loaders, the
+node editors, the playground, the MCP servers — are the teams, each with a
+charter saying what it owns and which of the others it depends on. One of them,
+Issue triage, is the first team here whose charter reads as a job an agent could
+be handed tomorrow. The package layout is real; **the OKRs and every number in
+the file are invented**, and nothing in it is a statement about the real
+project's plans or health.
+
 Requires Node 20.19+ (Vite 8 and Express 5 both need it).
 
 The repo is one npm workspace with three packages, so there is a single install

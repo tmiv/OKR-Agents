@@ -1,4 +1,10 @@
 {
-  "default": "workflow-platform-fy26",
-  "order": ["workflow-platform-fy26", "polaris-group-fy26", "starter", "regional-clinic-network"]
+  "default": "babylonjs-9x-cycle",
+  "order": [
+    "babylonjs-9x-cycle",
+    "workflow-platform-fy26",
+    "polaris-group-fy26",
+    "starter",
+    "regional-clinic-network"
+  ]
 }

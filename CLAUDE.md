@@ -158,8 +158,10 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-The September 2026 round shipped in full, TREE_BRIEFING and BRIEFING_AUDIT_CACHE included.
-`development/` is empty: new work starts with a new plan there, not by reopening a completed one.
+The September 2026 round shipped in full, TREE_BRIEFING and BRIEFING_AUDIT_CACHE included, and
+BABYLONJS_PROJECT_DATASET landed on top of it. `development/` holds one open plan,
+[OKR_AGENTS_RENAME_AND_POSITIONING](Plans/development/OKR_AGENTS_RENAME_AND_POSITIONING.md);
+anything else starts with a new plan there, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
 [Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
@@ -181,7 +183,14 @@ works:
 [TREE_BRIEFING](Plans/completed/TREE_BRIEFING.md) ·
 [DOCKER_IMAGES_AND_CI](Plans/completed/DOCKER_IMAGES_AND_CI.md) ·
 [SERVICE_CORS](Plans/completed/SERVICE_CORS.md) ·
-[BRIEFING_AUDIT_CACHE](Plans/completed/BRIEFING_AUDIT_CACHE.md).
+[BRIEFING_AUDIT_CACHE](Plans/completed/BRIEFING_AUDIT_CACHE.md) ·
+[BABYLONJS_PROJECT_DATASET](Plans/completed/BABYLONJS_PROJECT_DATASET.md).
+
+BABYLONJS_PROJECT_DATASET made `babylonjs-9x-cycle` the default dataset: a monorepo's
+sub-libraries as teams, with an issue-triage team written as a job an executor agent could take.
+Its completion notes are worth reading before the matrix plans — two of the six briefing findings
+came off `charter.dependsOn` alone, which is the first evidence the reliance graph pays for
+itself.
 
 TREE_BRIEFING also landed mode 1 of the four discussion modes (`persona`), so the next plan in
 that area starts from modes 2–4, not from scratch. Read its completion notes before touching the

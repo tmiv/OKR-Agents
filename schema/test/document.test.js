@@ -15,9 +15,10 @@ import {
   validateOkrTree
 } from '../index.js';
 
-// The tree the app boots with. datasets.test.js validates every bundled
-// document; here it is the fixture the round trips run on, so a real tree with
-// real edge cases goes through createDocument/parseDocument.
+// A bundled tree with real edge cases, used here as the round-trip fixture —
+// not because it is the dataset the app boots with (manifest.default names the
+// Babylon.js one), but because nothing in this file cares which file it is.
+// datasets.test.js is where every bundled document is validated.
 const defaultDocument = JSON.parse(
   readFileSync(new URL('../../web/src/assets/datasets/workflow-platform-fy26.json', import.meta.url))
 );
@@ -26,9 +27,9 @@ const defaultTree = defaultDocument.tree;
 // with unitId and no company parses, but warns on every node.
 const defaultCompany = defaultDocument.company;
 
-test('the default dataset’s tree is valid and raises no warnings', () => {
+test('the fixture dataset’s tree is valid and raises no warnings', () => {
   const structural = validateOkrTree(defaultTree);
-  assert.ok(structural.ok, `the default dataset failed validation:\n  ${structural.errors?.join('\n  ')}`);
+  assert.ok(structural.ok, `the fixture dataset failed validation:\n  ${structural.errors?.join('\n  ')}`);
   assert.deepEqual(checkTreeSemantics(defaultTree), { errors: [], warnings: [] });
 });
 

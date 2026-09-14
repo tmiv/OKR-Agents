@@ -4,8 +4,9 @@ tags:
   - datasets
   - agents
   - web
-status: development
+status: completed
 created: 2026-09-14
+completed_on: 2026-09-14
 predecessors:
   - completed/BUNDLED_DATASETS.md
   - completed/TEAM_MODEL_AND_EDITOR.md
@@ -14,7 +15,7 @@ predecessors:
 
 Concept: [Teams as Agents - Design](../../Concepts/Teams%20as%20Agents%20-%20Design.md) and
 [Agents as Executors - Design](../../Concepts/Agents%20as%20Executors%20-%20Design.md).
-Sibling: [OKR_AGENTS_RENAME_AND_POSITIONING](OKR_AGENTS_RENAME_AND_POSITIONING.md), which
+Sibling: [OKR_AGENTS_RENAME_AND_POSITIONING](../development/OKR_AGENTS_RENAME_AND_POSITIONING.md), which
 names this dataset in the README's first screen.
 
 ## Context
@@ -210,3 +211,32 @@ release numbers instead of quarters as the horizon.
 - **Default swap changes what the README demo shows.** The planted flaws cover the same
   questions the demo script asks; if a live demo needs the old file, `manifest.default` is one
   line.
+
+## Completion notes
+
+- **Planned vs. actual.** The shape landed exactly as written: 15 units, 45 nodes (1 root, 8
+  objectives, 36 KRs), the three planted weak links (`kr-conferences` 0.2, `kr-ci-runner` 0.15,
+  `kr-package-rename` 0.3) and the two unmeasurable KRs (`kr-shader-pipeline`,
+  `kr-getting-started`). `npm run test:schema` is 129/129 green, the new file valid with zero
+  warnings. Nothing about the dataset format needed changing to carry a project instead of a
+  company — Decision 5 held, and the root reading "The company is Babylon.js" did not surface
+  anywhere a reviewer looks.
+- **Mid-flight adjustments.** Two. (a) `schema/test/document.test.js` reads
+  `workflow-platform-fy26.json` by a hardcoded path, not through `manifest.default`, so the
+  default swap needed no code change — but its comments called that file "the tree the app boots
+  with", which the swap made false. Reworded to say it is a round-trip fixture and that
+  `manifest.default` now names the Babylon.js file. (b) Every unit was given a KR to own, which
+  the plan did not require; it costs nothing and keeps the Teams panel from listing five teams
+  with a `0` beside them.
+- **Surprises / residual risks.** The briefing grouped the findings differently from the
+  prediction: `kr-ci-runner` came back bundled with `kr-conferences` as "two key results are
+  activities, not outcomes", which spans two teams and therefore offers **Fix** rather than
+  **Ask Issue triage**. The "Ask" button does appear — on a *seventh-KR-under-one-team* finding
+  about triage's focus budget, and on the package-rename and documentation findings. Two of the
+  six findings were ones the plan did not plant at all, both read straight off `charter.dependsOn`
+  ("MCP servers depend on four teams, only two of which have a matching KR"), which is the first
+  evidence the dependency web pays for itself and is the argument for
+  `TEAM_RELIANCE_MATRIX.md` next. Residual: the README paragraph sits under `## Setup` as a
+  placeholder; [OKR_AGENTS_RENAME_AND_POSITIONING](../development/OKR_AGENTS_RENAME_AND_POSITIONING.md)
+  is supposed to move it to the first screen, and if that plan is abandoned the paragraph is in
+  the wrong place.

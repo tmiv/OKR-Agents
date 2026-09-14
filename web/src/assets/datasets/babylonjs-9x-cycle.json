@@ -1,0 +1,803 @@
+{
+  "schemaVersion": 1,
+  "meta": {
+    "title": "Babylon.js, an illustrative 9.x cycle",
+    "period": "9.x cycle",
+    "exportedAt": "2026-09-14T00:00:00Z",
+    "generator": "hand-authored"
+  },
+  "company": {
+    "name": "Babylon.js",
+    "units": [
+      {
+        "id": "maintainers",
+        "name": "Maintainers",
+        "parent": null,
+        "charter": {
+          "mission": "We keep the release train running and decide what 9.x is, so that every package team can ship without negotiating a date with every other package team.",
+          "process": "Scope proposals come in from the package teams and from the forum. We publish the 9.x scope once, cut a release on a fixed cadence, and hold a weekly maintainers call where anything that changes another package's public API is argued and decided there rather than in a pull request thread. A breaking change ships only with a migration note and a deprecation that has already been through a release.",
+          "owns": [
+            "the release train",
+            "the 9.x scope",
+            "the breaking-change policy",
+            "the deprecation list"
+          ]
+        }
+      },
+      {
+        "id": "core",
+        "name": "Engine core",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We are the engine everything else is built on: if a scene renders at all, it renders through us.",
+          "process": "Feature requests arrive from the package teams and bug reports arrive already labelled and routed from triage. We work against the visual test suite \u2014 a change that moves a reference image does not merge until the diff is explained \u2014 and we land WebGL and WebGPU behind one public API so no caller has to know which backend is under it.",
+          "owns": [
+            "the scene graph",
+            "the WebGL and WebGPU backends",
+            "the animation system",
+            "the material and mesh base classes",
+            "the public API surface"
+          ],
+          "dependsOn": [
+            "triage",
+            "build-tools"
+          ]
+        }
+      },
+      {
+        "id": "loaders",
+        "name": "Loaders & serializers",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make sure an asset that leaves any authoring tool arrives in a Babylon scene looking the way its author meant it to.",
+          "process": "New extensions come from the Khronos registry and broken-asset reports come from triage. Every extension lands with a sample asset in the conformance suite and a reference render; export is tested by round-tripping the same asset back out and comparing it against that render. An asset we cannot load is a bug against us even when the exporter that wrote it is the thing that is wrong.",
+          "owns": [
+            "glTF import and export",
+            "the OBJ, STL and SPLAT loaders",
+            "the glTF extension registry",
+            "the asset conformance suite"
+          ],
+          "dependsOn": [
+            "core",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "materials",
+        "name": "Materials & post-processes",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We give a scene its look: the shading, the textures and the post-processing that turn correct geometry into something worth showing.",
+          "process": "We build on core's material base classes rather than beside them. Every material and post-process in the library ships with a Playground that demonstrates it and a reference image in the visual suite, and anything that moves that image is reverted before the release rather than explained after it.",
+          "owns": [
+            "the materials library",
+            "the procedural textures",
+            "the post-process pipeline",
+            "the shader include library"
+          ],
+          "dependsOn": [
+            "core",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "gui",
+        "name": "GUI",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We are how a scene talks back to the person looking at it, in 2D over the canvas and in 3D inside it.",
+          "process": "Control requests come from the viewer, the editors and the forum, routed to us by triage. We keep the control set small and composable, ship each control in both the 2D and the 3D flavour where that makes sense, and hold the GUI editor to one rule: anything you can build by hand you can build in the editor, and it serializes to the same file either way.",
+          "owns": [
+            "the 2D GUI controls",
+            "the 3D GUI controls",
+            "the GUI editor",
+            "the GUI serialization format"
+          ],
+          "dependsOn": [
+            "core",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "node-editors",
+        "name": "Node editors",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We let someone build a material, a geometry, a particle system or a render graph by wiring boxes together, so that writing shader code stops being the price of entry.",
+          "process": "New blocks follow new core and materials features by one release: they land the capability, we expose it as a block with a live preview and a saved snippet. The four editors share one graph canvas and one serialization layer, so a fix to the canvas lands in all of them at once and a graph saved by one of them is readable by the others.",
+          "owns": [
+            "the node material editor",
+            "the node geometry editor",
+            "the node particle editor",
+            "the node render graph editor",
+            "the shared node graph canvas"
+          ],
+          "dependsOn": [
+            "core",
+            "materials",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "inspector",
+        "name": "Inspector",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make a running scene legible: what is in it, what it is doing, and which property is the one that is wrong.",
+          "process": "We follow the core API \u2014 a new property that is not in the inspector is a bug against us, not against core. Inspector v2 is built on the shared UI component library and lands feature by feature alongside v1 until it can replace it; we do not ship a v2 that can do less than the v1 it replaces.",
+          "owns": [
+            "inspector v1 and v2",
+            "the shared UI component library",
+            "the scene explorer and the property grid"
+          ],
+          "dependsOn": [
+            "core",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "playground",
+        "name": "Playground & sandbox",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We are where every bug is reproduced and every feature is learned: a scene anyone can open, edit and share by link in under ten seconds.",
+          "process": "Every release becomes a selectable version in the playground on the day it is tagged. Snippets are immutable once saved and are never collected, because a five-year-old forum post linking to one is the documentation for that answer. The sandbox does the same job for a file someone drags in rather than code they type.",
+          "owns": [
+            "the playground",
+            "the sandbox",
+            "the snippet server",
+            "the example library"
+          ],
+          "dependsOn": [
+            "core",
+            "inspector",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "viewer",
+        "name": "Viewer",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make putting a 3D model on a web page a one-line job for someone who has never heard of a scene graph.",
+          "process": "We wrap the engine in a web component with a declarative configuration and no required JavaScript. Every configurator option maps to an attribute and every attribute is documented, and we hold the whole bundle to a size budget, because the people who use us are putting it on a product page that has a budget of its own.",
+          "owns": [
+            "the viewer web component",
+            "the viewer configurator",
+            "the viewer bundle size budget"
+          ],
+          "dependsOn": [
+            "core",
+            "loaders",
+            "gui",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "smart-filters",
+        "name": "Smart Filters",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make real-time video and image effects composable, so an effect chain is something you assemble rather than something you write.",
+          "process": "Filters are authored as blocks in the smart filter editor and compiled down to one optimised shader per chain. We take the node editors' canvas as given and contribute back to it rather than forking it, and every block ships with a demo chain that runs against a live camera feed so a regression is visible rather than reported.",
+          "owns": [
+            "the smart filter runtime",
+            "the smart filter block library",
+            "the smart filter editor"
+          ],
+          "dependsOn": [
+            "core",
+            "node-editors",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "native",
+        "name": "Babylon Native",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We run the same scene, unchanged, outside a browser \u2014 in a native app, on a phone, and under React Native.",
+          "process": "We track core's releases rather than its main branch, and our bar is parity: a Playground that works on the web should work on Native with the same output. Where a platform genuinely cannot do something we say so in the parity table, with a date or a reason, instead of quietly diverging and letting someone find out at ship time.",
+          "owns": [
+            "Babylon Native",
+            "Babylon React Native",
+            "the JavaScript runtime host",
+            "the platform parity table"
+          ],
+          "dependsOn": [
+            "core",
+            "loaders",
+            "triage"
+          ]
+        }
+      },
+      {
+        "id": "mcp",
+        "name": "MCP servers",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make the engine and its editors drivable by an agent, so that \u201cbuild me a scene that does this\u201d is something a model can do rather than describe.",
+          "process": "Each server wraps one surface \u2014 the engine core, the node material editor, the GUI editor, the playground \u2014 and exposes it as tools with schemas an agent can read without a tutorial. We test against a suite of prompts that must each produce a scene that renders, and a tool a model consistently calls wrong is a tool we named badly rather than a model that needs a longer prompt.",
+          "owns": [
+            "the MCP servers",
+            "the tool schemas they expose",
+            "the prompt-to-scene smoke suite"
+          ],
+          "dependsOn": [
+            "core",
+            "node-editors",
+            "gui",
+            "playground"
+          ]
+        }
+      },
+      {
+        "id": "build-tools",
+        "name": "Build, test & release",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make a release a non-event: the build is boring, the tests are trustworthy, and tagging a version is the least interesting thing that happens that week.",
+          "process": "Every pull request runs the unit tests, the visual test suite and the memory-leak suite. A flaky test is quarantined the day it is noticed and then fixed or deleted inside the release \u2014 we do not carry a suite people have learned to ignore. Releases go out of CI on a tag, never off a laptop.",
+          "owns": [
+            "the build tooling",
+            "the visual test suite",
+            "the memory-leak suite",
+            "CI",
+            "the release pipeline"
+          ],
+          "dependsOn": [
+            "core"
+          ]
+        }
+      },
+      {
+        "id": "docs",
+        "name": "Documentation",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make sure the answer to a question is on the documentation site before it is asked on the forum for the third time.",
+          "process": "We follow the release: every public API that ships gets a reference entry generated from its source comments, and every feature that ships with a Playground gets that Playground embedded in a page. Forum questions that keep coming back become tutorials, and a tutorial that stops running against the current release is fixed or deleted rather than left up.",
+          "owns": [
+            "the documentation site",
+            "the API reference",
+            "the tutorials",
+            "the embedded playground examples"
+          ],
+          "dependsOn": [
+            "core",
+            "loaders",
+            "gui",
+            "node-editors",
+            "playground"
+          ]
+        }
+      },
+      {
+        "id": "triage",
+        "name": "Issue triage",
+        "parent": "maintainers",
+        "charter": {
+          "mission": "We make sure every report reaches the team that can act on it, with a reproduction attached, before it goes stale.",
+          "process": "Every new issue and every forum bug report, within one working day: reproduce it in a Playground or ask for one; label it by area and severity; close duplicates with a link to the original; assign it to the owning team. Every Monday: rank the open, unassigned issues by how many users are affected and post the top ten. We do not fix bugs; we make them fixable.",
+          "owns": [
+            "the issue queue",
+            "the label set and what each label means",
+            "time-to-first-response",
+            "the duplicate and repro policy"
+          ],
+          "dependsOn": [
+            "playground",
+            "core"
+          ]
+        }
+      }
+    ]
+  },
+  "tree": {
+    "nodes": [
+      {
+        "id": "co-1",
+        "level": "company",
+        "parent": null,
+        "label": "Ship a 9.x line that a newcomer can pick up in an afternoon and a studio can ship on",
+        "owner": "Maintainers",
+        "unitId": "maintainers",
+        "metric": "median newcomer time-to-first-scene, and production titles shipped on 9.x",
+        "target": "38 min \u2192 15 min, 120 \u2192 300 titles by 9.6",
+        "contributes": 1
+      },
+      {
+        "id": "obj-webgpu",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "WebGPU is the default path without regressions",
+        "owner": "Engine core",
+        "unitId": "core",
+        "metric": "share of sessions rendering through WebGPU, with no unexplained visual diffs",
+        "target": "12% \u2192 80% by 9.4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-webgpu-parity",
+        "level": "kr",
+        "parent": "obj-webgpu",
+        "label": "Match the WebGL reference images across the whole visual test suite under WebGPU",
+        "owner": "Engine core",
+        "unitId": "core",
+        "metric": "visual tests passing under WebGPU at the same reference tolerance as WebGL",
+        "target": "1,840 / 2,310 \u2192 2,310 / 2,310 by 9.3",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-frame-budget",
+        "level": "kr",
+        "parent": "obj-webgpu",
+        "label": "Hold the frame-time budget on the benchmark scenes under WebGPU",
+        "owner": "Engine core",
+        "unitId": "core",
+        "metric": "p95 frame time on the ten benchmark scenes, WebGPU against WebGL",
+        "target": "1.35\u00d7 WebGL \u2192 0.9\u00d7 WebGL by 9.4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-webgpu-default",
+        "level": "kr",
+        "parent": "obj-webgpu",
+        "label": "Select WebGPU by default wherever the browser supports it, and delete the flag",
+        "owner": "Engine core",
+        "unitId": "core",
+        "metric": "the engine feature flag removed and WebGPU chosen without opt-in",
+        "target": "flag removed by 9.4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-materials-webgpu",
+        "level": "kr",
+        "parent": "obj-webgpu",
+        "label": "Port the materials library and the post-process pipeline to the WebGPU shader path",
+        "owner": "Materials & post-processes",
+        "unitId": "materials",
+        "metric": "library materials and post-processes with a working WebGPU shader variant",
+        "target": "34 / 61 \u2192 61 / 61 by 9.4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-shader-pipeline",
+        "level": "kr",
+        "parent": "obj-webgpu",
+        "label": "Rewrite the shader pipeline",
+        "owner": "Engine core",
+        "unitId": "core",
+        "metric": "",
+        "target": "",
+        "contributes": 0.45
+      },
+      {
+        "id": "obj-gltf",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Every glTF the ecosystem produces loads correctly",
+        "owner": "Loaders & serializers",
+        "unitId": "loaders",
+        "metric": "asset conformance suite pass rate across the ratified extension set",
+        "target": "86% \u2192 99% by 9.5",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-conformance",
+        "level": "kr",
+        "parent": "obj-gltf",
+        "label": "Pass the conformance suite on every ratified glTF extension",
+        "owner": "Loaders & serializers",
+        "unitId": "loaders",
+        "metric": "conformance assets rendering inside reference tolerance",
+        "target": "86% \u2192 99% by 9.5",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-extension-lag",
+        "level": "kr",
+        "parent": "obj-gltf",
+        "label": "Implement a ratified extension within one release of its ratification",
+        "owner": "Loaders & serializers",
+        "unitId": "loaders",
+        "metric": "ratified extensions implemented, and median releases behind ratification",
+        "target": "31 / 38 \u2192 38 / 38, 3 releases \u2192 1 by 9.5",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-load-time",
+        "level": "kr",
+        "parent": "obj-gltf",
+        "label": "Halve cold load time across the sample asset set",
+        "owner": "Loaders & serializers",
+        "unitId": "loaders",
+        "metric": "median time from fetch start to first rendered frame, 40-asset sample set",
+        "target": "4.1s \u2192 2.0s by 9.5",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-native-parity",
+        "level": "kr",
+        "parent": "obj-gltf",
+        "label": "Load the same assets identically under Babylon Native",
+        "owner": "Babylon Native",
+        "unitId": "native",
+        "metric": "conformance assets whose Native render matches the web render inside tolerance",
+        "target": "74% \u2192 97% by 9.5",
+        "contributes": 0.8
+      },
+      {
+        "id": "obj-node-editors",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Anyone can build a material or a particle system without writing shader code",
+        "owner": "Node editors",
+        "unitId": "node-editors",
+        "metric": "share of materials in newly shared Playgrounds authored in a node editor",
+        "target": "18% \u2192 45% by 9.6",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-block-coverage",
+        "level": "kr",
+        "parent": "obj-node-editors",
+        "label": "Expose every core shading and geometry feature as a block within one release",
+        "owner": "Node editors",
+        "unitId": "node-editors",
+        "metric": "core features with a matching editor block, and median releases behind",
+        "target": "64% \u2192 95%, 2 releases \u2192 1 by 9.5",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-starter-graphs",
+        "level": "kr",
+        "parent": "obj-node-editors",
+        "label": "Ship starter graphs for the twelve most-asked-for effects",
+        "owner": "Node editors",
+        "unitId": "node-editors",
+        "metric": "starter graphs published and opened at least 100 times each",
+        "target": "0 \u2192 12 by 9.4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-block-reference",
+        "level": "kr",
+        "parent": "obj-node-editors",
+        "label": "Document every editor block with a runnable example",
+        "owner": "Documentation",
+        "unitId": "docs",
+        "metric": "blocks with a reference page and an embedded Playground",
+        "target": "41% \u2192 100% by 9.6",
+        "contributes": 0.65
+      },
+      {
+        "id": "kr-filters-canvas",
+        "level": "kr",
+        "parent": "obj-node-editors",
+        "label": "Bring the smart filter editor onto the shared graph canvas",
+        "owner": "Smart Filters",
+        "unitId": "smart-filters",
+        "metric": "smart filter editor running on the shared canvas with no forked canvas code",
+        "target": "forked \u2192 shared by 9.5",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-conferences",
+        "level": "kr",
+        "parent": "obj-node-editors",
+        "label": "Attend three conferences to demo the editors",
+        "owner": "Node editors",
+        "unitId": "node-editors",
+        "metric": "conferences attended",
+        "target": "3 by 9.6",
+        "contributes": 0.2
+      },
+      {
+        "id": "obj-playground",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "The Playground is where every bug is reproduced and every feature is learned",
+        "owner": "Playground & sandbox",
+        "unitId": "playground",
+        "metric": "share of issues and accepted forum answers carrying a Playground link",
+        "target": "48% \u2192 85% by 9.5",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-snippet-load",
+        "level": "kr",
+        "parent": "obj-playground",
+        "label": "Open a shared snippet in under a second on a cold cache",
+        "owner": "Playground & sandbox",
+        "unitId": "playground",
+        "metric": "p95 time from snippet URL to rendered scene, cold cache",
+        "target": "3.4s \u2192 1.0s by 9.4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-repro-links",
+        "level": "kr",
+        "parent": "obj-playground",
+        "label": "Get a Playground link onto four of every five open issues",
+        "owner": "Playground & sandbox",
+        "unitId": "playground",
+        "metric": "share of open issues carrying a Playground reproduction",
+        "target": "39% \u2192 80% by 9.5",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-sandbox-formats",
+        "level": "kr",
+        "parent": "obj-playground",
+        "label": "Accept every format the loaders support by drag and drop in the sandbox",
+        "owner": "Playground & sandbox",
+        "unitId": "playground",
+        "metric": "loader-supported formats openable in the sandbox",
+        "target": "9 / 14 \u2192 14 / 14 by 9.4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-inspector-embed",
+        "level": "kr",
+        "parent": "obj-playground",
+        "label": "Make the inspector open inside any shared Playground without a reload",
+        "owner": "Inspector",
+        "unitId": "inspector",
+        "metric": "shared Playgrounds where the inspector opens in place",
+        "target": "0% \u2192 100% by 9.5",
+        "contributes": 0.6
+      },
+      {
+        "id": "obj-triage",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "Every issue gets a reproduction and an owner within a week",
+        "owner": "Issue triage",
+        "unitId": "triage",
+        "metric": "share of issues reproduced, labelled and routed inside five working days",
+        "target": "44% \u2192 90% by 9.5",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-first-response",
+        "level": "kr",
+        "parent": "obj-triage",
+        "label": "Cut median time-to-first-response from four days to one",
+        "owner": "Issue triage",
+        "unitId": "triage",
+        "metric": "median hours from issue opened to first maintainer response",
+        "target": "94h \u2192 24h by 9.4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-repro-share",
+        "level": "kr",
+        "parent": "obj-triage",
+        "label": "Attach a reproduction to four of every five open issues",
+        "owner": "Issue triage",
+        "unitId": "triage",
+        "metric": "share of open issues with a Playground repro, or a recorded request for one",
+        "target": "39% \u2192 80% by 9.5",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-routing",
+        "level": "kr",
+        "parent": "obj-triage",
+        "label": "Route every new issue to an owning team within one working day",
+        "owner": "Issue triage",
+        "unitId": "triage",
+        "metric": "share of new issues carrying an area label and an owning team inside 24h",
+        "target": "57% \u2192 95% by 9.4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-duplicates",
+        "level": "kr",
+        "parent": "obj-triage",
+        "label": "Close duplicates as duplicates, with a link to the original",
+        "owner": "Issue triage",
+        "unitId": "triage",
+        "metric": "share of closed-as-duplicate issues that link the original",
+        "target": "62% \u2192 98% by 9.4",
+        "contributes": 0.7
+      },
+      {
+        "id": "kr-weekly-ranking",
+        "level": "kr",
+        "parent": "obj-triage",
+        "label": "Post a ranked top ten of open, unassigned issues every Monday",
+        "owner": "Issue triage",
+        "unitId": "triage",
+        "metric": "weeks with a ranked list posted, and median age of the issues on it",
+        "target": "0 \u2192 26 weeks, 140d \u2192 30d by 9.6",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-ci-runner",
+        "level": "kr",
+        "parent": "obj-triage",
+        "label": "Move CI to a faster runner",
+        "owner": "Issue triage",
+        "unitId": "triage",
+        "metric": "median CI wall time per pull request",
+        "target": "38m \u2192 12m by 9.4",
+        "contributes": 0.15
+      },
+      {
+        "id": "obj-docs",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "The documentation matches the shipped API",
+        "owner": "Documentation",
+        "unitId": "docs",
+        "metric": "undocumented public symbols, and tutorials failing against the current release",
+        "target": "1,120 \u2192 0 symbols, 29% \u2192 0% failing by 9.5",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-undocumented",
+        "level": "kr",
+        "parent": "obj-docs",
+        "label": "Leave no public symbol without a reference entry",
+        "owner": "Documentation",
+        "unitId": "docs",
+        "metric": "public symbols with no generated reference entry",
+        "target": "1,120 \u2192 0 by 9.5",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-tutorial-pass",
+        "level": "kr",
+        "parent": "obj-docs",
+        "label": "Run every tutorial against the current release each week",
+        "owner": "Documentation",
+        "unitId": "docs",
+        "metric": "tutorials whose code runs unmodified on the latest release",
+        "target": "71% \u2192 100% by 9.5",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-broken-links",
+        "level": "kr",
+        "parent": "obj-docs",
+        "label": "Clear the broken links off the documentation site and keep them clear",
+        "owner": "Documentation",
+        "unitId": "docs",
+        "metric": "broken internal and external links, checked weekly",
+        "target": "418 \u2192 0 by 9.4",
+        "contributes": 0.6
+      },
+      {
+        "id": "kr-getting-started",
+        "level": "kr",
+        "parent": "obj-docs",
+        "label": "Refresh the getting-started page",
+        "owner": "Documentation",
+        "unitId": "docs",
+        "metric": "",
+        "target": "",
+        "contributes": 0.45
+      },
+      {
+        "id": "obj-release",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "A release is a non-event",
+        "owner": "Build, test & release",
+        "unitId": "build-tools",
+        "metric": "release lead time and visual-test flake rate",
+        "target": "212h \u2192 24h, 4.2% \u2192 0.2% by 9.4",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-flake-rate",
+        "level": "kr",
+        "parent": "obj-release",
+        "label": "Drive the visual test suite's flake rate under a fifth of a percent",
+        "owner": "Build, test & release",
+        "unitId": "build-tools",
+        "metric": "share of visual test runs that fail and then pass on an unchanged re-run",
+        "target": "4.2% \u2192 0.2% by 9.4",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-lead-time",
+        "level": "kr",
+        "parent": "obj-release",
+        "label": "Cut the time from tag to published packages from nine days to one",
+        "owner": "Build, test & release",
+        "unitId": "build-tools",
+        "metric": "median hours from release tag to every package on npm",
+        "target": "212h \u2192 24h by 9.4",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-leak-suite",
+        "level": "kr",
+        "parent": "obj-release",
+        "label": "Cover every package with the memory-leak suite on every pull request",
+        "owner": "Build, test & release",
+        "unitId": "build-tools",
+        "metric": "packages with a memory-leak scenario running per pull request",
+        "target": "5 / 19 \u2192 19 / 19 by 9.5",
+        "contributes": 0.75
+      },
+      {
+        "id": "kr-package-rename",
+        "level": "kr",
+        "parent": "obj-release",
+        "label": "Rename every published package onto a single npm scope",
+        "owner": "Build, test & release",
+        "unitId": "build-tools",
+        "metric": "packages republished under the new scope, with deprecation stubs on the old names",
+        "target": "0 / 19 \u2192 19 / 19 by 9.4",
+        "contributes": 0.3
+      },
+      {
+        "id": "obj-agent",
+        "level": "objective",
+        "parent": "co-1",
+        "label": "An agent can drive the engine",
+        "owner": "MCP servers",
+        "unitId": "mcp",
+        "metric": "editor and engine operations reachable through an MCP server, and prompt-to-scene pass rate",
+        "target": "22% \u2192 80% reachable, 41% \u2192 90% passing by 9.6",
+        "contributes": 0.85
+      },
+      {
+        "id": "kr-mcp-coverage",
+        "level": "kr",
+        "parent": "obj-agent",
+        "label": "Expose four of every five editor operations as an MCP tool",
+        "owner": "MCP servers",
+        "unitId": "mcp",
+        "metric": "editor and engine operations reachable through an MCP server",
+        "target": "22% \u2192 80% by 9.6",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-prompt-to-scene",
+        "level": "kr",
+        "parent": "obj-agent",
+        "label": "Build a working scene from a prompt nine times out of ten in the smoke suite",
+        "owner": "MCP servers",
+        "unitId": "mcp",
+        "metric": "smoke cases producing a scene that renders and matches its reference",
+        "target": "41% \u2192 90% by 9.6",
+        "contributes": 0.9
+      },
+      {
+        "id": "kr-viewer-by-prompt",
+        "level": "kr",
+        "parent": "obj-agent",
+        "label": "Configure the viewer from a prompt",
+        "owner": "Viewer",
+        "unitId": "viewer",
+        "metric": "configurator options reachable through an MCP server and covered by the smoke suite",
+        "target": "0% \u2192 85% by 9.6",
+        "contributes": 0.8
+      },
+      {
+        "id": "kr-gui-mcp",
+        "level": "kr",
+        "parent": "obj-agent",
+        "label": "Drive the GUI editor through an MCP server end to end",
+        "owner": "GUI",
+        "unitId": "gui",
+        "metric": "GUI controls creatable and editable through the GUI MCP server",
+        "target": "9 / 31 \u2192 31 / 31 by 9.6",
+        "contributes": 0.8
+      }
+    ]
+  }
+}
