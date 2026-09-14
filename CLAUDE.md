@@ -158,8 +158,10 @@ a natural seam, or (b) move rationale to a `Concepts/` doc and keep the plan on 
 
 ## Current work
 
-The September 2026 round shipped in full, TREE_BRIEFING included, and `development/` is empty.
-New work starts with a new plan in `development/`, not by reopening a completed one.
+The September 2026 round shipped in full, TREE_BRIEFING included. One plan is open in
+`development/`: [BRIEFING_AUDIT_CACHE](Plans/development/BRIEFING_AUDIT_CACHE.md), which caches
+audit findings in IndexedDB keyed by a hash of the document so a reload does not re-audit.
+Other new work starts with a new plan in `development/`, not by reopening a completed one.
 
 Vision and ordering for the round that just landed:
 [Concepts/OKR Viewer - Product Vision.md](Concepts/OKR%20Viewer%20-%20Product%20Vision.md).
