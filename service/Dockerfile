@@ -6,8 +6,38 @@
 #
 # There is one lockfile for all three workspace packages, and service/ imports
 # @okr-viewer/schema, so neither is visible from a service/-scoped context.
+#
+# The `ctx` stage below is the ONLY thing that reads the build context, and that
+# is load-bearing. BuildKit resolves every context COPY in a Dockerfile eagerly
+# and in parallel, so when several of them can fail it reports an arbitrary one
+# — which is how a build run from inside service/ ends up insisting that
+# service/validate.js is missing while the file sits right there. One context
+# read cannot be raced, so the error below is the one you actually get.
 
 ARG NODE_VERSION=24-alpine
+
+# ── context ───────────────────────────────────────────────────────────────────
+# Takes the context whole (.dockerignore already trims it to source), checks it
+# is the repo root, and hands named paths to the stages below. A COPY of a
+# missing file just dies; having the files in hand lets us say what is wrong.
+#
+# Copying everything here does not cost the npm ci cache: the stages below pull
+# named paths out of this one, and BuildKit keys those on the content of the
+# paths named, not on this stage's layer.
+FROM busybox:1.37 AS ctx
+COPY . /ctx
+RUN if [ ! -f /ctx/package-lock.json ] || [ ! -d /ctx/schema ]; then \
+      echo; \
+      echo "  Wrong build context: no package-lock.json and no schema/ in it."; \
+      echo; \
+      echo "  This image builds from the repo root. One lockfile covers all"; \
+      echo "  three workspaces, and service/ imports @okr-viewer/schema, so"; \
+      echo "  neither is reachable from a service/-scoped context."; \
+      echo; \
+      echo "      docker build -f service/Dockerfile -t okr-viewer-service ."; \
+      echo; \
+      exit 1; \
+    fi
 
 # ── build ─────────────────────────────────────────────────────────────────────
 # Installs the whole workspace so schema/ can generate dist/ (its validators and
@@ -24,26 +54,30 @@ WORKDIR /app
 
 # npm ci checks the lockfile against every workspace, so all three package.json
 # files have to be present even though this image only runs one of them.
-COPY package.json package-lock.json ./
-COPY web/package.json web/
-COPY service/package.json service/
+COPY --from=ctx /ctx/package.json /ctx/package-lock.json ./
+COPY --from=ctx /ctx/web/package.json web/
+COPY --from=ctx /ctx/service/package.json service/
 # schema/ builds itself from its own `prepare` script during install, so its
 # sources must land before npm ci rather than after.
-COPY schema/ schema/
+COPY --from=ctx /ctx/schema schema
 RUN npm ci
+
+COPY --from=ctx /ctx/service/index.js /ctx/service/prompt.js /ctx/service/validate.js service/
 
 # ── runtime ───────────────────────────────────────────────────────────────────
 # A second, production-only install rather than pruning the build stage: this is
 # a workspace root, and `npm prune` there would leave web/'s three.js and svelte
 # sitting in an image that never serves a browser.
+#
+# Everything here comes --from=build, never from the context — see the header.
 FROM node:${NODE_VERSION} AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-COPY web/package.json web/
-COPY service/package.json service/
-COPY schema/package.json schema/
+COPY --from=build /app/package.json /app/package-lock.json ./
+COPY --from=build /app/web/package.json web/
+COPY --from=build /app/service/package.json service/
+COPY --from=build /app/schema/package.json schema/
 # --ignore-scripts: schema/'s `prepare` would try to rebuild dist/ with devDeps
 # that this stage deliberately does not install. The built dist/ is copied in
 # from the build stage instead.
@@ -51,9 +85,9 @@ RUN npm ci --omit=dev --ignore-scripts --workspace okr-viewer-service \
  && npm cache clean --force
 
 COPY --from=build /app/schema/dist schema/dist
-COPY schema/index.js schema/index.d.ts schema/version.js schema/
-COPY schema/migrations schema/migrations
-COPY service/index.js service/prompt.js service/validate.js service/
+COPY --from=build /app/schema/index.js /app/schema/index.d.ts /app/schema/version.js schema/
+COPY --from=build /app/schema/migrations schema/migrations
+COPY --from=build /app/service/index.js /app/service/prompt.js /app/service/validate.js service/
 
 # ANTHROPIC_API_KEY is a runtime variable, never a build arg — a build arg would
 # be readable in the image history. service/.env stays out via .dockerignore;

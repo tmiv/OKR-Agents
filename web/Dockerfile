@@ -6,6 +6,13 @@
 #
 # There is one lockfile for all three workspace packages, and web/ imports
 # @okr-viewer/schema, so neither is visible from a web/-scoped context.
+#
+# The `ctx` stage below is the ONLY thing that reads the build context, and that
+# is load-bearing. BuildKit resolves every context COPY in a Dockerfile eagerly
+# and in parallel, so when several of them can fail it reports an arbitrary one
+# — a build run from inside web/ ends up insisting some file is missing while it
+# sits right there. One context read cannot be raced, so the error below is the
+# one you actually get.
 
 # Debian, not Alpine: Vite 8 builds through rolldown, which loads a native
 # binding, and the lockfile only resolves @rolldown/binding-linux-x64-gnu. There
@@ -13,6 +20,29 @@
 # same pin is why these images target linux/amd64.
 ARG NODE_VERSION=24-bookworm-slim
 ARG NGINX_VERSION=1.29-alpine
+
+# ── context ───────────────────────────────────────────────────────────────────
+# Takes the context whole (.dockerignore already trims it to source), checks it
+# is the repo root, and hands named paths to the stages below. A COPY of a
+# missing file just dies; having the files in hand lets us say what is wrong.
+#
+# Copying everything here does not cost the npm ci cache: the stages below pull
+# named paths out of this one, and BuildKit keys those on the content of the
+# paths named, not on this stage's layer.
+FROM busybox:1.37 AS ctx
+COPY . /ctx
+RUN if [ ! -f /ctx/package-lock.json ] || [ ! -d /ctx/schema ]; then \
+      echo; \
+      echo "  Wrong build context: no package-lock.json and no schema/ in it."; \
+      echo; \
+      echo "  This image builds from the repo root. One lockfile covers all"; \
+      echo "  three workspaces, and web/ imports @okr-viewer/schema, so"; \
+      echo "  neither is reachable from a web/-scoped context."; \
+      echo; \
+      echo "      docker build -f web/Dockerfile -t okr-viewer-web ."; \
+      echo; \
+      exit 1; \
+    fi
 
 # ── build ─────────────────────────────────────────────────────────────────────
 FROM node:${NODE_VERSION} AS build
@@ -29,15 +59,15 @@ WORKDIR /app
 
 # npm ci checks the lockfile against every workspace, so all three package.json
 # files have to be present even though this image only builds one of them.
-COPY package.json package-lock.json ./
-COPY web/package.json web/
-COPY service/package.json service/
+COPY --from=ctx /ctx/package.json /ctx/package-lock.json ./
+COPY --from=ctx /ctx/web/package.json web/
+COPY --from=ctx /ctx/service/package.json service/
 # schema/ builds itself from its own `prepare` script during install, so its
 # sources must land before npm ci rather than after.
-COPY schema/ schema/
+COPY --from=ctx /ctx/schema schema
 RUN npm ci
 
-COPY web/ web/
+COPY --from=ctx /ctx/web web
 RUN npm run build -w web
 
 # ── runtime ───────────────────────────────────────────────────────────────────
@@ -52,8 +82,9 @@ FROM nginx:${NGINX_VERSION} AS runtime
 ENV NGINX_PORT=8080
 ENV SERVICE_URL=http://service:8787
 
-# default.conf.template renders over the image's own default.conf.
-COPY web/nginx.conf.template /etc/nginx/templates/default.conf.template
+# default.conf.template renders over the image's own default.conf. Taken
+# --from=build, not from the context — see the header.
+COPY --from=build /app/web/nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/web/dist /usr/share/nginx/html
 
 EXPOSE 8080

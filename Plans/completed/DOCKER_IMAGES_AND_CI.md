@@ -92,6 +92,18 @@ Publishing to any registry other than GHCR; deploy manifests (k8s/ECS); a dev co
   `platforms: linux/amd64`. Two: compose's `${VAR:?err}` is interpolated at parse time from the
   shell, not from `env_file`, so it failed even when `service/.env` held the key; the key is now a
   valueless `- ANTHROPIC_API_KEY` passthrough that never clobbers what `env_file` read.
+- **Follow-up, same day: the wrong-context error was unusable.** Building from inside `service/`
+  failed with `failed to compute cache key ... "/service/validate.js": not found` — naming a file
+  that is sitting right there, and saying nothing about the actual mistake. The cause is that
+  BuildKit resolves every context COPY in a Dockerfile eagerly and in parallel, so when several
+  can fail it reports an arbitrary one. Neither ordering the COPYs nor gating stages on a
+  bind-mount guard stage fixed it; both lost the race, verified. The fix is structural: a single
+  `ctx` stage (`FROM busybox` + `COPY . /ctx`) is now the *only* reader of the build context, it
+  checks for `package-lock.json` and `schema/`, and it prints the right command. Every other stage
+  pulls named paths `--from=ctx` or `--from=build`. One context read cannot be raced, so the guard
+  always wins. **This costs nothing in layer caching** — measured: after a real content change to
+  `service/index.js`, both `npm ci` layers stayed `CACHED` and only the source COPY reran, because
+  BuildKit keys a `COPY --from` on the content of the paths named, not on the source stage's layer.
 - **Surprises / residual risks.** Verified end to end against the running pair: `GET /` 200,
   SPA fallback 200 on an unknown path, `GET /api/health` → `{"ok":true,...}` and a `POST
   /api/chat` 400 (schema errors) both through the nginx proxy, gzip on, one `Cache-Control` per
