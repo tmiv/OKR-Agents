@@ -52,6 +52,12 @@
   // so a retarget bends the path instead of jumping it.
   // { from, to, aimFrom, aimTo, start, ms }
   let camTween = null;
+  // The tree the graph instance is already holding. Setting graphData re-heats
+  // the simulation to alpha 1 and burns 80 warmup ticks, so it must happen once
+  // per document and not once per reason-to-think-about-the-document: onMount
+  // seeds the data and the $effect below would otherwise push the very same
+  // tree again on its first run.
+  let applied = null;
 
   const LEVEL = {
     company: { color: '#f5c542', size: 10 },
@@ -272,6 +278,20 @@
     settleNext = performance.now() + SETTLE_STEP;
   }
 
+  // Whoever touches the mouse owns the camera. Without this the settle above
+  // spends its first ~3 s re-aiming, re-levelling and re-measuring the distance
+  // six times a second, and each of those writes lands on top of the drag the
+  // user is in the middle of — the camera is pulled back to the framing every
+  // frame, which is the first drag after load feeling like it fights back.
+  // Later drags are fine only because the settle has run out by then.
+  function releaseCamera() {
+    settleLeft = 0;
+    camTween = null;
+    upTween = null;
+  }
+
+  const refreshControlsScreen = () => graph?.controls().handleResize?.();
+
   function animate() {
     if (settleLeft > 0 && performance.now() >= settleNext) {
       settleLeft--;
@@ -389,15 +409,35 @@
     graph.controls().staticMoving = true;
     if (import.meta.env.DEV) window.__graph = graph;
 
+    // 'start' fires on pointer-down for rotate, pan and zoom alike.
+    graph.controls().addEventListener('start', releaseCamera);
+
+    applied = tree;
     graph.graphData(toGraphData(tree, null));
     const ro = new ResizeObserver(() => graph.width(el.clientWidth).height(el.clientHeight));
     ro.observe(el);
+
+    // TrackballControls measures the canvas once, in its own constructor, and
+    // force-graph never measures it again. That reading is taken before the
+    // stage has been laid out, so it is the renderer's default 600x300: every
+    // drag is then scaled by the ratio between that and the real canvas, and
+    // anchored off-centre besides.
+    //
+    // Re-measure on the way in to each drag rather than on resize, because the
+    // canvas is resized on kapsule's own schedule and a measurement taken in
+    // the ResizeObserver reads the size the canvas still has, not the one it is
+    // about to get. Capture phase, so it lands before the controls' own
+    // pointerdown handler takes its anchor point: re-measuring after that would
+    // change the mapping under `_movePrev` and put a jump in the first frame of
+    // the rotation — the very thing being fixed.
+    el.addEventListener('pointerdown', refreshControlsScreen, true);
     frameWhenSettled();
     animate();
 
     return () => {
       cancelAnimationFrame(raf);
       clearTimeout(hoverTimer);
+      el.removeEventListener('pointerdown', refreshControlsScreen, true);
       ro.disconnect();
       graph._destructor?.();
     };
@@ -406,6 +446,10 @@
   $effect(() => {
     const t = tree;
     if (!graph) return;
+    // Already on stage — either onMount seeded it or a previous run of this
+    // effect pushed it. Re-pushing would re-heat the layout for nothing.
+    if (t === applied) return;
+    applied = t;
     graph.graphData(toGraphData(t, graph.graphData()));
     const alive = new Set(t.nodes.map((n) => n.id));
     for (const id of [...meshes.keys()]) if (!alive.has(id)) meshes.delete(id);
