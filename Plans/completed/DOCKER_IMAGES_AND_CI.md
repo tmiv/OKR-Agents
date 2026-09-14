@@ -12,15 +12,15 @@ completed_on: 2026-09-13
 ## Context
 The repo is one npm workspace with three packages (`schema/`, `web/`, `service/`) and a single
 root lockfile. Today the only documented way to run it is two `npm run dev:*` shells on a host
-with Node 20.19+ ([README.md:129](README.md)). `schema/dist/` is generated and gitignored, so any
+with Node 20.19+ ([README.md:129](../../README.md)). `schema/dist/` is generated and gitignored, so any
 image has to build it before either consumer can import `@okr-viewer/schema`. In dev, Vite's
-proxy is what makes `/api` work from the browser ([web/vite.config.js:10](web/vite.config.js));
+proxy is what makes `/api` work from the browser ([web/vite.config.js:10](../../web/vite.config.js));
 a production `vite build` emits static files with no proxy at all, so that wiring has to be
 re-created in the web image.
 
 Two wrinkles the build must handle:
 - `json-schema-to-typescript` is pinned to a GitHub fork and resolved in the lockfile as
-  `git+ssh://git@github.com/...` ([package-lock.json:164](package-lock.json)). A container has no
+  `git+ssh://git@github.com/...` ([package-lock.json:164](../../package-lock.json)). A container has no
   SSH key, so `npm ci` must rewrite that to HTTPS.
 - `service/.env` holds `ANTHROPIC_API_KEY` and is gitignored. It must never enter an image layer.
 
@@ -51,7 +51,7 @@ workflow builds both on every push and PR.
 `service/Dockerfile`, build stage installs the full workspace and runs `npm run build:schema`;
 runtime stage does a prod-only install for `okr-viewer-service`, copies built `schema/`, runs as
 the `node` user, exposes 8787, healthchecks `/api/health`
-([service/index.js:15](service/index.js)).
+([service/index.js:15](../../service/index.js)).
 
 ## Phase 2 — Web image
 `web/Dockerfile`, same build stage plus `npm run build -w web`; runtime is `nginx:alpine` with
@@ -81,7 +81,7 @@ Publishing to any registry other than GHCR; deploy manifests (k8s/ECS); a dev co
 ## Completion notes
 - **Planned vs. actual.** All four phases landed as written. The two wrinkles called out in
   Context were both real and both fixed as designed: the `git+ssh://` → HTTPS rewrite
-  ([service/Dockerfile:20](service/Dockerfile), [web/Dockerfile:23](web/Dockerfile)), and
+  ([service/Dockerfile:20](../../service/Dockerfile), [web/Dockerfile:23](../../web/Dockerfile)), and
   `.dockerignore` keeping `service/.env` out. The runtime image holds 8 root packages and none of
   web/'s — Decision 3 (prod install over `npm prune`) earned its keep.
 - **Mid-flight adjustments.** One: Alpine does not work for the web build. Vite 8 builds through
