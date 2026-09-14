@@ -6,7 +6,56 @@ import { sanitizeContext, sanitizeHistory, mergeTurns, resolveTab, validateRespo
 import { checkCompanySemantics, checkOwnership, checkTreeSemantics, validateChatRequest } from '@okr-viewer/schema';
 
 const PORT = Number(process.env.PORT) || 8787;
+
+// Which browser origins may use this service. An *origin* is scheme://host[:port]
+// — that is what the browser sends and what CORS compares, so a bare hostname
+// here matches nothing. Comma-separated for the "dev and staging" case, and `*`
+// as a deliberate opt-out for a deployment that gates access somewhere else.
+//
+// The default is the dev server from the README, so `npm run dev:*` needs no
+// setup. In a container it is set explicitly: with the compose stack the browser
+// is on the web container's port, and nginx passes that Origin through.
+const APP_ORIGIN = (process.env.APP_ORIGIN ?? 'http://localhost:5173')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean);
+const originAllowed = (origin) => APP_ORIGIN.includes('*') || APP_ORIGIN.includes(origin);
+
 const app = express();
+
+// Above express.json() on purpose: a refused origin should not get a 2MB body
+// parsed on its behalf.
+app.use((req, res, next) => {
+  const origin = req.get('origin');
+
+  // No Origin at all is not a CORS case. Same-origin GETs, the container
+  // healthcheck and every server-side caller send none, and refusing them would
+  // break the healthcheck while protecting nobody — CORS is enforced by the
+  // browser, and a script with curl never asks in the first place.
+  if (!origin) return next();
+
+  if (!originAllowed(origin)) {
+    // 403 rather than "just omit the header". Omitting it makes the browser
+    // discard the *response*, but by then the handler has run and the tokens
+    // are spent. Refusing here is the part that matters.
+    console.warn(`[cors] refused ${origin} (APP_ORIGIN: ${APP_ORIGIN.join(', ')})`);
+    return res.status(403).json({ error: 'This origin may not use the service.' });
+  }
+
+  // Echo the caller rather than replying `*`: the allowlist can hold several,
+  // and Vary keeps a cache from handing one origin another's response.
+  res.set('Access-Control-Allow-Origin', origin);
+  res.vary('Origin');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'Content-Type');
+  res.set('Access-Control-Max-Age', '86400');
+
+  // The preflight never reaches a route: it is asking about the real request,
+  // and the headers above are the whole answer.
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+});
+
 app.use(express.json({ limit: '2mb' }));
 
 // Created lazily so a missing key surfaces as a clear 500, not a crash at boot.
@@ -130,4 +179,8 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`okr-viewer service on http://localhost:${PORT} (model: ${MODEL})`));
+// The allowlist goes in the boot line because the failure it causes is quiet:
+// /api/health sends no Origin and stays green while every chat turn 403s.
+app.listen(PORT, () =>
+  console.log(`okr-viewer service on http://localhost:${PORT} (model: ${MODEL}, APP_ORIGIN: ${APP_ORIGIN.join(', ')})`)
+);

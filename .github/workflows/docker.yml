@@ -104,6 +104,36 @@ jobs:
           echo "$body"
           echo "$body" | grep -q '"ok":true'
 
+      - name: The app's origin is allowed through CORS
+        run: |
+          hdr=$(curl -sf -D- -o /dev/null \
+                  -H 'Origin: http://localhost:8080' \
+                  http://localhost:8080/api/health \
+                | grep -i '^access-control-allow-origin:')
+          echo "$hdr"
+          echo "$hdr" | grep -qi 'http://localhost:8080'
+
+      - name: A foreign origin is refused
+        run: |
+          # Reaching the service at all proves nginx forwards Origin; the 403
+          # proves APP_ORIGIN is what decides.
+          code=$(curl -s -o /dev/null -w '%{http_code}' \
+                   -X POST http://localhost:8080/api/chat \
+                   -H 'Origin: https://evil.test' \
+                   -H 'Content-Type: application/json' \
+                   -d '{}')
+          echo "POST with foreign Origin → $code"
+          test "$code" = "403"
+
+      - name: Preflight is answered
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' -X OPTIONS \
+                   http://localhost:8080/api/chat \
+                   -H 'Origin: http://localhost:8080' \
+                   -H 'Access-Control-Request-Method: POST')
+          echo "OPTIONS → $code"
+          test "$code" = "204"
+
       - name: Dump logs on failure
         if: failure()
         run: docker compose logs --no-color

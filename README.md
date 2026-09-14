@@ -181,14 +181,53 @@ docker build -f web/Dockerfile     -t okr-viewer-web     .
 
 | | Base | Port | Env |
 |---|---|---|---|
-| `service` | `node:24-alpine`, non-root, `/api/health` healthcheck | 8787 | `ANTHROPIC_API_KEY`, `PORT` |
+| `service` | `node:24-alpine`, non-root, `/api/health` healthcheck | 8787 | `ANTHROPIC_API_KEY`, `APP_ORIGIN`, `PORT` |
 | `web` | `nginx:1.29-alpine` over a `vite build` | 8080 | `SERVICE_URL`, `NGINX_PORT` |
+
+Each container names the other's host in its own environment: `SERVICE_URL` tells
+the web container where to proxy `/api/`, and `APP_ORIGIN` tells the service
+which browser origin is allowed to call it.
 
 The web image is what replaces the dev proxy. `vite build` emits static files
 with no dev server behind them, so nginx does both jobs: serve the bundle, and
 forward `/api/` to `$SERVICE_URL` (no trailing slash — `web/nginx.conf.template`
 passes the path through unchanged). The browser still only ever talks to one
 origin, so there is no CORS to configure and the key never reaches a bundle.
+
+### CORS
+
+`APP_ORIGIN` is the list of browser origins the service will answer. Through the
+proxy it is the app's own URL — `http://localhost:8080` with the compose stack,
+your real domain in production:
+
+```bash
+APP_ORIGIN=https://okr.example.com        # comma-separated for several
+APP_ORIGIN='*'                            # explicit opt-out
+```
+
+It must be a full **origin** — `scheme://host[:port]` — because that is what the
+browser sends and what CORS compares. A bare hostname matches nothing.
+
+The rules, and why:
+
+- **No `Origin` header → allowed.** Same-origin GETs, the container healthcheck
+  and every server-side caller send none. Refusing them would break the
+  healthcheck and protect nobody.
+- **An unlisted `Origin` → 403**, before the handler runs. Merely omitting
+  `Access-Control-Allow-Origin` would make the browser discard the *response*,
+  but the request has already cost tokens by then.
+- **Unset → `http://localhost:5173`**, the Vite dev origin, so `npm run dev:*`
+  needs no extra setup.
+
+The allowlist is printed in the service's boot line, because the failure it
+causes is quiet: `/api/health` sends no `Origin` and stays green while every
+chat turn 403s. Every refusal logs the origin it refused.
+
+This is defence in depth, not the primary boundary — with the proxy the browser
+is same-origin anyway. It matters the moment the service port is reachable from
+a browser: the commented-out `ports:` block in `docker-compose.yml`, a compose
+override, a LAN deploy. CORS stops a page on another origin; it does not stop a
+script with curl, which is why the service port stays unpublished by default.
 
 Two build constraints worth knowing before you change a base image:
 
@@ -243,7 +282,7 @@ okr-viewer/
 │   └── vite.config.js
 └── service/
     ├── Dockerfile              workspace install → schema build → prod-only runtime
-    ├── index.js                POST /api/chat
+    ├── index.js                POST /api/chat, CORS gate on $APP_ORIGIN
     ├── prompt.js               system prompt + RESPOND_TOOL
     └── validate.js             drop actions/highlights with unknown IDs
 ```

@@ -15,6 +15,10 @@ services:
     image: okr-viewer-service
     environment:
       - PORT=8787
+      # The origin the browser is on, which with this file is the web
+      # container's published port below. Not the service's own address, and
+      # not a bare hostname — CORS compares scheme://host:port exactly.
+      - APP_ORIGIN=${APP_ORIGIN:-http://localhost:8080}
       # Valueless on purpose: it passes the shell's key through when there is
       # one and stays unset otherwise, so it never clobbers what env_file read.
       # Never a build arg — a build arg is readable in the image history.
@@ -34,7 +38,9 @@ services:
       dockerfile: web/Dockerfile
     image: okr-viewer-web
     environment:
-      # No trailing slash — nginx forwards the /api/ path through unchanged.
+      # Where the service lives, for the /api/ proxy. No trailing slash — nginx
+      # forwards the path through unchanged. The mirror of APP_ORIGIN above:
+      # each container names the other's host in its own environment.
       - SERVICE_URL=http://service:8787
     ports:
       - "8080:8080"
