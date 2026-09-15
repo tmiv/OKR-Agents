@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OKR Agents — an explorable model of what an organisation is trying to do</title>
+<meta name="description" content="Summary document for OKR Agents, a prototype built for the Exploration &amp; Understanding theme: a 3D OKR tree with the teams that own it, a coach that answers by moving the view, a briefing that says what needs attention, and teams that answer for themselves.">
+<style>
+  :root {
+    --text: #202122; --muted: #54595d; --link: #0645ad; --visited: #0b0080;
+    --border: #a2a9b1; --soft: #eaecf0; --box: #f8f9fa; --page: #ffffff;
+    --warn-bg: #fef6e7; --warn-border: #fc3; --note-bg: #eef3fb;
+  }
+  * { box-sizing: border-box; }
+  html { background: #f6f6f6; }
+  body {
+    margin: 0; color: var(--text); background: var(--page);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.6;
+  }
+  .page { max-width: 1120px; margin: 0 auto; padding: 24px 28px 64px; background: var(--page); }
+  h1, h2, h3, h4 { font-family: "Linux Libertine", Georgia, "Times New Roman", serif; font-weight: normal; line-height: 1.25; }
+  h1 { font-size: 2.1em; margin: 0 0 4px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  h2 { font-size: 1.55em; margin: 1.6em 0 0.5em; border-bottom: 1px solid var(--border); padding-bottom: 3px; clear: none; }
+  h3 { font-size: 1.22em; margin: 1.3em 0 0.4em; font-weight: bold; font-family: inherit; }
+  h4 { font-size: 1.05em; margin: 1.1em 0 0.3em; font-weight: bold; font-family: inherit; }
+  p { margin: 0.5em 0 0.9em; }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a.ext::after { content: "\2197"; font-size: 0.75em; margin-left: 2px; opacity: .7; }
+  .tagline { font-style: italic; color: var(--muted); margin: 0 0 14px; font-size: 0.95em; }
+  .hatnote { font-style: italic; color: var(--muted); padding-left: 1.6em; margin: 0.4em 0 1em; font-size: 0.95em; }
+  .lead p:first-of-type { font-size: 1.05em; }
+  code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  code { background: var(--box); border: 1px solid var(--soft); border-radius: 3px; padding: 0 4px; font-size: 0.92em; }
+  pre { background: var(--box); border: 1px solid var(--soft); padding: 12px 14px; overflow-x: auto; font-size: 0.86em; line-height: 1.45; }
+  pre code { border: 0; padding: 0; background: none; }
+  ul, ol { padding-left: 1.6em; }
+  li { margin: 0.25em 0; }
+  table.wikitable { border-collapse: collapse; background: var(--box); border: 1px solid var(--border); margin: 1em 0; font-size: 0.93em; }
+  table.wikitable th, table.wikitable td { border: 1px solid var(--border); padding: 5px 9px; vertical-align: top; text-align: left; }
+  table.wikitable th { background: var(--soft); }
+  .tablewrap { overflow-x: auto; }
+  /* infobox */
+  .infobox {
+    float: right; clear: right; width: 300px; margin: 0 0 16px 24px; padding: 4px;
+    border: 1px solid var(--border); background: var(--box); font-size: 0.86em; line-height: 1.4;
+  }
+  .infobox caption, .infobox .title { font-size: 1.25em; font-weight: bold; text-align: center; padding: 6px 4px; }
+  .infobox img { display: block; width: 100%; border: 1px solid var(--soft); }
+  .infobox .cap { text-align: center; font-size: 0.92em; padding: 3px 4px 8px; color: var(--muted); }
+  .infobox table { width: 100%; border-collapse: collapse; }
+  .infobox th, .infobox td { padding: 4px 6px; vertical-align: top; text-align: left; border-top: 1px solid var(--soft); }
+  .infobox th { width: 38%; font-weight: bold; }
+  /* thumbs */
+  .thumb { float: right; clear: right; width: 420px; max-width: 100%; margin: 4px 0 16px 24px; border: 1px solid #c8ccd1; background: var(--box); padding: 3px; font-size: 0.86em; }
+  .thumb.left { float: left; clear: left; margin: 4px 24px 16px 0; }
+  .thumb.wide { float: none; clear: both; width: 100%; margin: 12px 0 18px; }
+  .thumb img { display: block; width: 100%; height: auto; border: 1px solid var(--soft); background: #0e1117; }
+  .thumb .caption { padding: 6px 4px 3px; color: var(--text); line-height: 1.4; }
+  /* toc */
+  .toc { display: inline-block; border: 1px solid var(--border); background: var(--box); padding: 8px 16px 10px; margin: 8px 0 16px; font-size: 0.92em; }
+  .toc .toctitle { font-weight: bold; text-align: center; margin-bottom: 4px; }
+  .toc ol { list-style: none; padding-left: 0; margin: 0; }
+  .toc ol ol { padding-left: 1.8em; }
+  .toc li { margin: 2px 0; }
+  .toc .n { color: var(--text); margin-right: 6px; }
+  /* boxes */
+  .box { border: 1px solid var(--border); background: var(--box); padding: 10px 14px; margin: 12px 0 16px; }
+  .box.video { background: var(--warn-bg); border-color: var(--warn-border); }
+  .box.note { background: var(--note-bg); border-color: #b6cbe8; }
+  .box .h { font-weight: bold; margin-bottom: 4px; }
+  .clear { clear: both; }
+  .cta { display: inline-block; padding: 6px 12px; border: 1px solid var(--border); background: #fff; border-radius: 3px; margin: 4px 8px 4px 0; font-weight: 600; }
+  .cta.primary { background: #36c; border-color: #36c; color: #fff; }
+  .cta.primary:hover { background: #2a4b8d; text-decoration: none; }
+  .small { font-size: 0.88em; color: var(--muted); }
+  .refs { font-size: 0.9em; }
+  .refs li { margin: 0.35em 0; }
+  dl { margin: 0.5em 0 1em; }
+  dt { font-weight: bold; margin-top: 0.6em; }
+  dd { margin: 0.1em 0 0.4em 1.4em; }
+  @media (max-width: 760px) {
+    .page { padding: 16px; }
+    .infobox { float: none; width: 100%; margin: 0 0 16px; }
+    .thumb, .thumb.left { float: none; width: 100%; margin: 12px 0; }
+    .toc { display: block; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+<h1>OKR Agents</h1>
+<p class="tagline">From the OKR Agents project summary · take-home prototype for the theme <b>Exploration &amp; Understanding</b></p>
+
+<div class="hatnote">This page is the written summary that accompanies the prototype. For the running app see the <a class="ext" href="https://okr-801210973620.us-central1.run.app">live demo</a>; for the code see the <a class="ext" href="https://github.com/tmiv/OKR-Agents">repository</a>; for how it was built, session by session, see <a href="#transcripts">§&nbsp;Transcripts</a>.</div>
+
+<div class="infobox">
+  <div class="title">OKR Agents</div>
+  <a href="screenshots/01-overview-briefing.png"><img src="screenshots/01-overview-briefing.png" alt="The OKR Agents app: a 3D OKR tree with a briefing panel on the left and a chat panel on the right"></a>
+  <div class="cap">The default view: a 45-node tree, its briefing, and the chat</div>
+  <table>
+    <tr><th>Type</th><td>Interactive explorer for goal hierarchies, with an AI coach and team agents</td></tr>
+    <tr><th>Theme</th><td>Exploration &amp; Understanding</td></tr>
+    <tr><th>Live demo</th><td><a class="ext" href="https://okr-801210973620.us-central1.run.app">okr-801210973620.us-central1.run.app</a></td></tr>
+    <tr><th>Video</th><td><a href="#video">Walkthrough (link below)</a></td></tr>
+    <tr><th>Source</th><td><a class="ext" href="https://github.com/tmiv/OKR-Agents">github.com/tmiv/OKR-Agents</a></td></tr>
+    <tr><th>Stack</th><td>Svelte 5 + Vite, <code>3d-force-graph</code> (three.js), Express 5, Claude API (one forced tool call), JSON Schema + Ajv, Docker, Cloud Run</td></tr>
+    <tr><th>Built</th><td>11–14 September 2026</td></tr>
+    <tr><th>Human time</th><td>≈ 4 hours of attention, plus ≈ 1 hour for the video</td></tr>
+    <tr><th>Built with</th><td>Claude Code (plans, subagents, transcripts published <a href="transcripts/index.html">here</a>)</td></tr>
+    <tr><th>Author</th><td>Thomas Miller</td></tr>
+  </table>
+</div>
+
+<div class="lead">
+<p><b>OKR Agents</b> is a prototype for understanding an organisation's goals as a system rather than as a document. It takes the vocabulary most people already know, <i>Objectives and Key Results</i>, and turns a goal tree into something you can fly through, interrogate, and be briefed on. A coach answers questions about the whole tree by <i>moving the view</i>: it flies the camera to the nodes it means, pulses them, and rewrites them in place when asked. A briefing reads the tree unprompted, ranks what needs a person's attention, and hands each finding to the team that owns it. Each team carries a charter written as a job description, so a team is something you can open and talk to: it answers from its own mission, process and dependencies rather than as a generic assistant.</p>
+
+<p>The prototype was built for a take-home exercise whose theme was <b>Exploration &amp; Understanding</b>: complex systems and unfamiliar artifacts are hard to understand through static explanation, so build a tool that helps people develop deep understanding of one. The artifact chosen here is a goal hierarchy. A goal tree is a small complex system: dozens of nodes, weighted links, ownership that cuts across the hierarchy, and dependencies between teams that the tree itself cannot show. The bet in the interaction design is that <b>the model's output is the interface, not a chat log next to one</b>. Every answer is also a camera move, a highlight, or an edit you can undo.</p>
+
+<p>The bundled default dataset is not a company. It models the sub-libraries of an open-source monorepo, illustratively Babylon.js, as teams with the dependencies they really have, plus an issue-triage team whose charter reads as the job you would hand to an agent. Its OKRs and every number in it are invented.</p>
+</div>
+
+<div class="box video" id="video">
+  <div class="h">▶ Video walkthrough</div>
+  <p style="margin:0">A five-minute recorded tour of the prototype. <b>Link:</b> <a href="#video"><i>[video link to be added]</i></a></p>
+</div>
+
+<p>
+  <a class="cta primary ext" href="https://okr-801210973620.us-central1.run.app">Open the live demo</a>
+  <a class="cta ext" href="https://github.com/tmiv/OKR-Agents">Source on GitHub</a>
+  <a class="cta" href="transcripts/index.html">Build transcripts</a>
+</p>
+
+<div class="toc">
+  <div class="toctitle">Contents</div>
+  <ol>
+    <li><span class="n">1</span><a href="#theme">Why a goal tree, for this theme</a></li>
+    <li><span class="n">2</span><a href="#tour">A tour of the prototype</a>
+      <ol>
+        <li><span class="n">2.1</span><a href="#tour-tree">The tree</a></li>
+        <li><span class="n">2.2</span><a href="#tour-chat">Asking, and being shown</a></li>
+        <li><span class="n">2.3</span><a href="#tour-briefing">Being told what matters</a></li>
+        <li><span class="n">2.4</span><a href="#tour-teams">Teams that answer for themselves</a></li>
+        <li><span class="n">2.5</span><a href="#tour-edit">Editing in place, with history</a></li>
+        <li><span class="n">2.6</span><a href="#tour-datasets">Datasets</a></li>
+      </ol>
+    </li>
+    <li><span class="n">3</span><a href="#time">Time spent, and how it was built</a></li>
+    <li><span class="n">4</span><a href="#design">Design decisions</a></li>
+    <li><span class="n">5</span><a href="#architecture">Architecture</a></li>
+    <li><span class="n">6</span><a href="#plans">Plans implemented</a></li>
+    <li><span class="n">7</span><a href="#transcripts">Transcripts</a></li>
+    <li><span class="n">8</span><a href="#vision">Vision and future plans</a></li>
+    <li><span class="n">9</span><a href="#limits">Known limitations</a></li>
+    <li><span class="n">10</span><a href="#refs">References</a></li>
+  </ol>
+</div>
+
+<h2 id="theme">Why a goal tree, for this theme</h2>
+
+<p>OKRs are usually kept in a spreadsheet or a slide. Both are static explanations of a system that is not static: a key result supports its objective a little or a lot, a team owns some nodes and depends on other teams for others, and the places where the plan is quietly broken (an activity dressed up as an outcome, a key result parked under the wrong objective, a dependency nobody wrote down) are invisible until someone reads every row. Reading every row is the job that never gets done.</p>
+
+<p>The prototype treats the tree the way one would treat any unfamiliar complex system: give it a shape you can look at, let you ask it questions and have the answers <i>point</i>, and have it volunteer what it thinks is wrong. Three ideas carry that:</p>
+
+<ol>
+  <li><b>Pointing beats describing.</b> Every reply from the model carries a list of node ids to highlight, and the camera flies to them. "Which key results don't support a company objective?" is answered by the view changing, with the prose as a caption. The same channel works in reverse: whatever you have selected, opened, or are typing into is sent to the model with each message, so "make <i>this</i> measurable" resolves without an id.</li>
+  <li><b>The system should read itself.</b> On load, and after every change, the tree is audited without being asked. The result is a ranked list of three to six findings, each with a one-click fix that goes through the same undoable commit path as a hand edit. This is the difference between a viewer and a tool for understanding: it tells you where to look.</li>
+  <li><b>Ownership is a first-class object.</b> Teams are not a string in an "owner" column. Each has a charter (mission, process, what it owns, whom it depends on) written so that a model can speak <i>as</i> that team. Two of the six findings on the default dataset come off the dependency lists alone, which is the first evidence that modelling the reliance graph pays for itself.</li>
+</ol>
+
+<h2 id="tour">A tour of the prototype</h2>
+
+<h3 id="tour-tree">The tree</h3>
+
+<div class="thumb">
+  <a href="screenshots/09-polaris-135-nodes.png"><img src="screenshots/09-polaris-135-nodes.png" alt="A 135-node OKR tree rendered in 3D"></a>
+  <div class="caption">The largest bundled dataset, a fictional 135-node conglomerate with 61 units. Green edges are strong links; orange and red edges are the weak ones the audit will find.</div>
+</div>
+
+<p>The scene is a three-level tree: one company node at the top, objectives below it, key results below those. Every node has a label, an owner, a metric, a target, and a <i>contributes</i> score from 0 to 1 that says how well it supports its parent. That score drives the edge: thick and green for a strong link, thin and red for a weak one, so misalignment reads at a glance from the whole-tree view.</p>
+
+<p>The tree draws exactly one edge per node, the parent link, on purpose. Every relation that is not a parent edge (a key result that also serves a second objective, a team another team waits on) lives elsewhere: in the briefing, in the chat, and in future matrix views described under <a href="#vision">§&nbsp;Vision</a>. That restraint is what keeps a 135-node scene legible.</p>
+
+<p>Navigation is deliberately keyboard-first: <kbd>F</kbd> frames the whole tree, the arrow keys walk it (up to the parent, down to the first child, left and right between siblings), and every step selects the node and flies the camera to frame it with its parent and children. Programmatic camera moves always end level with world-up, so you never arrive at a node upside down; free tumbling with the mouse stays free. Hovering a node shows a card with its label, owner, metric and target.</p>
+
+<h3 id="tour-chat">Asking, and being shown</h3>
+
+<div class="thumb">
+  <a href="screenshots/03-chat-highlight.png"><img src="screenshots/03-chat-highlight.png" alt="The chat answers a question and the nodes it names pulse red in the tree"></a>
+  <div class="caption">"Which key results don't clearly support a company objective?" The reply names them, and the ten nodes it means turn red in the scene. A "show 10 nodes" pill re-highlights them later.</div>
+</div>
+
+<p>The chat panel is where you ask. Every message goes to the service with the entire tree, the company structure, a short history, and a <i>view context</i>: which node is selected, which panel is open, which field the cursor is in, which nodes are currently highlighted. The model answers with one structured call containing three things: a reply, a list of node ids to highlight, and a list of actions to apply. Most messages are questions, so the actions list is usually empty; the highlight list almost never is, and it is what makes the tool feel alive.</p>
+
+<p>Because actions are structured edits rather than text, "rewrite those so they're measurable" produces real changes to the tree, applied through the same commit path as a hand edit and undoable in one step. Chat has tabs, each with a mode and a subject. Beside the free-form coach there are interview tabs ("interview me about this OKR", "interview me about a new key result here") in which the assistant asks the questions and closes by proposing edits.</p>
+
+<h3 id="tour-briefing">Being told what matters</h3>
+
+<div class="thumb">
+  <a href="screenshots/10-polaris-briefing.png"><img src="screenshots/10-polaris-briefing.png" alt="The briefing panel lists six ranked findings for the 135-node tree"></a>
+  <div class="caption">The briefing on the 135-node tree: six findings, ranked, each naming the teams involved and offering Show, Fix, or Dismiss.</div>
+</div>
+
+<p>The briefing is the prototype's answer to "where should I look first?" When a document loads, and after every change to it, the assistant audits the whole tree without being asked and returns three to six ranked findings. Each is a card: a title, a sentence on why it matters, the teams it touches, and buttons. <b>Show</b> flies the camera to the nodes involved and pulses them. <b>Fix</b> applies the finding's proposed edit through the undoable commit path. <b>Dismiss</b> hides it. Where a finding resolves to a single chartered team, a fourth button, <b>Ask &lt;team&gt;</b>, opens a conversation with that team about it.</p>
+
+<div class="thumb left">
+  <a href="screenshots/02-briefing-show.png"><img src="screenshots/02-briefing-show.png" alt="After clicking Show, the camera has flown to an objective and its weak key result, both pulsing red"></a>
+  <div class="caption">After <b>Show</b> on a finding: the camera has flown to the objective and the key result it names.</div>
+</div>
+
+<p>The list is a ranked window, not a queue: fix one problem and the next-ranked one takes its place, so the count holds at five or six on a tree with more problems than that. Findings are cached in the browser keyed by a hash of the document, so reloading, undoing to a tree already audited, or switching back to a dataset shows the earlier findings without another call. Only a document the browser has never seen costs an audit.</p>
+
+<p>On the default dataset, six problems were planted deliberately (three weak links, two unmeasurable key results, one team with too many key results). The audit found those, grouped two of them into one finding about "activities, not outcomes", and then found two more nobody planted, both read straight off the teams' dependency lists: a team that says it depends on four others, only two of which have a key result that would deliver anything to it.</p>
+
+<div class="clear"></div>
+
+<h3 id="tour-teams">Teams that answer for themselves</h3>
+
+<div class="thumb">
+  <a href="screenshots/07-team-charter.png"><img src="screenshots/07-team-charter.png" alt="The team editor showing the Issue triage team's mission, process, what it owns, and its dependencies"></a>
+  <div class="caption">The Issue triage team's charter: a mission, a process, what it owns, and the teams it depends on. "Talk to this team" is the front door onto the persona mode.</div>
+</div>
+
+<p>Teams are the structure behind the tree. The Teams panel lists them as a hierarchy with the number of key results each owns; opening one shows its charter. A charter is written as a <b>job description for an agent</b>: if a person read only the charter they should be able to sit in a meeting and argue that team's corner. Its four parts are the mission (why the team exists), the process (how it does its work), what it owns (the metrics and systems it is the authority on), and whom it depends on. The field descriptions and placeholder text read like a persona, not a form, because the same prose becomes a system prompt.</p>
+
+<div class="thumb left">
+  <a href="screenshots/08-persona-chat.png"><img src="screenshots/08-persona-chat.png" alt="A chat tab labelled 'As Issue triage' answers in the team's own voice while the tree shows the team's key results"></a>
+  <div class="caption">Talking to Issue triage. Asked which three of its six key results it would keep, it answers from its charter, disowns the CI key result as belonging to another team, and the seven nodes it refers to pulse in the tree.</div>
+</div>
+
+<p><b>Talk to this team</b> opens a chat tab in the persona mode. The system prompt is the coach prompt plus the team's charter and an instruction to answer as that team would, from its priorities and constraints. Replies carry a speaker label, and, like every other reply, a highlight list, so the team's answer also moves the view. In the shot on the left the triage team, asked to cut its six key results to three, keeps the three that match its charter's promise, folds two into process, and says the sixth is not its job at all, which is the same conclusion the briefing reached from the other direction.</p>
+
+<p>This is mode 1 of four discussion modes designed for the product (<a href="#vision">§&nbsp;Vision</a>). The other three, in which teams review each other's subtrees, debate with the user moderating, and negotiate edits, are additive to what exists: a tab already has a mode and a subject, and the service is stateless, so a multi-team debate is the browser orchestrating persona calls over a shared transcript.</p>
+
+<div class="clear"></div>
+
+<h3 id="tour-edit">Editing in place, with history</h3>
+
+<div class="thumb">
+  <a href="screenshots/05-node-editor.png"><img src="screenshots/05-node-editor.png" alt="The detail panel in edit mode for an objective, with its owner, metric, target, parent and fit editable and its five key results listed"></a>
+  <div class="caption">The detail panel in edit mode: label, owner (a team picker), metric, target, the parent it supports, and the fit score. Below, the five key results beneath it with their own fit.</div>
+</div>
+
+<p>Selecting a node opens its detail panel: the card, the parent it supports, its fit, and the nodes beneath it. <b>Edit</b> makes every field editable in place; each commits on blur or Enter. The owner is a team picker rather than free text, so ownership stays consistent with the company structure. Nodes and teams can be added, deleted, and re-parented from the same panel.</p>
+
+<p>Every mutation, whether from a hand edit, a chat reply, a briefing fix, or an interview's closing proposal, is an <i>Action</i> applied through one <code>commit()</code> function. That function snapshots the document for undo and appends a described change to a history that rides along in export and import. It is the one invariant the whole design leans on: there is no UI path that changes the tree without going through it, which is what makes "undo the whole negotiation in one step" possible later.</p>
+
+<div class="clear"></div>
+
+<h3 id="tour-datasets">Datasets</h3>
+
+<div class="thumb">
+  <a href="screenshots/06-teams-list.png"><img src="screenshots/06-teams-list.png" alt="The Teams panel listing the Babylon.js dataset's fifteen units with the number of key results each owns"></a>
+  <div class="caption">The default dataset's fifteen units: a project's sub-libraries as teams, each with a charter.</div>
+</div>
+
+<p>The app boots on a bundled dataset and ships five, switchable from the top bar. Each is a hand-written document that passes the schema with no warnings and meets a demo bar of at least three weak links and two unmeasurable key results, so the briefing always has something to say.</p>
+
+<div class="tablewrap">
+<table class="wikitable">
+  <tr><th>Dataset</th><th>Nodes</th><th>Units</th><th>Chartered</th><th>What it is</th></tr>
+  <tr><td>Babylon.js, an illustrative 9.x cycle <i>(default)</i></td><td>45</td><td>15</td><td>15</td><td>A monorepo's sub-libraries as teams with their real interdependencies, plus an issue-triage team written as an executor's job. The OKRs are invented.</td></tr>
+  <tr><td>Workflow platform, FY26</td><td>27</td><td>17</td><td>6</td><td>A mid-size software company; the original demo tree.</td></tr>
+  <tr><td>Polaris Group, FY26</td><td>135</td><td>61</td><td>23</td><td>A fictional conglomerate, for scale: the largest tree, the slowest audit.</td></tr>
+  <tr><td>Starter tree</td><td>9</td><td>6</td><td>3</td><td>The smallest possible complete example.</td></tr>
+  <tr><td>Regional clinic network, FY26</td><td>30</td><td>23</td><td>6</td><td>A non-software organisation, to check the vocabulary generalises.</td></tr>
+</table>
+</div>
+
+<p>The Babylon.js dataset is the one that makes the "exploring an unfamiliar codebase" reading of the theme concrete: the package layout is real, the teams are the packages, and the dependency lists are the ones a maintainer would recognise. Nothing in it is a statement about the real project's plans or health. Export and Import round-trip any document as a version-stamped JSON file.</p>
+
+<div class="clear"></div>
+
+<h2 id="time">Time spent, and how it was built</h2>
+
+<div class="box note">
+  <div class="h">Honest accounting</div>
+  <p style="margin:0.3em 0">The brief asked for one to two hours on the prototype, with an allowance of up to eight. I spent about <b>four hours of my own attention</b> on it, spread over 11–14 September 2026, and will spend about <b>one more hour</b> recording the video. Claude Code ran for much longer than that: the work went through 32 recorded sessions (25 top-level, 7 subagents) and 44 commits, most of them while I was doing something else. Every session is published unedited under <a href="#transcripts">§&nbsp;Transcripts</a> so the split between my time and the model's is inspectable rather than asserted.</p>
+</div>
+
+<p>The build followed one loop, repeated seventeen times: write a plan, implement the plan, write completion notes. The repository's working instructions require every non-trivial change to start as a plan file with a fixed template (context, goal, decisions locked in, numbered phases citing <code>file:line</code> edit points, verification, out of scope) and to end with three bullets of completion notes: what landed as planned, what changed mid-flight, and what surprised. Design rationale lives apart from the plans in concept documents, so that the <i>why</i> is not fused with the <i>what</i>. The plans are listed with their transcripts in <a href="#plans">§&nbsp;Plans implemented</a>.</p>
+
+<p>The rough sequence, by day:</p>
+
+<dl>
+  <dt>Day 1 (11 Sept)</dt>
+  <dd>A README written as a set of build notes (kept unedited at the bottom of the repository's README), then the first working app from it. The same day: a plan for a shared, versioned JSON Schema package, and its implementation; then a round of six plans written together for datasets, camera behaviour, the node editor, the team model, view context and chat tabs. Three of those were implemented in parallel by subagents in isolated worktrees, the rest in sequence.</dd>
+  <dt>Day 2 (12 Sept)</dt>
+  <dd>The hover card, keyboard shortcuts, neighbourhood framing, a large dataset for scale, several small bugs, and then the two things that changed the product: the vision and concept documents (written when 80% of the time budget was spent, to decide what the remaining time was for), and the tree briefing with the persona mode as its stretch goal.</dd>
+  <dt>Day 3–4 (13–14 Sept)</dt>
+  <dd>Container images, CI and a CORS gate for deployment; the audit cache; the Babylon.js dataset; and finally the rename from "OKR Viewer" to "OKR Agents" with a front door on the persona mode, which is the point at which the product's name caught up with its thesis.</dd>
+</dl>
+
+<p>Two habits from that process are worth naming because they are visible in the transcripts. First, completion notes are where the real engineering knowledge ended up: the discovery that naming a field the tool schema does not have makes the model emit an empty tool call, or that a nginx <code>proxy_pass</code> with a trailing slash silently breaks the API while the health check stays green, are both recorded in the plan that found them, not in a commit message. Second, the plans were written before the code they cite existed in its final form, so several completion notes open with "every <code>file:line</code> citation had drifted", and the fix was to re-verify each before editing rather than to trust the plan.</p>
+
+<h2 id="design">Design decisions</h2>
+
+<p>The decisions below are the ones that shaped everything else. Each is recorded, with its rationale, in the plan or concept document that made it.</p>
+
+<dl>
+  <dt>The model's output is the interface</dt>
+  <dd>Every reply is a structured object with a highlight list and an action list, and the scene reacts to both. The prose is secondary. This is why the tree is a 3D scene and not a table: a table cannot be flown through, and a highlight in a table is a row colour.</dd>
+  <dt>One tool, forced</dt>
+  <dd>Rather than four tools (<code>edit_node</code>, <code>add_node</code>, <code>relink_node</code>, <code>highlight_nodes</code>) and a multi-round tool loop, the service defines a single <code>respond</code> tool and forces it with <code>tool_choice</code>. One call, guaranteed structure, no branch for "what if it called nothing". The tool's schema is generated from the same JSON Schemas the app validates against, and it varies by mode: the audit mode's schema has a <code>findings</code> field and no other mode's does, because a mode whose schema cannot express findings must not be told about them.</dd>
+  <dt>The service is stateless; the browser owns the document</dt>
+  <dd>The whole tree is sent with every message. There is no session store and no drift between what the service thinks the tree is and what is on screen. It also means a multi-team debate can be orchestrated from the browser as a sequence of persona calls over a shared transcript.</dd>
+  <dt>Every mutation is an Action with an actor, through one <code>commit()</code></dt>
+  <dd>Hand edits, chat edits, briefing fixes and interview proposals all take the same path, so undo, history, export and re-audit come for free with every new feature. A future executor agent adds <code>actor: "agent"</code> and nothing else changes.</dd>
+  <dt>The schema is the contract, owned in one place</dt>
+  <dd>A workspace package holds nine draft-07 JSON Schemas (node, tree, company, history, action, chat request and response, document envelope) and builds TypeScript types, precompiled validators, and the Claude tool schema from them. Both the web app and the service import it. Every field description is written for the model as much as for a person.</dd>
+  <dt>Teams carry charters written for a prompt</dt>
+  <dd>The charter is the team's persona. Field descriptions say "in the team's own words". This is what lets "Talk to this team" be a one-plan feature and what the later discussion modes build on.</dd>
+  <dt>Audit on change, not on schedule</dt>
+  <dd>The briefing re-runs after every commit, debounced. A cache keyed by a hash of the document keeps that from costing an API call for any tree the browser has seen before.</dd>
+  <dt>The three-level ladder is a default, not doctrine</dt>
+  <dd>The schema only warns about depth; the editor and the prompt enforce it. Deeper hierarchies can be opened later without a migration. The argument for why this matters is in <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Concepts/Depth%20and%20Focus%20-%20Design.md">Depth and Focus</a>.</dd>
+</dl>
+
+<h2 id="architecture">Architecture</h2>
+
+<pre><code>┌──────────────────────┐         ┌─────────────────────┐         ┌────────┐
+│  web/  (Vite+Svelte) │  POST   │  service/ (Express) │  HTTPS  │ Claude │
+│                      │ /api/   │                     │         │  API   │
+│  owns the tree ──────┼─ chat ──┼─&gt; owns the prompt    ├────────&gt;│        │
+│  renders the graph   │&lt;────────┼── + tool schema      │&lt;────────┤        │
+│  applies actions     │ {reply, │   validates IDs      │         └────────┘
+│  keeps undo stack    │  actions│                      │
+└──────────────────────┘  highlight}────────────────────┘
+                 both import  @okr-agents/schema
+</code></pre>
+
+<p>Three packages in one npm workspace:</p>
+
+<ul>
+  <li><b><code>schema/</code></b> (about 3,700 lines including tests): the JSON Schemas, a build script that emits types, validators and the tool schema, semantic checks (ownership, level ladder, dangling references), and a versioned document envelope with a migrations directory. 129 tests.</li>
+  <li><b><code>web/</code></b> (about 3,700 lines of Svelte and JS): <code>App.svelte</code> owns the document state, the undo stack, history and the audit trigger; <code>Graph.svelte</code> wraps <code>3d-force-graph</code> and owns the camera; <code>Chat.svelte</code>, <code>Briefing.svelte</code>, <code>Detail.svelte</code>, <code>TeamList.svelte</code> and <code>TeamEditor.svelte</code> are the panels; <code>lib/</code> holds pure functions for applying actions, walking the tree, canonicalising a document for hashing, and the IndexedDB audit cache. Two of those have their own tests.</li>
+  <li><b><code>service/</code></b> (about 900 lines): one endpoint, <code>POST /api/chat</code>. <code>prompt.js</code> holds the system prompt, the per-mode role blocks and the <code>respondTool(mode)</code> builder; <code>validate.js</code> sanitises everything that references the document (context, history, tab subject, actions, highlights, findings) against <i>this</i> tree, dropping what it cannot resolve rather than failing the request. A CORS gate refuses browser origins other than the app's.</li>
+</ul>
+
+<p>The request carries the tree, the company structure, the message, the selected node, a history slice, the tab's mode and subject, and the view context. The response is <code>{ reply, actions, highlight }</code>, plus <code>findings</code> in audit mode. Both are validated against the schema on both sides.</p>
+
+<p>For deployment, each package has a Dockerfile built from the repository root (one lockfile serves all three). The web image is nginx over a <code>vite build</code>, proxying <code>/api/</code> to the service so the browser talks to one origin and the API key never reaches a bundle. A GitHub Actions workflow builds both images on every push, publishes them from <code>main</code>, and smoke-tests the pair with <code>docker compose</code>. The live demo runs on Cloud Run.</p>
+
+<h2 id="plans">Plans implemented</h2>
+
+<p>Seventeen plans landed, in this order. Each link opens the plan in the repository; the plan's completion notes at the bottom are the most useful part. The last column is the Claude Code session in which it was implemented, where one session maps to one plan.</p>
+
+<div class="tablewrap">
+<table class="wikitable">
+  <tr><th>#</th><th>Plan</th><th>Landed</th><th>What it did</th><th>Implementation session</th></tr>
+  <tr><td>1</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/OKR_SCHEMA_PACKAGE.md">OKR_SCHEMA_PACKAGE</a></td><td>11 Sept</td><td>The workspace and the versioned schema package; export and import of the document.</td><td><a href="transcripts/tmiv74-OKR-Display/62f92fb9-9496-46b4-a509-468adb1bb3e7/index.html">session</a> (<a href="transcripts/tmiv74-OKR-Display/d2fd352a-bdd5-4da3-bc67-4d978cb97f63/index.html">planning</a>)</td></tr>
+  <tr><td>2</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/BUNDLED_DATASETS.md">BUNDLED_DATASETS</a></td><td>11 Sept</td><td>Datasets as validated JSON documents with a picker; the hard-coded tree removed.</td><td><a href="transcripts/subagents/agent-a1116e0f33f637a50/index.html">subagent</a></td></tr>
+  <tr><td>3</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/CAMERA_LEVEL_AUTO_MOVES.md">CAMERA_LEVEL_AUTO_MOVES</a></td><td>11 Sept</td><td>Programmatic camera moves end level with world-up; free tumbling stays free.</td><td><a href="transcripts/subagents/agent-afb80aee96ccfff17/index.html">subagent</a></td></tr>
+  <tr><td>4</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/CLEAR_HIGHLIGHT_ON_SELECT.md">CLEAR_HIGHLIGHT_ON_SELECT</a></td><td>11 Sept</td><td>Any selection clears the chat highlight; a tumble does not.</td><td><a href="transcripts/subagents/agent-ae233054730f76ecd/index.html">subagent</a></td></tr>
+  <tr><td>5</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/OKR_NODE_EDITOR.md">OKR_NODE_EDITOR</a></td><td>11 Sept</td><td>Edit a node in place through one <code>commit()</code> that records history.</td><td><a href="transcripts/subagents/agent-a9d43819b25dbc286/index.html">subagent</a></td></tr>
+  <tr><td>6</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/TEAM_MODEL_AND_EDITOR.md">TEAM_MODEL_AND_EDITOR</a></td><td>11 Sept</td><td>Teams with charters, referenced from nodes, edited in a panel, described to the model.</td><td><a href="transcripts/subagents/agent-a59ef1fd0260623ef/index.html">subagent</a></td></tr>
+  <tr><td>7</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/CHAT_CONTEXT.md">CHAT_CONTEXT</a></td><td>11 Sept</td><td>The view context (selection, open panel, focused field, highlights) sent with every message.</td><td><a href="transcripts/subagents/agent-a72556cd146152f41/index.html">subagent</a></td></tr>
+  <tr><td>8</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/CHAT_TABS_AND_INTERVIEWS.md">CHAT_TABS_AND_INTERVIEWS</a></td><td>11 Sept</td><td>Chat tabs with a mode and a subject; interview tabs that close by proposing edits.</td><td><a href="transcripts/subagents/agent-a2cdc87a358dc6728/index.html">subagent</a></td></tr>
+  <tr><td>9</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/NODE_HOVER_CARD.md">NODE_HOVER_CARD</a></td><td>11 Sept</td><td>One node card component, used by the panel and shown on hover in the scene.</td><td><a href="transcripts/tmiv74-OKR-Display/12579354-beb6-47ed-b56e-b9ddf389d718/index.html">session</a></td></tr>
+  <tr><td>10</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/GRAPH_KEYBOARD_SHORTCUTS.md">GRAPH_KEYBOARD_SHORTCUTS</a></td><td>12 Sept</td><td>A table-driven shortcut registry: frame the tree, walk it with the arrow keys.</td><td><a href="transcripts/tmiv74-OKR-Display/14e64493-ba91-4d07-8d51-0955e484388d/index.html">session</a> (<a href="transcripts/tmiv74-OKR-Display/3ce7d910-5e30-4840-bc0a-fa38d35e4138/index.html">planning</a>)</td></tr>
+  <tr><td>11</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/FRAME_NODE_NEIGHBORHOOD.md">FRAME_NODE_NEIGHBORHOOD</a></td><td>12 Sept</td><td>Selecting a node frames it with its parent and children, never from straight above.</td><td><a href="transcripts/tmiv74-OKR-Display/70d77039-c740-43f2-949c-eefb2ccc55f3/index.html">session</a> (<a href="transcripts/tmiv74-OKR-Display/2ea17692-c1e6-41e1-b87f-14217a1bd69c/index.html">planning</a>)</td></tr>
+  <tr><td>12</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/TREE_BRIEFING.md">TREE_BRIEFING</a></td><td>12 Sept</td><td>The unprompted audit, the Briefing panel with Show / Fix / Dismiss, and the persona mode as its stretch goal.</td><td><a href="transcripts/tmiv74-OKR-Display/447b2be1-92b6-4778-a5ec-293ae761dacd/index.html">session</a> (<a href="transcripts/tmiv74-OKR-Display/fbe9e569-ec27-4169-8b73-185d892fd439/index.html">planning</a>)</td></tr>
+  <tr><td>13</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/DOCKER_IMAGES_AND_CI.md">DOCKER_IMAGES_AND_CI</a></td><td>13 Sept</td><td>Container images for both packages, built and smoke-tested in GitHub Actions.</td><td><a href="transcripts/tmiv74-OKR-Display/62c7c2f5-d819-45af-8210-92db648fd81b/index.html">session</a></td></tr>
+  <tr><td>14</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/SERVICE_CORS.md">SERVICE_CORS</a></td><td>13 Sept</td><td>The service refuses browser origins other than the app's; both containers name the other host.</td><td><a href="transcripts/tmiv74-OKR-Display/62c7c2f5-d819-45af-8210-92db648fd81b/index.html">session</a></td></tr>
+  <tr><td>15</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/BRIEFING_AUDIT_CACHE.md">BRIEFING_AUDIT_CACHE</a></td><td>14 Sept</td><td>Audit findings cached in IndexedDB, keyed by a hash of the canonical document.</td><td><a href="transcripts/tmiv74-OKR-Display/bf0828d0-5595-4ea8-8260-b9be113e1d30/index.html">session</a> (<a href="transcripts/tmiv74-OKR-Display/1ca3b8fc-f6f2-46f1-b51a-54977422bbf0/index.html">planning</a>)</td></tr>
+  <tr><td>16</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/BABYLONJS_PROJECT_DATASET.md">BABYLONJS_PROJECT_DATASET</a></td><td>14 Sept</td><td>The project-shaped default dataset with an issue-triage team written as an executor's job.</td><td><a href="transcripts/tmiv74-OKR-Display/042aa35f-07af-4618-a8ac-3acf3f779810/index.html">session</a></td></tr>
+  <tr><td>17</td><td><a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Plans/completed/OKR_AGENTS_RENAME_AND_POSITIONING.md">OKR_AGENTS_RENAME_AND_POSITIONING</a></td><td>14 Sept</td><td>The rename, the mission on the README's first screen, and "Talk to this team" on every team panel.</td><td><a href="transcripts/tmiv74-OKR-Display/2b11efc1-bae3-47da-94d2-1474c9d18e9f/index.html">session</a> (<a href="transcripts/tmiv74-OKR-Display/7661023b-b78b-4a38-ba40-f1f2b99cd6c8/index.html">planning</a>)</td></tr>
+</table>
+</div>
+
+<p>All seventeen live in <a class="ext" href="https://github.com/tmiv/OKR-Agents/tree/main/Plans/completed">Plans/completed</a>. The rules they follow are in the repository's <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/CLAUDE.md">CLAUDE.md</a>.</p>
+
+<h2 id="transcripts">Transcripts</h2>
+
+<p>Every Claude Code session in the build is published unedited, including the model's reasoning, the tool calls, and the dead ends. The <a href="transcripts/index.html">archive index</a> lists them; the tables below group them by what they were for. Times are as recorded by the archive.</p>
+
+<h3>Top-level sessions</h3>
+
+<div class="tablewrap">
+<table class="wikitable">
+  <tr><th>When</th><th>Session</th><th>What it was for</th></tr>
+  <tr><td>11 Sept 02:20</td><td><a href="transcripts/tmiv74-OKR-Display/8fed4af5-d6b5-4f45-b459-38c2c0b7531e/index.html">Create the project from the README</a></td><td>The first working app, built from a README written as build notes.</td></tr>
+  <tr><td>11 Sept 18:02</td><td><a href="transcripts/tmiv74-OKR-Display/d2fd352a-bdd5-4da3-bc67-4d978cb97f63/index.html">Plan the schema package</a></td><td>Writing OKR_SCHEMA_PACKAGE.</td></tr>
+  <tr><td>11 Sept 19:38</td><td><a href="transcripts/tmiv74-OKR-Display/62f92fb9-9496-46b4-a509-468adb1bb3e7/index.html">Implement the schema package</a></td><td>OKR_SCHEMA_PACKAGE landed; four things the plan could not have known are in its completion notes.</td></tr>
+  <tr><td>12 Sept 01:31</td><td><a href="transcripts/tmiv74-OKR-Display/1eaa5892-b9d7-4470-95a0-d65b1340857f/index.html">Write the round of six plans</a></td><td>Datasets, camera, editor, team model, chat context, chat tabs, plus the first product vision and the Teams as Agents concept.</td></tr>
+  <tr><td>12 Sept 01:50</td><td><a href="transcripts/tmiv74-OKR-Display/12579354-beb6-47ed-b56e-b9ddf389d718/index.html">Implement NODE_HOVER_CARD</a></td><td></td></tr>
+  <tr><td>12 Sept 15:59</td><td><a href="transcripts/tmiv74-OKR-Display/96e8a409-1ad8-42d3-a7d8-8e640c5cdfbd/index.html">Run three agents on three plans in parallel</a></td><td>Orchestrates the subagents below in isolated worktrees, then merges.</td></tr>
+  <tr><td>12 Sept 16:05</td><td><a href="transcripts/tmiv74-OKR-Display/3ce7d910-5e30-4840-bc0a-fa38d35e4138/index.html">Plan the keyboard shortcuts</a></td><td></td></tr>
+  <tr><td>12 Sept 16:49</td><td><a href="transcripts/tmiv74-OKR-Display/78a1847e-32d3-4435-82fd-c77d189ddf64/index.html">Bug: node moves out from under the mouse</a></td><td></td></tr>
+  <tr><td>12 Sept 16:55</td><td><a href="transcripts/tmiv74-OKR-Display/14e64493-ba91-4d07-8d51-0955e484388d/index.html">Implement GRAPH_KEYBOARD_SHORTCUTS</a></td><td></td></tr>
+  <tr><td>12 Sept 17:01</td><td><a href="transcripts/tmiv74-OKR-Display/011b6c63-2eee-456f-b29f-7a60ac4fa253/index.html">A large dataset for scale</a></td><td>The 135-node conglomerate.</td></tr>
+  <tr><td>12 Sept 17:07</td><td><a href="transcripts/tmiv74-OKR-Display/2ea17692-c1e6-41e1-b87f-14217a1bd69c/index.html">Plan the neighbourhood framing</a></td><td></td></tr>
+  <tr><td>12 Sept 17:22</td><td><a href="transcripts/tmiv74-OKR-Display/70d77039-c740-43f2-949c-eefb2ccc55f3/index.html">Implement FRAME_NODE_NEIGHBORHOOD</a></td><td></td></tr>
+  <tr><td>12 Sept 18:20</td><td><a href="transcripts/tmiv74-OKR-Display/39fb61b5-bb47-42d3-a2d3-d55adb64be07/index.html">Bug: loading a graph should reset the view</a></td><td></td></tr>
+  <tr><td>12 Sept 18:35</td><td><a href="transcripts/tmiv74-OKR-Display/fbe9e569-ec27-4169-8b73-185d892fd439/index.html">"80% of the time budget is spent": decide what is next</a></td><td>The Depth and Focus concept and the TREE_BRIEFING plan.</td></tr>
+  <tr><td>12 Sept 20:23</td><td><a href="transcripts/tmiv74-OKR-Display/447b2be1-92b6-4778-a5ec-293ae761dacd/index.html">Implement TREE_BRIEFING</a></td><td>The largest session; includes the discovery about fields absent from the tool schema.</td></tr>
+  <tr><td>12 Sept 21:44</td><td><a href="transcripts/tmiv74-OKR-Display/adb2404a-a85f-4fd8-afcc-1a4bf6422bf3/index.html">Matrix views as a future idea</a></td><td>Becomes the Matrix Views concept document.</td></tr>
+  <tr><td>14 Sept 03:23</td><td><a href="transcripts/tmiv74-OKR-Display/62c7c2f5-d819-45af-8210-92db648fd81b/index.html">Dockerfiles, compose and CI</a></td><td>DOCKER_IMAGES_AND_CI and SERVICE_CORS.</td></tr>
+  <tr><td>14 Sept 14:53</td><td><a href="transcripts/tmiv74-OKR-Display/1ca3b8fc-f6f2-46f1-b51a-54977422bbf0/index.html">Plan the audit cache</a></td><td></td></tr>
+  <tr><td>14 Sept 14:56</td><td><a href="transcripts/tmiv74-OKR-Display/65a44f42-ad53-460d-bb3c-7779344c8415/index.html">Bug: the model jitters on first load</a></td><td></td></tr>
+  <tr><td>14 Sept 15:39</td><td><a href="transcripts/tmiv74-OKR-Display/bf0828d0-5595-4ea8-8260-b9be113e1d30/index.html">Implement BRIEFING_AUDIT_CACHE</a></td><td></td></tr>
+  <tr><td>14 Sept 16:41</td><td><a href="transcripts/tmiv74-OKR-Display/e6e4336c-067a-4ccd-a48b-6a2ee4324e6a/index.html">Text labels in front of the 3D elements</a></td><td></td></tr>
+  <tr><td>14 Sept 20:21</td><td><a href="transcripts/tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/index.html">Script for the five-minute video</a></td><td></td></tr>
+  <tr><td>14 Sept 20:31</td><td><a href="transcripts/tmiv74-OKR-Display/7661023b-b78b-4a38-ba40-f1f2b99cd6c8/index.html">"My vision is bigger than what comes across"</a></td><td>The mission statement and the rename plan.</td></tr>
+  <tr><td>14 Sept 20:46</td><td><a href="transcripts/tmiv74-OKR-Display/042aa35f-07af-4618-a8ac-3acf3f779810/index.html">Implement BABYLONJS_PROJECT_DATASET</a></td><td></td></tr>
+  <tr><td>14 Sept 21:28</td><td><a href="transcripts/tmiv74-OKR-Display/2b11efc1-bae3-47da-94d2-1474c9d18e9f/index.html">Implement OKR_AGENTS_RENAME_AND_POSITIONING</a></td><td></td></tr>
+</table>
+</div>
+
+<h3>Subagent sessions</h3>
+
+<p>Seven plans were implemented by subagents, each given one plan and an isolated worktree. Their transcripts are shorter and more single-minded than the top-level ones, which makes them the clearest illustration of the plan-then-implement loop.</p>
+
+<div class="tablewrap">
+<table class="wikitable">
+  <tr><th>When</th><th>Subagent</th><th>Plan</th></tr>
+  <tr><td>11 Sept 21:12</td><td><a href="transcripts/subagents/agent-afb80aee96ccfff17/index.html">agent-afb80aee</a></td><td>CAMERA_LEVEL_AUTO_MOVES</td></tr>
+  <tr><td>11 Sept 21:14</td><td><a href="transcripts/subagents/agent-ae233054730f76ecd/index.html">agent-ae233054</a></td><td>CLEAR_HIGHLIGHT_ON_SELECT</td></tr>
+  <tr><td>11 Sept 21:19</td><td><a href="transcripts/subagents/agent-a1116e0f33f637a50/index.html">agent-a1116e0f</a></td><td>BUNDLED_DATASETS</td></tr>
+  <tr><td>11 Sept 21:53</td><td><a href="transcripts/subagents/agent-a9d43819b25dbc286/index.html">agent-a9d43819</a></td><td>OKR_NODE_EDITOR</td></tr>
+  <tr><td>11 Sept 22:25</td><td><a href="transcripts/subagents/agent-a59ef1fd0260623ef/index.html">agent-a59ef1fd</a></td><td>TEAM_MODEL_AND_EDITOR</td></tr>
+  <tr><td>12 Sept 00:20</td><td><a href="transcripts/subagents/agent-a72556cd146152f41/index.html">agent-a72556cd</a></td><td>CHAT_CONTEXT</td></tr>
+  <tr><td>12 Sept 03:53</td><td><a href="transcripts/subagents/agent-a2cdc87a358dc6728/index.html">agent-a2cdc87a</a></td><td>CHAT_TABS_AND_INTERVIEWS</td></tr>
+</table>
+</div>
+
+<h2 id="vision">Vision and future plans</h2>
+
+<p>The mission, as written on the README's first screen: <b>OKR Agents uses the OKR vocabulary people already know to make traditional OKRs lighter to run, and to manage teams of agents through the same lens.</b> The prototype is Horizon 1 of three. Each later horizon has a concept document that fixes its vocabulary and the seams the current code keeps open for it; none has a plan yet, and writing the plan is the first step.</p>
+
+<div class="tablewrap">
+<table class="wikitable">
+  <tr><th>Horizon</th><th>What</th><th>Why it waits</th></tr>
+  <tr><td><b>1. Interaction model and value</b> <i>(built)</i></td><td>The tree, the coach, the briefing, teams with charters, the persona mode.</td><td>Everything later assumes the tree, teams and chat are worth using by one person.</td></tr>
+  <tr><td><b>2. Agents that work and measure</b></td><td>An agent runs <i>as a team</i> to execute one of its key results through connected tools, records what it did and how the metric moved, and a progress dashboard reads the record.</td><td>Needs a real charter (done), a place to run long jobs, and tool connections with credentials.</td></tr>
+  <tr><td><b>3. Shared, live document</b></td><td>The document lives in a realtime store so several people and agents edit and chat against it at once.</td><td>Needs the interaction model settled first; a multi-user store hardens whatever shape it is given.</td></tr>
+</table>
+</div>
+
+<h3>Team agent discussions (nearest to hand)</h3>
+
+<p>Four discussion modes were chosen, in dependency order. Mode 1 is shipped; the rest are additive to the chat tab's mode enum and the stateless service.</p>
+
+<ol>
+  <li><b>Chat with one team's agent.</b> Shipped as the persona mode behind "Talk to this team".</li>
+  <li><b>Agents review each other's OKRs.</b> Team A's persona critiques Team B's subtree for alignment, measurability and unstated dependencies on A. One call per review; the output is a normal reply, highlight and optional actions.</li>
+  <li><b>A team-versus-team debate the user moderates.</b> Several personas over one shared transcript; the browser orchestrates, one persona call per turn, with the user able to interject and the transcript shown with speaker labels.</li>
+  <li><b>Agents negotiate and propose edits.</b> Mode 3 with a closing turn: a neutral coach call reads the transcript and returns actions, which go through <code>commit()</code>, so the whole negotiation is one undo step.</li>
+</ol>
+
+<p class="small">Concept: <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Concepts/Teams%20as%20Agents%20-%20Design.md">Teams as Agents - Design</a>.</p>
+
+<h3>Agents that execute and measure</h3>
+
+<p>The example that defines the feature is already in the default dataset. The Issue triage team has the key result "address 90% of incoming issues, each ranked by priority". Its executor, running with the team's charter as its system prompt, would connect to the repository through a connection the user has authorised, triage and label incoming issues on a schedule, record how it is doing against the key result as metric samples, and leave a trail the user can inspect, undo where the tool allows, and turn off. The schema already has a place for those samples (<code>history.metricSamples</code>), and a person can record one by hand for any key result today; the dashboard reads the same shape whoever wrote it. The concept fixes the vocabulary (executor, connection, run, metric sample, progress) and the invariant that an agent which <i>can</i> report hourly must not.</p>
+
+<p class="small">Concept: <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Concepts/Agents%20as%20Executors%20-%20Design.md">Agents as Executors - Design</a>.</p>
+
+<h3>Matrix views</h3>
+
+<p>Three tables that show what the tree cannot, because the tree draws only parent edges. <b>OKR fitness</b>: rows and columns are both the OKRs, and each cell scores how well the row fits the column on a signed scale, so "in tension with" is expressible. <b>Team reliance</b>: rows and columns are teams, each cell how much the row relies on the column, derived from the charters and the tree as well as asserted, so the disagreement between what a team says it depends on and what its key results actually need is the finding. <b>Team communication</b>: the same axes, counting how often two teams actually talk. Reliance is what teams <i>say</i>; communication is what they <i>do</i>; the two overlaid is the payoff. Four plans in dependency order when they are written: reliance matrix (its source data already exists), fitness matrix, team message board, comms connectors.</p>
+
+<p class="small">Concept: <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Concepts/Matrix%20Views%20-%20Design.md">Matrix Views - Design</a>.</p>
+
+<h3>Deeper hierarchies, and the focus budget</h3>
+
+<p>The received wisdom that OKR cascades should stop at three levels was protecting against alignment fatigue in a manual system. With a model carrying the alignment work, the bottleneck moves from administrative capacity to human focus: a model can draft a thousand perfectly aligned key results and a person can still hold three to five priorities. So the product's job shifts from drawing the tree to keeping it honest and small: a live alignment audit on every change (the briefing is the seed) and a per-team focus budget the assistant pushes back with ("you now have nine key results; which three matter this quarter?"). Depth in the data model stays open; depth in the editor waits for those two.</p>
+
+<p class="small">Concept: <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Concepts/Depth%20and%20Focus%20-%20Design.md">Depth and Focus - Design</a>. Overall: <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/Concepts/OKR%20Agents%20-%20Product%20Vision.md">OKR Agents - Product Vision</a>.</p>
+
+<h2 id="limits">Known limitations</h2>
+
+<ul>
+  <li><b>Nothing persists.</b> The document lives in the browser; reload and you are back to the bundled dataset (the audit cache survives, the edits do not). Export and Import are the workaround. Horizon 3 is the fix.</li>
+  <li><b>The audit is slow on big trees.</b> Fifteen to twenty seconds on the 135-node dataset, eight to fifteen on the small ones. The panel never blocks and old cards stay up under "Reviewing…", but a demo should load the document before the audience is looking.</li>
+  <li><b>Cost is one audit per commit</b>, debounced at 1.5 seconds and cached by document hash. It is the obvious thing to gate if the tool were used at length.</li>
+  <li><b>"Ask &lt;team&gt;" is rare by design.</b> Findings are grouped by problem and problems cross teams, so about one finding in six on the bundled datasets resolves to a single team.</li>
+  <li><b>The one-tool design has one failure mode.</b> If the model's structured call comes back malformed, the service falls back to "I couldn't come up with an answer for that". A retry-once would be a cheap follow-up.</li>
+  <li><b>Single user, no auth, no streaming, desktop only.</b> The README's scope boundary from day one, unchanged.</li>
+  <li><b>The datasets are invented.</b> The Babylon.js package layout is real; its OKRs, numbers and every finding about them are not statements about the real project.</li>
+</ul>
+
+<h2 id="refs">References</h2>
+
+<ol class="refs">
+  <li>Live demo: <a class="ext" href="https://okr-801210973620.us-central1.run.app">https://okr-801210973620.us-central1.run.app</a></li>
+  <li>Video walkthrough: <a href="#video"><i>[link to be added]</i></a></li>
+  <li>Repository: <a class="ext" href="https://github.com/tmiv/OKR-Agents">https://github.com/tmiv/OKR-Agents</a>; the <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/README.md">README</a> carries the mission, the setup, and the original build notes unedited.</li>
+  <li>Plans: <a class="ext" href="https://github.com/tmiv/OKR-Agents/tree/main/Plans/completed">Plans/completed</a>, seventeen files, each with completion notes.</li>
+  <li>Concept documents: <a class="ext" href="https://github.com/tmiv/OKR-Agents/tree/main/Concepts">Concepts/</a>, five files: Product Vision, Teams as Agents, Agents as Executors, Matrix Views, Depth and Focus.</li>
+  <li>Working rules for plans and concepts: <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/CLAUDE.md">CLAUDE.md</a>.</li>
+  <li>Build transcripts: <a href="transcripts/index.html">archive index</a>, 25 sessions and 7 subagents.</li>
+  <li>Screenshots on this page were captured from the development build on 14 September 2026 and are in <a href="screenshots/">screenshots/</a>.</li>
+</ol>
+
+<p class="small">This page is part of the repository (<code>docs/index.html</code>) and is served by GitHub Pages.</p>
+
+</div>
+</body>
+</html>
