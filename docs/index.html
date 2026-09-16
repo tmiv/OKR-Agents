@@ -104,7 +104,7 @@
     <tr><th>Type</th><td>Interactive explorer for goal hierarchies, with an AI coach and team agents</td></tr>
     <tr><th>Theme</th><td>Exploration &amp; Understanding</td></tr>
     <tr><th>Live demo</th><td><a class="ext" href="https://okr-801210973620.us-central1.run.app">okr-801210973620.us-central1.run.app</a></td></tr>
-    <tr><th>Video</th><td><a href="#video">Walkthrough (link below)</a></td></tr>
+    <tr><th>Video</th><td><a href="#video">Walkthrough, 6½ min</a> (<a href="videos/OKRA.mp4">MP4</a>)</td></tr>
     <tr><th>Source</th><td><a class="ext" href="https://github.com/tmiv/OKR-Agents">github.com/tmiv/OKR-Agents</a></td></tr>
     <tr><th>Stack</th><td>Svelte 5 + Vite, <code>3d-force-graph</code> (three.js), Express 5, Claude API (one forced tool call), JSON Schema + Ajv, Docker, Cloud Run</td></tr>
     <tr><th>Built</th><td>11–14 September 2026</td></tr>
@@ -124,7 +124,10 @@
 
 <div class="box video" id="video">
   <div class="h">▶ Video walkthrough</div>
-  <p style="margin:0">A five-minute recorded tour of the prototype. <b>Link:</b> <a href="#video"><i>[video link to be added]</i></a></p>
+  <video controls preload="metadata" style="display:block;width:100%;max-width:960px;margin:8px 0;background:#000;border:1px solid var(--border)" src="videos/OKRA.mp4">
+    Your browser cannot play this video inline. <a href="videos/OKRA.mp4">Download the walkthrough (MP4)</a>.
+  </video>
+  <p style="margin:0">A recorded tour of the prototype, six and a half minutes. <b>Direct link:</b> <a href="videos/OKRA.mp4">videos/OKRA.mp4</a></p>
 </div>
 
 <p>
@@ -277,7 +280,7 @@
 
 <div class="box note">
   <div class="h">Honest accounting</div>
-  <p style="margin:0.3em 0">The brief asked for one to two hours on the prototype, with an allowance of up to eight. I spent about <b>four hours of my own attention</b> on it, spread over 11–14 September 2026, and will spend about <b>one more hour</b> recording the video. Claude Code ran for much longer than that: the work went through 32 recorded sessions (25 top-level, 7 subagents) and 44 commits, most of them while I was doing something else. Every session is published unedited under <a href="#transcripts">§&nbsp;Transcripts</a> so the split between my time and the model's is inspectable rather than asserted.</p>
+  <p style="margin:0.3em 0">The brief asked for one to two hours on the prototype, with an allowance of up to eight. I spent about <b>four hours of my own attention</b> on it, spread over 11–14 September 2026, and about <b>one more hour</b> recording the video. Claude Code ran for much longer than that: the work went through 32 recorded sessions (25 top-level, 7 subagents) and 44 commits, most of them while I was doing something else. Every session is published unedited under <a href="#transcripts">§&nbsp;Transcripts</a> so the split between my time and the model's is inspectable rather than asserted.</p>
 </div>
 
 <p>The build followed one loop, repeated seventeen times: write a plan, implement the plan, write completion notes. The repository's working instructions require every non-trivial change to start as a plan file with a fixed template (context, goal, decisions locked in, numbered phases citing <code>file:line</code> edit points, verification, out of scope) and to end with three bullets of completion notes: what landed as planned, what changed mid-flight, and what surprised. Design rationale lives apart from the plans in concept documents, so that the <i>why</i> is not fused with the <i>what</i>. The plans are listed with their transcripts in <a href="#plans">§&nbsp;Plans implemented</a>.</p>
@@ -402,7 +405,7 @@
   <tr><td>14 Sept 14:56</td><td><a href="transcripts/tmiv74-OKR-Display/65a44f42-ad53-460d-bb3c-7779344c8415/index.html">Bug: the model jitters on first load</a></td><td></td></tr>
   <tr><td>14 Sept 15:39</td><td><a href="transcripts/tmiv74-OKR-Display/bf0828d0-5595-4ea8-8260-b9be113e1d30/index.html">Implement BRIEFING_AUDIT_CACHE</a></td><td></td></tr>
   <tr><td>14 Sept 16:41</td><td><a href="transcripts/tmiv74-OKR-Display/e6e4336c-067a-4ccd-a48b-6a2ee4324e6a/index.html">Text labels in front of the 3D elements</a></td><td></td></tr>
-  <tr><td>14 Sept 20:21</td><td><a href="transcripts/tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/index.html">Script for the five-minute video</a></td><td></td></tr>
+  <tr><td>14 Sept 20:21</td><td><a href="transcripts/tmiv74-OKR-Display/5c7e3058-0775-4324-aed1-d0925a35c156/index.html">Script for the video walkthrough</a></td><td>The recording ran to six and a half minutes.</td></tr>
   <tr><td>14 Sept 20:31</td><td><a href="transcripts/tmiv74-OKR-Display/7661023b-b78b-4a38-ba40-f1f2b99cd6c8/index.html">"My vision is bigger than what comes across"</a></td><td>The mission statement and the rename plan.</td></tr>
   <tr><td>14 Sept 20:46</td><td><a href="transcripts/tmiv74-OKR-Display/042aa35f-07af-4618-a8ac-3acf3f779810/index.html">Implement BABYLONJS_PROJECT_DATASET</a></td><td></td></tr>
   <tr><td>14 Sept 21:28</td><td><a href="transcripts/tmiv74-OKR-Display/2b11efc1-bae3-47da-94d2-1474c9d18e9f/index.html">Implement OKR_AGENTS_RENAME_AND_POSITIONING</a></td><td></td></tr>
@@ -486,7 +489,7 @@
 
 <ol class="refs">
   <li>Live demo: <a class="ext" href="https://okr-801210973620.us-central1.run.app">https://okr-801210973620.us-central1.run.app</a></li>
-  <li>Video walkthrough: <a href="#video"><i>[link to be added]</i></a></li>
+  <li>Video walkthrough: <a href="videos/OKRA.mp4">videos/OKRA.mp4</a> (embedded under <a href="#video">§&nbsp;Video walkthrough</a>)</li>
   <li>Repository: <a class="ext" href="https://github.com/tmiv/OKR-Agents">https://github.com/tmiv/OKR-Agents</a>; the <a class="ext" href="https://github.com/tmiv/OKR-Agents/blob/main/README.md">README</a> carries the mission, the setup, and the original build notes unedited.</li>
   <li>Plans: <a class="ext" href="https://github.com/tmiv/OKR-Agents/tree/main/Plans/completed">Plans/completed</a>, seventeen files, each with completion notes.</li>
   <li>Concept documents: <a class="ext" href="https://github.com/tmiv/OKR-Agents/tree/main/Concepts">Concepts/</a>, five files: Product Vision, Teams as Agents, Agents as Executors, Matrix Views, Depth and Focus.</li>
